@@ -23,3 +23,31 @@ scratch_*.jpg
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Large exploration / comparison renders, not part of the app
+museum_specimens/
+museum_showcase.html
+public/museum_showcase.html
+public/specimen_showcase.html
+public/model_comparison/
+public/gpt5_comparison/
+public/gpt5_model_comparison.html
+gpt5_model_comparison.html
+scripts/test_output/
+
+# Superseded UI screenshots
+public/spidex_*_preview*.png
+public/spidex_species_detail_scrolled*.png
+
+# Personal files that landed in the repo root
+lich_trinh_nha_trang.*
+
+# Agent tooling config, not application source
+.claude/
+.agentkit/
+
+# Singapore butterfly pack: 126MB of images, too large for git without LFS
+public/packs/butterfly-sg/
