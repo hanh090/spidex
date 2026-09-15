@@ -126,11 +126,17 @@
     "online": "Online"
   },
   "onboarding": {
+    "browseAll": "Browse all checklists",
+    "choose": "Choose your first checklist",
+    "headline": "The birds and butterflies of Vietnam, in your pocket with no signal",
     "install": "Download and explore",
     "installNote": "Species and plates are stored on this device so the guide works fully offline.",
     "installing": "Downloading…",
-    "lede": "Spidex works with no signal, but it needs a species pack stored on the phone first. Pick one to download now — you can add the rest from the pack library.",
-    "title": "No pack on this device yet"
+    "lede": "Download a checklist once. Every species, plate and identification key then lives on the phone — deep in a national park, on a boat, at 3am with no bars.",
+    "statChecklists": "national checklists",
+    "statOffline": "bars needed",
+    "statOfflineValue": "Zero",
+    "statSpecies": "species"
   },
   "packs": {
     "active": "In use",

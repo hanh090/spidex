@@ -126,11 +126,17 @@
     "online": "Online"
   },
   "onboarding": {
+    "browseAll": "Alle Checklisten ansehen",
+    "choose": "Erste Checkliste wählen",
+    "headline": "Die Vögel und Schmetterlinge Vietnams — in der Tasche, ohne Empfang",
     "install": "Herunterladen und erkunden",
     "installNote": "Arten und Tafeln werden auf diesem Gerät gespeichert, damit der Führer vollständig offline arbeitet.",
     "installing": "Wird geladen…",
-    "lede": "Spidex funktioniert ohne Empfang, benötigt dafür aber zuerst ein Artenpaket auf dem Telefon. Wählen Sie eines zum Herunterladen — weitere gibt es später in der Paketbibliothek.",
-    "title": "Noch kein Paket auf diesem Gerät"
+    "lede": "Eine Checkliste einmal herunterladen. Alle Arten, Tafeln und Bestimmungsschlüssel liegen dann auf dem Telefon — tief im Nationalpark, auf dem Boot, um 3 Uhr nachts ohne Netz.",
+    "statChecklists": "nationale Checklisten",
+    "statOffline": "Balken nötig",
+    "statOfflineValue": "Null",
+    "statSpecies": "Arten"
   },
   "packs": {
     "active": "Aktiv",

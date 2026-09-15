@@ -121,11 +121,17 @@
     "online": "Trực tuyến"
   },
   "onboarding": {
+    "browseAll": "Xem tất cả danh lục",
+    "choose": "Chọn danh lục đầu tiên",
+    "headline": "Chim và bướm Việt Nam, trong túi bạn — không cần sóng",
     "install": "Tải và khám phá",
     "installNote": "Dữ liệu loài và hình ảnh được lưu trên máy để tra cứu hoàn toàn ngoại tuyến.",
     "installing": "Đang tải…",
-    "lede": "Spidex hoạt động không cần sóng, nhưng trước tiên cần tải một gói loài về máy. Hãy chọn một gói để tải ngay — các gói còn lại có trong thư viện gói.",
-    "title": "Thiết bị chưa có gói dữ liệu"
+    "lede": "Tải một danh lục về máy một lần. Toàn bộ loài, bản vẽ mẫu vật và khoá định danh sẽ nằm trong điện thoại — giữa rừng quốc gia, trên thuyền, hay 3 giờ sáng không vạch sóng nào.",
+    "statChecklists": "danh lục quốc gia",
+    "statOffline": "vạch sóng cần",
+    "statOfflineValue": "Không",
+    "statSpecies": "loài"
   },
   "packs": {
     "active": "Đang dùng",

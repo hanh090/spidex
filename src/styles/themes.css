@@ -45,6 +45,16 @@
   --scrim:     rgba(9, 4, 2, 0.66);
 }
 
+/*
+ * Sun drops decoration. The onboarding plate band is ornament, and in direct
+ * tropical sunlight ornament behind type is the first thing that costs you a
+ * reading. The cards, counts and actions are untouched.
+ */
+/* !important because the band carries an inline grid whose column count is
+   computed from how many plates actually loaded. A theme must still be able
+   to switch the whole band off. */
+:root[data-theme='sun'] .hero-plates { display: none !important; }
+
 /* Sun leans on weight as well as colour — glare eats thin strokes. */
 :root[data-theme='sun'] body {
   --type-body:  500 16px/1.55 var(--font-sans);
