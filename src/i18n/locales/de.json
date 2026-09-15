@@ -125,6 +125,11 @@
     "offline": "Offline",
     "online": "Online"
   },
+  "notFound": {
+    "fix": "Der Link ist womöglich veraltet. Alles im Führer ist über die drei Tabs unten erreichbar.",
+    "home": "Zu Entdecken",
+    "title": "Diese Seite gibt es nicht"
+  },
   "onboarding": {
     "browseAll": "Alle Checklisten ansehen",
     "choose": "Erste Checkliste wählen",

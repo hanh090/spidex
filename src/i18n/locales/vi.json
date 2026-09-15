@@ -120,6 +120,11 @@
     "offline": "Ngoại tuyến",
     "online": "Trực tuyến"
   },
+  "notFound": {
+    "fix": "Liên kết có thể đã cũ. Mọi mục trong sách hướng dẫn đều truy cập được từ ba thẻ bên dưới.",
+    "home": "Về Khám phá",
+    "title": "Trang này không tồn tại"
+  },
   "onboarding": {
     "browseAll": "Xem tất cả danh lục",
     "choose": "Chọn danh lục đầu tiên",

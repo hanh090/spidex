@@ -11,6 +11,7 @@
  * matches never dead-end: the least selective filter is relaxed and named.
  */
 import { useMemo, useState } from 'react'
+import { useScreenState } from '../app/use-screen-state'
 import { useTranslation } from 'react-i18next'
 import { EmptyState, Skeleton } from '../ui/primitives'
 import { Sheet } from '../ui/sheet'
@@ -29,8 +30,17 @@ import { formatNumber } from '../i18n/format'
 export function Explore() {
   const { t } = useTranslation()
   const { pack, species, baseUrl, loading } = useActivePack()
-  const [selection, setSelection] = useState<Selection>({})
-  const [query, setQuery] = useState('')
+
+  /*
+   * Filters and search survive leaving the screen. Narrowing 1,429 species to
+   * a dozen candidates is the expensive half of the task, and tapping one of
+   * those candidates is exactly when you want the rest still there on return.
+   * Keyed by pack: a selection names trait keys from one pack's schema.
+   */
+  const scope = `explore:${pack?.id ?? 'none'}`
+  const [selection, setSelection] = useScreenState<Selection>(`${scope}:selection`, {})
+  const [query, setQuery] = useScreenState(`${scope}:query`, '')
+  // The sheet is a transient overlay, not a place — it should not reopen itself.
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const schema = pack?.manifest.traitSchema

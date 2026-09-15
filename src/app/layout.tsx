@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Drawer } from './drawer'
+import { useScrollRestoration } from './use-scroll-restoration'
 import { IconExplore, IconIdentify, IconSightings, IconMenu } from '../ui/icons'
 import { useOnline } from '../lib/net'
 import { useActivePackName } from '../features/guide/use-active-pack-name'
@@ -51,12 +52,8 @@ export function Layout() {
     void estimate().then(setUsage)
   }, [])
 
-  // Auto scroll to top on route change
-  useEffect(() => {
-    mainRef.current?.scrollTo({ top: 0 })
-    const scrollable = mainRef.current?.querySelector('.scroll-y')
-    scrollable?.scrollTo({ top: 0 })
-  }, [location.pathname])
+  // Top on push, restored position on back. See use-scroll-restoration.
+  useScrollRestoration(mainRef)
 
   const onTheme = (next: ThemeSetting) => {
     setThemeSetting(next)

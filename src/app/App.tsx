@@ -10,6 +10,7 @@ import { SightingDetail } from '../screens/sighting-detail'
 import { Packs } from '../screens/packs'
 import { AuthCallback } from '../screens/auth-callback'
 import { AuthProvider } from '../features/auth/auth-context'
+import { NotFound } from '../screens/not-found'
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,9 @@ const router = createBrowserRouter([
       { path: 'sightings/:id', element: <SightingDetail /> },
       { path: 'library', element: <Packs /> },
       { path: 'auth/callback', element: <AuthCallback /> },
+      // Anything else. Without this, an unknown path raises out of the router
+      // and the user gets React Router's raw error page.
+      { path: '*', element: <NotFound /> },
     ],
   },
 ])

@@ -125,6 +125,11 @@
     "offline": "Offline",
     "online": "Online"
   },
+  "notFound": {
+    "fix": "The link may be out of date. Everything in the guide is reachable from the three tabs below.",
+    "home": "Go to Explore",
+    "title": "This page does not exist"
+  },
   "onboarding": {
     "browseAll": "Browse all checklists",
     "choose": "Choose your first checklist",

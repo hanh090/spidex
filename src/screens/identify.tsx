@@ -11,7 +11,8 @@
  * common correction in a key — you realise the bird was larger than you
  * thought — and it previously had no control at all.
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useScreenState } from '../app/use-screen-state'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useActivePack } from '../features/guide/use-pack'
@@ -29,9 +30,17 @@ export function Identify() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { pack, species, baseUrl, loading } = useActivePack()
-  const [selection, setSelection] = useState<Selection>({})
-  const [step, setStep] = useState(0)
-  const [showResults, setShowResults] = useState(false)
+
+  /*
+   * The key survives leaving the screen. Half-identifying a bird, tapping
+   * Explore to check a similar species, and returning to step 1 with every
+   * answer discarded is the worst thing this screen can do — in the field the
+   * animal is already gone.
+   */
+  const scope = `identify:${pack?.id ?? 'none'}`
+  const [selection, setSelection] = useScreenState<Selection>(`${scope}:selection`, {})
+  const [step, setStep] = useScreenState(`${scope}:step`, 0)
+  const [showResults, setShowResults] = useScreenState(`${scope}:showResults`, false)
 
   const schema = pack?.manifest.traitSchema
   const { results, relaxedKey } = useMemo(() => {
