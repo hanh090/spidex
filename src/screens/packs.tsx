@@ -140,7 +140,6 @@ export function Packs() {
         key={entry.id}
         manifest={entry.manifest}
         preview={entry.preview}
-        current={isActive}
         headingLevel="h3"
         status={
           p ? { label: t('packs.downloading'), tone: 'warn' }

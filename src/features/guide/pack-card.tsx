@@ -37,12 +37,10 @@ export interface PackCardProps {
   headingLevel?: 'h2' | 'h3'
   /** Progress bar while installing. */
   progress?: { done: number; total: number; label: string } | null
-  /** The pack currently mounted — drawn with an ink edge rather than a hairline. */
-  current?: boolean
 }
 
 export function PackCard({
-  manifest, preview, actions, status, headingLevel: H = 'h3', progress, current,
+  manifest, preview, actions, status, headingLevel: H = 'h3', progress,
 }: PackCardProps) {
   const { t } = useTranslation()
   const name = resolve(manifest.name)
@@ -70,7 +68,13 @@ export function PackCard({
     <article
       style={{
         position: 'relative', isolation: 'isolate',
-        border: `var(--hair) solid ${current ? 'var(--ink)' : 'var(--line)'}`,
+        /*
+         * One edge weight for every card. An ink border on the mounted pack
+         * put a near-black rectangle around the one card that already says
+         * "In use" in a filled pill — two signals for one state, and the
+         * heavier of the two fighting a soft blurred ground.
+         */
+        border: 'var(--hair) solid var(--line)',
         borderRadius: 'var(--radius-card)', overflow: 'hidden',
         background: 'var(--paper)',
       }}
