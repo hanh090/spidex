@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dragonfly Plates &mdash; Spidex</title>
+<style>
+:root {
+  --bg:#0b1220; --panel:#121c2e; --panel-2:#16223a; --line:#24334f;
+  --ink:#e8eefc; --muted:#93a4c4; --accent:#4ade80; --warn:#f59e0b; --danger:#f87171;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+h1{font-size:30px;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 28px;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:18px;margin-bottom:22px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.card-head h2{margin:0;font-size:20px}
+.vi{margin:2px 0 0;color:var(--warn);font-size:13px}
+.sci{margin:1px 0 0;color:var(--muted);font-style:italic;font-size:13px}
+.lic{font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:5px 9px;
+  border-radius:6px;white-space:nowrap;border:1px solid var(--line)}
+.lic.ok{color:var(--accent);border-color:#265c3c}
+.lic.warn{color:var(--danger);border-color:#5c2626}
+.marks{margin:12px 0 16px;font-size:13px;color:#c3d0e8;
+  border-left:3px solid var(--accent);padding-left:12px}
+.marks strong{color:var(--accent);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;display:block;margin-bottom:2px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cell{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  display:flex;flex-direction:column;background:#fff}
+.cell--raw{background:#0f1726}
+.cell img{width:100%;aspect-ratio:1/1;object-fit:contain;display:block}
+.cell--raw img{object-fit:cover}
+figcaption{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);background:var(--panel-2);padding:7px 8px;text-align:center}
+.credit{margin:12px 0 0;font-size:11px;color:#6f84ab}
+@media (max-width:760px){ .pair{grid-template-columns:1fr} }
+</style></head>
+<body><div class="wrap">
+<h1>Dragonfly specimen plates</h1>
+<p class="sub">Three of the most common Vietnamese Odonata, drawn through the
+<code>spidex:specimen-plate</code> skill on the new dragonfly branch
+(<code>microsoft/mai-image-2.6-flash</code>, ~$0.023 each). Left is the original
+iNaturalist field photo, right is the redrawn plate. The badge is the photo licence:
+red means it is not cleared for commercial reuse.</p>
+<section class="card"><header class="card-head"><div><h2>Wandering Glider</h2><p class="vi">Chuồn chuồn vàng</p><p class="sci">Pantala flavescens</p></div><span class="lic ok">CC-BY</span></header><p class="marks"><strong>Field marks</strong> Golden-yellow to amber abdomen, very broad hindwing bases, amber wash at hindwing base</p><div class="pair"><figure class="cell cell--raw"><img src="museum_specimens/dragonfly_pantala_flavescens_raw.jpg" alt="Field photo of Pantala flavescens" loading="lazy"><figcaption>Original photo (field)</figcaption></figure><figure class="cell cell--plate"><img src="museum_specimens/dragonfly_pantala_flavescens_plate.jpg" alt="Specimen plate of Pantala flavescens" loading="lazy"><figcaption>Redrawn specimen plate</figcaption></figure></div><p class="credit">(c) Roger Rittmaster, some rights reserved (CC BY) &middot; iNaturalist (Vietnam)</p></section><section class="card"><header class="card-head"><div><h2>Scarlet Skimmer</h2><p class="vi">Chuồn chuồn đỏ</p><p class="sci">Crocothemis servilia</p></div><span class="lic ok">CC-BY</span></header><p class="marks"><strong>Field marks</strong> Male entirely brilliant blood-red including face, eyes and abdomen, thin dark mid-dorsal line, amber patch at hindwing base</p><div class="pair"><figure class="cell cell--raw"><img src="museum_specimens/dragonfly_crocothemis_servilia_raw.jpg" alt="Field photo of Crocothemis servilia" loading="lazy"><figcaption>Original photo (field)</figcaption></figure><figure class="cell cell--plate"><img src="museum_specimens/dragonfly_crocothemis_servilia_plate.jpg" alt="Specimen plate of Crocothemis servilia" loading="lazy"><figcaption>Redrawn specimen plate</figcaption></figure></div><p class="credit">(c) Ben Costamagna, some rights reserved (CC BY) &middot; iNaturalist (Vietnam)</p></section><section class="card"><header class="card-head"><div><h2>Slender Skimmer</h2><p class="vi">Chuồn chuồn kim vàng</p><p class="sci">Orthetrum sabina</p></div><span class="lic ok">CC-BY</span></header><p class="marks"><strong>Field marks</strong> Pale greenish-yellow body banded with black, strongly constricted waist-like abdomen swelling at the tip, clear wings</p><div class="pair"><figure class="cell cell--raw"><img src="museum_specimens/dragonfly_orthetrum_sabina_raw.jpg" alt="Field photo of Orthetrum sabina" loading="lazy"><figcaption>Original photo (field)</figcaption></figure><figure class="cell cell--plate"><img src="museum_specimens/dragonfly_orthetrum_sabina_plate.jpg" alt="Specimen plate of Orthetrum sabina" loading="lazy"><figcaption>Redrawn specimen plate</figcaption></figure></div><p class="credit">(c) Mark Clarke, some rights reserved (CC BY) &middot; iNaturalist (Vietnam)</p></section>
+</div></body></html>

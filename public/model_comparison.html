@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plate Model Comparison — Spidex</title>
+<style>
+:root {
+  --bg: #0b1220; --panel: #121c2e; --panel-2: #16223a; --line: #24334f;
+  --ink: #e8eefc; --muted: #93a4c4; --accent: #4ade80; --warn: #f59e0b;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 1680px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -.02em; }
+.sub { color: var(--muted); margin: 0 0 28px; max-width: 72ch; }
+.strip, .head { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.head { position: sticky; top: 0; z-index: 5; background: var(--bg);
+  padding: 12px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+.head-cell { display: flex; flex-direction: column; gap: 4px; padding: 12px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.head-cell--source { background: #1d1520; border-color: #40263a; }
+.vendor { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.name { font-weight: 700; font-size: 15px; }
+.tag { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.head-cell code { font-size: 10px; color: #6f84ab; word-break: break-all; margin-top: auto; }
+.species { background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 18px; margin-bottom: 22px; }
+.species-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.species-head h2 { margin: 0; font-size: 20px; }
+.vi { margin: 2px 0 0; color: var(--warn); font-size: 13px; }
+.sci { margin: 1px 0 0; color: var(--muted); font-style: italic; font-size: 13px; }
+.family { font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); background: var(--panel-2); border: 1px solid var(--line);
+  padding: 5px 9px; border-radius: 6px; white-space: nowrap; }
+.marks { margin: 12px 0 16px; font-size: 13px; color: #c3d0e8;
+  border-left: 3px solid var(--accent); padding-left: 12px; }
+.marks strong { color: var(--accent); font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; display: block; margin-bottom: 2px; }
+.cell { margin: 0; background: #ffffff; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--line); display: flex; flex-direction: column; }
+.cell--source { background: #0f1726; }
+.cell img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; display: block; }
+.cell--source img { object-fit: cover; }
+.meta { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); background: var(--panel-2); padding: 6px 8px; text-align: center; }
+.cell--empty { background: var(--panel-2); }
+.failed { aspect-ratio: 4 / 3; display: flex; flex-direction: column; gap: 4px;
+  align-items: center; justify-content: center; color: #7c8db0; font-size: 12px; }
+.failed small { color: #55658a; font-size: 10px; }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+td code { font-size: 11px; color: #7f93b8; }
+.summary { background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 18px; }
+.summary h2 { margin: 0; font-size: 18px; }
+@media (max-width: 1100px) {
+  .strip, .head { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .head { position: static; }
+}
+</style></head>
+<body><div class="wrap">
+<h1>Field-guide plate: model comparison</h1>
+<p class="sub">Four Vietnamese butterflies, one identical prompt, the same source photo as
+reference. Every model is given the <code>spidex:specimen-plate</code> production prompt &mdash; clear
+anatomical wing venation, pure white background, no shadow &mdash; through the OpenRouter
+<code>/api/v1/images</code> endpoint. The Gemini 2.5 Flash column is the existing production plate,
+drawn before that prompt was tightened.</p>
+<div class="head"><div class="head-cell head-cell--source"><span class="vendor">field</span><span class="name">Original photo</span><span class="tag">Input every model was given.</span></div><div class="head-cell"><span class="vendor">Google</span><span class="name">Gemini 2.5 Flash</span><span class="tag">The incumbent — fast, cheap, drew all 100 production plates.</span><code>google/gemini-2.5-flash-image</code></div><div class="head-cell"><span class="vendor">OpenAI</span><span class="name">GPT Image 2</span><span class="tag">Photoreal discipline; reads specimen texture before it draws.</span><code>openai/gpt-image-2</code></div><div class="head-cell"><span class="vendor">OpenAI</span><span class="name">GPT-5 Image</span><span class="tag">Reasoning-led rendering, tighter prompt adherence.</span><code>openai/gpt-5-image</code></div><div class="head-cell"><span class="vendor">Microsoft AI</span><span class="name">MAI-Image-2.6 Flash</span><span class="tag">Latency-first diffusion; near-precision quality at flash cost.</span><code>microsoft/mai-image-2.6-flash</code></div><div class="head-cell"><span class="vendor">Google</span><span class="name">Nano Banana Pro</span><span class="tag">Top Google tier; maximum fidelity, maximum price.</span><code>google/gemini-3-pro-image</code></div></div>
+<section class="species"><header class="species-head"><div><h2>Paris Peacock</h2><p class="vi">Bướm Phượng đuôi công</p><p class="sci">Papilio paris</p></div><span class="family">Papilionidae</span></header><p class="marks"><strong>Field marks</strong> Velvety black dusted with glittering green scales, huge brilliant metallic peacock-blue patch on hindwings</p><div class="strip"><figure class="cell cell--source"><img src="museum_specimens/butterfly_papilio_paris_raw.jpg" alt="Field photo of Papilio paris" loading="lazy"><figcaption class="meta">source photo</figcaption></figure><figure class="cell"><img src="museum_specimens/butterfly_papilio_paris_plate.jpg" alt="Papilio paris by Gemini 2.5 Flash" loading="lazy"><figcaption class="meta">baseline plate</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-image-2__papilio_paris.png" alt="Papilio paris by GPT Image 2" loading="lazy"><figcaption class="meta">18s · $0.0128</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-5-image__papilio_paris.png" alt="Papilio paris by GPT-5 Image" loading="lazy"><figcaption class="meta">36s · $0.1741</figcaption></figure><figure class="cell"><img src="model_comparison/mai-image-2.6-flash__papilio_paris.png" alt="Papilio paris by MAI-Image-2.6 Flash" loading="lazy"><figcaption class="meta">20s · $0.0217</figcaption></figure><figure class="cell"><img src="model_comparison/gemini-3-pro-image__papilio_paris.png" alt="Papilio paris by Nano Banana Pro" loading="lazy"><figcaption class="meta">23s · $0.1363</figcaption></figure></div></section><section class="species"><header class="species-head"><div><h2>Golden Birdwing</h2><p class="vi">Bướm Phượng cánh chim vàng</p><p class="sci">Troides aeacus</p></div><span class="family">Papilionidae</span></header><p class="marks"><strong>Field marks</strong> Large birdwing; velvety black forewings, expansive bright golden-yellow hindwings with black conical spots</p><div class="strip"><figure class="cell cell--source"><img src="museum_specimens/butterfly_troides_aeacus_raw.jpg" alt="Field photo of Troides aeacus" loading="lazy"><figcaption class="meta">source photo</figcaption></figure><figure class="cell"><img src="museum_specimens/butterfly_troides_aeacus_plate.jpg" alt="Troides aeacus by Gemini 2.5 Flash" loading="lazy"><figcaption class="meta">baseline plate</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-image-2__troides_aeacus.png" alt="Troides aeacus by GPT Image 2" loading="lazy"><figcaption class="meta">19s · $0.0181</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-5-image__troides_aeacus.png" alt="Troides aeacus by GPT-5 Image" loading="lazy"><figcaption class="meta">35s · $0.1742</figcaption></figure><figure class="cell"><img src="model_comparison/mai-image-2.6-flash__troides_aeacus.png" alt="Troides aeacus by MAI-Image-2.6 Flash" loading="lazy"><figcaption class="meta">21s · $0.0218</figcaption></figure><figure class="cell"><img src="model_comparison/gemini-3-pro-image__troides_aeacus.png" alt="Troides aeacus by Nano Banana Pro" loading="lazy"><figcaption class="meta">23s · $0.1363</figcaption></figure></div></section><section class="species"><header class="species-head"><div><h2>Great Orange Tip</h2><p class="vi">Bướm đầu cam lớn</p><p class="sci">Hebomoia glaucippe</p></div><span class="family">Pieridae</span></header><p class="marks"><strong>Field marks</strong> Very large pierid; chalk-white wings with prominent bright fiery-orange forewing apical tips</p><div class="strip"><figure class="cell cell--source"><img src="museum_specimens/butterfly_hebomoia_glaucippe_raw.jpg" alt="Field photo of Hebomoia glaucippe" loading="lazy"><figcaption class="meta">source photo</figcaption></figure><figure class="cell"><img src="museum_specimens/butterfly_hebomoia_glaucippe_plate.jpg" alt="Hebomoia glaucippe by Gemini 2.5 Flash" loading="lazy"><figcaption class="meta">baseline plate</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-image-2__hebomoia_glaucippe.png" alt="Hebomoia glaucippe by GPT Image 2" loading="lazy"><figcaption class="meta">22s · $0.0228</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-5-image__hebomoia_glaucippe.png" alt="Hebomoia glaucippe by GPT-5 Image" loading="lazy"><figcaption class="meta">37s · $0.1741</figcaption></figure><figure class="cell"><img src="model_comparison/mai-image-2.6-flash__hebomoia_glaucippe.png" alt="Hebomoia glaucippe by MAI-Image-2.6 Flash" loading="lazy"><figcaption class="meta">22s · $0.0224</figcaption></figure><figure class="cell"><img src="model_comparison/gemini-3-pro-image__hebomoia_glaucippe.png" alt="Hebomoia glaucippe by Nano Banana Pro" loading="lazy"><figcaption class="meta">23s · $0.1363</figcaption></figure></div></section><section class="species"><header class="species-head"><div><h2>Common Albatross</h2><p class="vi">Bướm phấn trắng</p><p class="sci">Appias albina</p></div><span class="family">Pieridae</span></header><p class="marks"><strong>Field marks</strong> Chalky white wings with narrow dark apical margin in male, broad dark border in female</p><div class="strip"><figure class="cell cell--source"><img src="museum_specimens/butterfly_appias_albina_raw.jpg" alt="Field photo of Appias albina" loading="lazy"><figcaption class="meta">source photo</figcaption></figure><figure class="cell"><img src="museum_specimens/butterfly_appias_albina_plate.jpg" alt="Appias albina by Gemini 2.5 Flash" loading="lazy"><figcaption class="meta">baseline plate</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-image-2__appias_albina.png" alt="Appias albina by GPT Image 2" loading="lazy"><figcaption class="meta">35s · $0.0489</figcaption></figure><figure class="cell"><img src="model_comparison/gpt-5-image__appias_albina.png" alt="Appias albina by GPT-5 Image" loading="lazy"><figcaption class="meta">34s · $0.1741</figcaption></figure><figure class="cell"><img src="model_comparison/mai-image-2.6-flash__appias_albina.png" alt="Appias albina by MAI-Image-2.6 Flash" loading="lazy"><figcaption class="meta">20s · $0.0218</figcaption></figure><figure class="cell"><img src="model_comparison/gemini-3-pro-image__appias_albina.png" alt="Appias albina by Nano Banana Pro" loading="lazy"><figcaption class="meta">37s · $0.1367</figcaption></figure></div></section>
+<div class="summary"><h2>Cost and latency</h2>
+<table><thead><tr><th>Model</th><th>Slug</th><th>Plates</th><th>Avg latency</th>
+<th>Cost / plate</th><th>Est. 4-plate run</th></tr></thead>
+<tbody><tr><td>GPT Image 2</td><td><code>openai/gpt-image-2</code></td><td>4/4</td><td>23.5s</td><td>$0.0256</td><td>$0.1025</td></tr><tr><td>GPT-5 Image</td><td><code>openai/gpt-5-image</code></td><td>4/4</td><td>35.8s</td><td>$0.1741</td><td>$0.6965</td></tr><tr><td>MAI-Image-2.6 Flash</td><td><code>microsoft/mai-image-2.6-flash</code></td><td>4/4</td><td>20.4s</td><td>$0.0220</td><td>$0.0878</td></tr><tr><td>Nano Banana Pro</td><td><code>google/gemini-3-pro-image</code></td><td>4/4</td><td>26.6s</td><td>$0.1364</td><td>$0.5457</td></tr></tbody></table></div>
+</div></body></html>
