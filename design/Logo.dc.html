@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+    body { margin: 0; font-family: Archivo, "Helvetica Neue", sans-serif; }
+    a { color: #b8232c; } a:hover { color: #8c1a21; }
+    .lbl { font: 600 10px/1 Archivo, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #6b6258; }
+  </style>
+</helmet>
+
+<div style="width: 880px; height: 620px; background: #faf7f2; padding: 40px 44px; box-sizing: border-box; display: flex; flex-direction: column; gap: 30px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #ddd5c8; padding-bottom: 12px;">
+    <div class="lbl">Spidex · Identity</div>
+    <div class="lbl">Wing venation as index rules</div>
+  </div>
+
+  <!-- primary lockup -->
+  <div style="display: flex; align-items: center; gap: 26px;">
+    <svg width="104" height="104" viewBox="0 0 64 64" aria-label="Spidex mark">
+      <path d="M32 58 C32 34 44 12 60 6 C60 30 50 50 32 58 Z" fill="#b8232c"/>
+      <path d="M32 58 C32 34 20 12 4 6 C4 30 14 50 32 58 Z" fill="#141110"/>
+      <g stroke="#faf7f2" stroke-width="1.5" stroke-linecap="round" opacity=".92">
+        <path d="M32 56 L54 12"/><path d="M32 56 L47 13"/><path d="M32 56 L40 12"/>
+        <path d="M32 56 L10 12"/><path d="M32 56 L17 13"/><path d="M32 56 L24 12"/>
+      </g>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div style="font: 700 60px/0.9 Spectral, Georgia, serif; letter-spacing: -0.015em; color: #141110;">Spidex</div>
+      <div style="font: 600 11px/1 Archivo, sans-serif; letter-spacing: .34em; text-transform: uppercase; color: #6b6258;">Species Index</div>
+    </div>
+  </div>
+
+  <!-- variants -->
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px;">
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <div style="height: 116px; background: #f0ebe1; border: 1px solid #ddd5c8; display: flex; align-items: center; justify-content: center;">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <path d="M32 58 C32 34 44 12 60 6 C60 30 50 50 32 58 Z" fill="#b8232c"/>
+          <path d="M32 58 C32 34 20 12 4 6 C4 30 14 50 32 58 Z" fill="#141110"/>
+          <g stroke="#f0ebe1" stroke-width="1.6" stroke-linecap="round"><path d="M32 56 L54 12"/><path d="M32 56 L40 12"/><path d="M32 56 L10 12"/><path d="M32 56 L24 12"/></g>
+        </svg>
+      </div>
+      <div class="lbl">App icon · 64px</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <div style="height: 116px; background: #141110; border: 1px solid #141110; display: flex; align-items: center; justify-content: center;">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <path d="M32 58 C32 34 44 12 60 6 C60 30 50 50 32 58 Z" fill="#d9534f"/>
+          <path d="M32 58 C32 34 20 12 4 6 C4 30 14 50 32 58 Z" fill="#f2ece2"/>
+          <g stroke="#141110" stroke-width="1.6" stroke-linecap="round"><path d="M32 56 L54 12"/><path d="M32 56 L40 12"/><path d="M32 56 L10 12"/><path d="M32 56 L24 12"/></g>
+        </svg>
+      </div>
+      <div class="lbl">Reversed · dark</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <div style="height: 116px; background: #f0ebe1; border: 1px solid #ddd5c8; display: flex; align-items: center; justify-content: center; position: relative;">
+        <div style="position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 1px dashed #b8232c; opacity: .5;"></div>
+        <svg width="66" height="66" viewBox="0 0 64 64">
+          <path d="M32 58 C32 34 44 12 60 6 C60 30 50 50 32 58 Z" fill="#141110"/>
+          <path d="M32 58 C32 34 20 12 4 6 C4 30 14 50 32 58 Z" fill="#141110"/>
+          <g stroke="#f0ebe1" stroke-width="1.6" stroke-linecap="round"><path d="M32 56 L54 12"/><path d="M32 56 L40 12"/><path d="M32 56 L10 12"/><path d="M32 56 L24 12"/></g>
+        </svg>
+      </div>
+      <div class="lbl">Maskable · safe zone</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px;">
+      <div style="height: 116px; background: #f0ebe1; border: 1px solid #ddd5c8; display: flex; align-items: center; justify-content: center; gap: 22px;">
+        <svg width="48" height="48" viewBox="0 0 64 64">
+          <path d="M32 58 C32 34 44 12 60 6 C60 30 50 50 32 58 Z" fill="#b8232c"/>
+          <path d="M32 58 C32 34 20 12 4 6 C4 30 14 50 32 58 Z" fill="#141110"/>
+          <g stroke="#f0ebe1" stroke-width="2.2" stroke-linecap="round"><path d="M32 56 L52 13"/><path d="M32 56 L12 13"/></g>
+        </svg>
+        <svg width="16" height="16" viewBox="0 0 64 64">
+          <path d="M32 58 C32 34 44 12 60 6 C60 30 50 50 32 58 Z" fill="#b8232c"/>
+          <path d="M32 58 C32 34 20 12 4 6 C4 30 14 50 32 58 Z" fill="#141110"/>
+        </svg>
+      </div>
+      <div class="lbl">48px / 16px favicon</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 34px; align-items: flex-start; border-top: 1px solid #ddd5c8; padding-top: 18px;">
+    <div style="flex-grow: 1;">
+      <div class="lbl" style="margin-bottom: 7px;">Rationale</div>
+      <div style="font: 400 13px/1.55 Archivo, sans-serif; color: #3c352d; max-width: 430px;">
+        Two forewings, one dark and one accent, ruled with radiating veins that double as the lines of an index page. The mark loses its veins gracefully at 16px and survives a circular mask. No leaf, no binoculars, no bird silhouette.
+      </div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom: 7px;">Type</div>
+      <div style="font: 400 12px/1.7 'IBM Plex Mono', monospace; color: #3c352d;">
+        Spectral 700 · display<br>
+        Archivo 400–700 · UI<br>
+        IBM Plex Mono · data
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

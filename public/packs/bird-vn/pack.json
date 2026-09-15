@@ -1,0 +1,152 @@
+{
+  "id": "bird-vn",
+  "name": {
+    "en": "Birds of Vietnam",
+    "vi": "Chim Việt Nam"
+  },
+  "taxonGroup": "aves",
+  "region": "Vietnam",
+  "version": 2,
+  "license": "CC-BY-SA-4.0",
+  "sources": [
+    "IOC World Bird List v14.1 & Craik & Minh (2018)",
+    "Vietnam Red Data Book & IEBR Checklist",
+    "Spidex Natural History Museum Plate Collection"
+  ],
+  "speciesCount": 962,
+  "sizeBytes": {
+    "thumb": 203373148,
+    "full": 203373148
+  },
+  "idRemap": [],
+  "traitSchema": {
+    "traits": [
+      {
+        "key": "size",
+        "label": {
+          "en": "Size",
+          "vi": "Kích thước"
+        },
+        "type": "single",
+        "render": "chip",
+        "options": [
+          {
+            "v": "tiny",
+            "label": {
+              "en": "Sparrow or smaller (< 15 cm)",
+              "vi": "Nhỏ hơn chim sẻ (< 15 cm)"
+            }
+          },
+          {
+            "v": "small",
+            "label": {
+              "en": "Bulbul-sized (15–25 cm)",
+              "vi": "Cỡ chào mào (15–25 cm)"
+            }
+          },
+          {
+            "v": "med",
+            "label": {
+              "en": "Crow-sized (25–45 cm)",
+              "vi": "Cỡ quạ (25–45 cm)"
+            }
+          },
+          {
+            "v": "large",
+            "label": {
+              "en": "Eagle / Heron (> 45 cm)",
+              "vi": "Cỡ diều hâu / diệc (> 45 cm)"
+            }
+          }
+        ]
+      },
+      {
+        "key": "colour",
+        "label": {
+          "en": "Primary plumage",
+          "vi": "Màu lông chính"
+        },
+        "type": "multi",
+        "render": "swatch",
+        "max": 3,
+        "options": [
+          {
+            "v": "black",
+            "hex": "#1b1713",
+            "label": {
+              "en": "Black",
+              "vi": "Đen"
+            }
+          },
+          {
+            "v": "white",
+            "hex": "#f6f2ea",
+            "label": {
+              "en": "White",
+              "vi": "Trắng"
+            }
+          },
+          {
+            "v": "brown",
+            "hex": "#5c3d2e",
+            "label": {
+              "en": "Brown",
+              "vi": "Nâu"
+            }
+          },
+          {
+            "v": "green",
+            "hex": "#3d7a44",
+            "label": {
+              "en": "Green",
+              "vi": "Xanh lục"
+            }
+          },
+          {
+            "v": "blue",
+            "hex": "#2f5fa8",
+            "label": {
+              "en": "Blue",
+              "vi": "Xanh lam"
+            }
+          },
+          {
+            "v": "yellow",
+            "hex": "#d4a017",
+            "label": {
+              "en": "Yellow",
+              "vi": "Vàng"
+            }
+          },
+          {
+            "v": "red",
+            "hex": "#b8232c",
+            "label": {
+              "en": "Red",
+              "vi": "Đỏ"
+            }
+          }
+        ]
+      }
+    ],
+    "aspects": {
+      "required": [
+        "profile"
+      ],
+      "optional": [
+        "male",
+        "female",
+        "flight"
+      ]
+    },
+    "sections": [
+      {
+        "key": "call",
+        "label": {
+          "en": "Voice & Call",
+          "vi": "Tiếng hót"
+        }
+      }
+    ]
+  }
+}
