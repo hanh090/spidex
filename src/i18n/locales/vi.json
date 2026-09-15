@@ -130,6 +130,7 @@
     "choose": "Chọn danh lục đầu tiên",
     "headline": "Chim và bướm Việt Nam, trong túi bạn — không cần sóng",
     "install": "Tải và khám phá",
+    "installNamed": "Tải {{name}} và khám phá",
     "installNote": "Dữ liệu loài và hình ảnh được lưu trên máy để tra cứu hoàn toàn ngoại tuyến.",
     "installing": "Đang tải…",
     "lede": "Tải một danh lục về máy một lần. Toàn bộ loài, bản vẽ mẫu vật và khoá định danh sẽ nằm trong điện thoại — giữa rừng quốc gia, trên thuyền, hay 3 giờ sáng không vạch sóng nào.",
@@ -140,13 +141,21 @@
   },
   "packs": {
     "active": "Đang dùng",
+    "available": "Có thể tải về",
     "cancelled": "Đã huỷ tải.",
     "delete": "Xoá",
     "deleteConfirm": "Xoá {{name}}? Có {{count}} ghi nhận tham chiếu tới gói này — chúng vẫn được giữ và đọc được.",
     "download": "Tải về",
-    "fixtureNote": "Dữ liệu mẫu — hình minh hoạ, không phải ảnh chụp.",
+    "downloadNamed": "Tải {{name}}",
+    "downloading": "Đang tải",
+    "figureLicence": "giấy phép",
+    "figureSize": "dung lượng",
+    "figureSpecies": "loài",
     "invalid": "Gói không hợp lệ: {{detail}}",
+    "lede": "Mỗi danh lục là một cuốn hướng dẫn vùng hoàn chỉnh lưu trên máy. Tải về khi cần và xoá đi khi chuyến đi kết thúc.",
     "noHeadroom": "Không đủ dung lượng cho ảnh độ phân giải cao.",
+    "noneListed": "Không liệt kê được danh lục nào. Hãy kết nối mạng một lần để xem các gói hiện có.",
+    "onThisDevice": "Trên máy này",
     "persistWarning": "Trình duyệt này không bảo vệ dữ liệu tải về khỏi bị xoá. Vẫn tải?",
     "phase": {
       "manifest": "Đang đọc gói…",
@@ -155,11 +164,15 @@
       "index": "Đang hoàn tất…",
       "done": "Xong"
     },
+    "removeNamed": "Xoá {{name}}",
     "setActive": "Dùng gói này",
+    "setActiveNamed": "Dùng {{name}} làm danh lục hiện hành",
     "speciesCount_other": "{{n}} loài",
     "title": "Thư viện gói",
     "update": "Cập nhật lên v{{version}}",
-    "updateConfirm": "Cập nhật từ v{{from}} lên v{{to}}?\n\n{{affected}} ghi nhận của bạn tham chiếu gói này. {{unmappable}} không khớp được với phiên bản mới và sẽ giữ tên đã lưu."
+    "updateAvailable": "Cập nhật",
+    "updateConfirm": "Cập nhật từ v{{from}} lên v{{to}}?\n\n{{affected}} ghi nhận của bạn tham chiếu gói này. {{unmappable}} không khớp được với phiên bản mới và sẽ giữ tên đã lưu.",
+    "updateNamed": "Cập nhật {{name}} lên phiên bản {{version}}"
   },
   "scope": {
     "label": "Phạm vi",

@@ -14,27 +14,21 @@ import { downloadPack, deletePack, fetchManifest, packReferenceCount, type Progr
 import { previewUpdate } from '../data/pack-update'
 import { packBaseUrl } from '../features/guide/use-pack'
 import type { PackManifest } from '../data/pack-manifest'
-import { Button, Meta, Badge } from '../ui/primitives'
+import { Button } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
+import { PackCard } from '../features/guide/pack-card'
+import { CATALOGUE } from '../data/pack-catalogue'
+import { fetchPackPreview, type PackPreview } from '../data/pack-preview'
 import { resolve } from '../data/localized'
-import { formatBytes, formatNumber } from '../i18n/format'
-
-/** Packs bundled with the build. Includes national & regional scientific checklists. */
-const CATALOGUE = [
-  'butterfly-vn',
-  'bird-vn',
-  'butterfly-th',
-  'bird-th',
-  'butterfly-sg',
-  'butterfly-min',
-  'bird-min',
-]
+import { formatNumber } from '../i18n/format'
 
 interface Listed {
   id: string
   manifest: PackManifest
   /** The manifest came from an installed pack, not from the network. */
   local: boolean
+  /** A few real plates, so a pack is judged on what it looks like. */
+  preview: PackPreview[]
 }
 
 export function Packs() {
@@ -58,7 +52,7 @@ export function Packs() {
     setActiveId(active)
 
     const byId = new Map<string, Listed>(
-      packs.map((p) => [p.id, { id: p.id, manifest: p.manifest, local: true }]),
+      packs.map((p) => [p.id, { id: p.id, manifest: p.manifest, local: true, preview: [] }]),
     )
 
     for (const id of CATALOGUE) {
@@ -66,9 +60,17 @@ export function Packs() {
       // A failed fetch is the normal offline case, not an error: an installed
       // entry already covers it, and one not installed simply cannot be
       // downloaded right now.
-      if (m.ok) byId.set(id, { id, manifest: m.manifest, local: false })
+      if (m.ok) byId.set(id, { id, manifest: m.manifest, local: false, preview: [] })
     }
-    setListed([...byId.values()])
+
+    // Plates are decorative and best-effort; a pack lists with or without them.
+    const withPreviews = await Promise.all(
+      [...byId.values()].map(async (entry) => ({
+        ...entry,
+        preview: await fetchPackPreview(packBaseUrl(entry.id), 3),
+      })),
+    )
+    setListed(withPreviews)
   }, [])
 
   useEffect(() => { void refresh() }, [refresh])
@@ -123,65 +125,137 @@ export function Packs() {
     await refresh()
   }
 
+  const installedList = listed.filter((l) => installed.some((p) => p.id === l.id))
+  const availableList = listed.filter((l) => !installed.some((p) => p.id === l.id))
+
+  const renderCard = (entry: Listed) => {
+    const localPack = installed.find((p) => p.id === entry.id)
+    const isActive = activeId === entry.id
+    const p = progress[entry.id]
+    const outdated = localPack && localPack.version < entry.manifest.version && !entry.local
+    const name = resolve(entry.manifest.name)
+
+    return (
+      <PackCard
+        key={entry.id}
+        manifest={entry.manifest}
+        preview={entry.preview}
+        current={isActive}
+        headingLevel="h3"
+        status={
+          p ? { label: t('packs.downloading'), tone: 'warn' }
+          : isActive ? { label: t('packs.active'), tone: 'ok' }
+          : outdated ? { label: t('packs.updateAvailable'), tone: 'accent' }
+          : undefined
+        }
+        progress={p ? { done: p.done, total: p.total, label: t(`packs.phase.${p.phase}`) } : null}
+        actions={
+          <>
+            {!entry.local && !localPack && (
+              <Button
+                variant="primary"
+                full
+                onClick={() => void install(entry.id, 'thumb')}
+                aria-label={t('packs.downloadNamed', { name })}
+              >
+                {t('packs.download')}
+              </Button>
+            )}
+            {outdated && (
+              <Button
+                variant="primary"
+                full
+                onClick={() => void update(entry.id)}
+                aria-label={t('packs.updateNamed', { name, version: entry.manifest.version })}
+              >
+                {t('packs.update', { version: entry.manifest.version })}
+              </Button>
+            )}
+            {localPack && !isActive && (
+              <Button
+                variant="secondary"
+                full
+                onClick={async () => { await setActivePackId(entry.id); await refresh() }}
+                aria-label={t('packs.setActiveNamed', { name })}
+              >
+                {t('packs.setActive')}
+              </Button>
+            )}
+            {localPack && (
+              <Button
+                variant="inline"
+                onClick={() => void remove(localPack)}
+                aria-label={t('packs.removeNamed', { name })}
+              >
+                {t('packs.delete')}
+              </Button>
+            )}
+          </>
+        }
+      />
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
       <NavBar title={t('packs.title')} />
 
-      <div className="scroll-y" style={{ flex: 1, width: '100%', padding: 'var(--gutter-sm)', paddingBottom: 'max(var(--space-6), env(safe-area-inset-bottom))' }}>
-        {problem && (
-          <div style={{ background: 'var(--alert)', border: 'var(--hair) solid var(--warn)', padding: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-            <span className="t-body">{problem}</span>
-          </div>
-        )}
+      <div
+        className="scroll-y"
+        style={{
+          flex: 1, width: '100%',
+          padding: 'var(--space-4) var(--gutter-sm)',
+          paddingBottom: 'max(var(--space-8), env(safe-area-inset-bottom))',
+        }}
+      >
+        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+          {/* The screen's own heading. NavBar carries a title but it is chrome,
+              not an outline entry, so heading navigation had nothing to land on. */}
+          <h1 className="t-title" style={{ margin: '0 0 var(--space-2)' }}>{t('packs.title')}</h1>
+          <p className="t-body" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-6)', textWrap: 'pretty' }}>
+            {t('packs.lede')}
+          </p>
 
-      {listed.map(({ id, manifest, local }) => {
-        const localPack = installed.find((p) => p.id === id)
-        const p = progress[id]
-        return (
-          <section key={id} style={{
-            border: 'var(--hair) solid var(--line)', padding: 'var(--space-3)',
-            marginBottom: 'var(--space-3)', background: activeId === id ? 'var(--panel)' : 'transparent',
-          }}>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="t-heading">{resolve(manifest.name)}</div>
-                <Meta>
-                  {t('packs.speciesCount', { count: manifest.speciesCount, n: formatNumber(manifest.speciesCount) })} ·{' '}
-                  {formatBytes(manifest.sizeBytes.thumb)} · v{formatNumber(manifest.version)}
-                </Meta>
+          {problem && (
+            <p
+              role="alert"
+              className="t-body"
+              style={{
+                background: 'var(--alert)', border: 'var(--hair) solid var(--warn)',
+                borderRadius: 'var(--radius-tap)', padding: 'var(--space-3)',
+                margin: '0 0 var(--space-4)',
+              }}
+            >
+              {problem}
+            </p>
+          )}
+
+          {installedList.length > 0 && (
+            <section style={{ marginBottom: 'var(--space-8)' }}>
+              <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
+                {t('packs.onThisDevice', { count: installedList.length, n: formatNumber(installedList.length) })}
+              </h2>
+              <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {installedList.map(renderCard)}
               </div>
-              {localPack && activeId === id && <Badge tone="ok">{t('packs.active')}</Badge>}
-            </div>
+            </section>
+          )}
 
-            {p && (
-              <div style={{ marginTop: 'var(--space-2)' }}>
-                <Meta tone="warn">{t(`packs.phase.${p.phase}`)} {p.total > 1 ? `${p.done}/${p.total}` : ''}</Meta>
+          {availableList.length > 0 && (
+            <section>
+              <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
+                {t('packs.available')}
+              </h2>
+              <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                {availableList.map(renderCard)}
               </div>
-            )}
+            </section>
+          )}
 
-            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)', flexWrap: 'wrap' }}>
-              {!local && !localPack && (
-                <Button variant="primary" onClick={() => void install(id, 'thumb')}>{t('packs.download')}</Button>
-              )}
-              {localPack && localPack.version < manifest.version && !local && (
-                <Button variant="primary" onClick={() => void update(id)}>
-                  {t('packs.update', { version: manifest.version })}
-                </Button>
-              )}
-              {localPack && activeId !== id && (
-                <Button variant="secondary" onClick={async () => { await setActivePackId(id); await refresh() }}>
-                  {t('packs.setActive')}
-                </Button>
-              )}
-              {localPack && <Button variant="inline" onClick={() => void remove(localPack)}>{t('packs.delete')}</Button>}
-            </div>
-
-            <div style={{ marginTop: 'var(--space-2)' }}>
-              <Meta>{t('packs.fixtureNote')}</Meta>
-            </div>
-          </section>
-        )
-      })}
+          {listed.length === 0 && (
+            <p className="t-body" style={{ color: 'var(--ink-muted)' }}>{t('packs.noneListed')}</p>
+          )}
+        </div>
       </div>
     </div>
   )

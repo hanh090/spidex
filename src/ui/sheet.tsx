@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { IconClose } from './icons'
+import { useDialogA11y } from '../app/use-dialog-a11y'
 
 interface Props {
   open: boolean
@@ -42,15 +43,10 @@ export function Sheet({
   const panelRef = useRef<HTMLDivElement | null>(null)
   const gesture = useRef<{ y0: number; h0: number; t0: number } | null>(null)
 
-  // Escape closes, and focus moves into the sheet when it opens.
-  useEffect(() => {
-    if (!open) return
-    setDrag(0)
-    panelRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
+  // Escape, focus trap and focus restore. The sheet unmounts when closed, so
+  // the inert half of this is a no-op here — the trap and restore are not.
+  useEffect(() => { if (open) setDrag(0) }, [open])
+  useDialogA11y(panelRef, open, onClose)
 
   if (!open) return null
 

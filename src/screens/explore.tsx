@@ -88,6 +88,13 @@ export function Explore() {
   return (
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
 
+      {/*
+        The screen's name for anyone navigating by heading. It is not drawn:
+        the pack name in the shell header already says where you are, and a
+        second visible title would spend a line of a phone screen restating it.
+      */}
+      <h1 className="sr-only">{t('explore.title')}</h1>
+
       <div style={{ flex: 'none', background: 'var(--panel)', borderBottom: 'var(--hair) solid var(--line)' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 'var(--space-3)',

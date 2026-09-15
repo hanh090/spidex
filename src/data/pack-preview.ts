@@ -16,6 +16,8 @@ export interface PackPreview {
   /** Absolute URL, ready for src. */
   url: string
   sciName: string
+  /** Provenance of the plate — a photograph credit, or a drawing statement. */
+  credit: string
 }
 
 /** ~10 species records. Enough for a preview strip, small enough to be free. */
@@ -45,10 +47,16 @@ export async function fetchPackPreview(
       try {
         const rec = JSON.parse(line) as {
           sciName?: string
-          images?: { thumbUrl?: string }[]
+          images?: { thumbUrl?: string; credit?: string }[]
         }
-        const thumb = rec.images?.[0]?.thumbUrl
-        if (thumb) out.push({ url: `${baseUrl}/${thumb}`, sciName: rec.sciName ?? '' })
+        const img = rec.images?.[0]
+        if (img?.thumbUrl) {
+          out.push({
+            url: `${baseUrl}/${img.thumbUrl}`,
+            sciName: rec.sciName ?? '',
+            credit: img.credit ?? '',
+          })
+        }
       } catch {
         /* Partial or malformed line — skip it, keep the rest. */
       }

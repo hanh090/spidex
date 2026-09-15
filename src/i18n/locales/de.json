@@ -135,6 +135,7 @@
     "choose": "Erste Checkliste wählen",
     "headline": "Die Vögel und Schmetterlinge Vietnams — in der Tasche, ohne Empfang",
     "install": "Herunterladen und erkunden",
+    "installNamed": "{{name}} herunterladen und erkunden",
     "installNote": "Arten und Tafeln werden auf diesem Gerät gespeichert, damit der Führer vollständig offline arbeitet.",
     "installing": "Wird geladen…",
     "lede": "Eine Checkliste einmal herunterladen. Alle Arten, Tafeln und Bestimmungsschlüssel liegen dann auf dem Telefon — tief im Nationalpark, auf dem Boot, um 3 Uhr nachts ohne Netz.",
@@ -145,13 +146,21 @@
   },
   "packs": {
     "active": "Aktiv",
+    "available": "Zum Herunterladen",
     "cancelled": "Download abgebrochen.",
     "delete": "Entfernen",
     "deleteConfirm": "{{name}} entfernen? {{count}} deiner Beobachtungen verweisen darauf — sie bleiben erhalten und lesbar.",
     "download": "Herunterladen",
-    "fixtureNote": "Testdaten — Platzhaltergrafiken, keine Fotos.",
+    "downloadNamed": "{{name}} herunterladen",
+    "downloading": "Lädt",
+    "figureLicence": "Lizenz",
+    "figureSize": "Download",
+    "figureSpecies": "Arten",
     "invalid": "Dieses Paket ist ungültig: {{detail}}",
+    "lede": "Jede Checkliste ist ein vollständiger Regionalführer auf Ihrem Telefon. Laden Sie herunter, was Sie brauchen, und entfernen Sie es nach der Reise.",
     "noHeadroom": "Zu wenig Speicher für die volle Auflösung.",
+    "noneListed": "Es konnten keine Checklisten geladen werden. Verbinden Sie sich einmal, um zu sehen, was verfügbar ist.",
+    "onThisDevice": "Auf diesem Gerät",
     "persistWarning": "Dieser Browser schützt Downloads nicht vor dem Löschen. Trotzdem herunterladen?",
     "phase": {
       "manifest": "Paket wird gelesen…",
@@ -160,12 +169,16 @@
       "index": "Wird abgeschlossen…",
       "done": "Fertig"
     },
+    "removeNamed": "{{name}} entfernen",
     "setActive": "Dieses Paket nutzen",
+    "setActiveNamed": "{{name}} als aktive Checkliste verwenden",
     "speciesCount_one": "1 Art",
     "speciesCount_other": "{{n}} Arten",
     "title": "Paketbibliothek",
     "update": "Auf v{{version}} aktualisieren",
-    "updateConfirm": "Von v{{from}} auf v{{to}} aktualisieren?\n\n{{affected}} deiner Beobachtungen verweisen auf dieses Paket. {{unmappable}} lassen sich der neuen Version nicht zuordnen und behalten ihren gespeicherten Namen."
+    "updateAvailable": "Update",
+    "updateConfirm": "Von v{{from}} auf v{{to}} aktualisieren?\n\n{{affected}} deiner Beobachtungen verweisen auf dieses Paket. {{unmappable}} lassen sich der neuen Version nicht zuordnen und behalten ihren gespeicherten Namen.",
+    "updateNamed": "{{name}} auf Version {{version}} aktualisieren"
   },
   "scope": {
     "label": "Auswahl",

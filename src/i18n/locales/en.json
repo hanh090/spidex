@@ -135,6 +135,7 @@
     "choose": "Choose your first checklist",
     "headline": "The birds and butterflies of Vietnam, in your pocket with no signal",
     "install": "Download and explore",
+    "installNamed": "Download {{name}} and explore",
     "installNote": "Species and plates are stored on this device so the guide works fully offline.",
     "installing": "Downloading…",
     "lede": "Download a checklist once. Every species, plate and identification key then lives on the phone — deep in a national park, on a boat, at 3am with no bars.",
@@ -145,13 +146,21 @@
   },
   "packs": {
     "active": "In use",
+    "available": "Available to download",
     "cancelled": "Download cancelled.",
     "delete": "Remove",
     "deleteConfirm": "Remove {{name}}? {{count}} of your sightings reference it — they will be kept and stay readable.",
     "download": "Download",
-    "fixtureNote": "Fixture content — placeholder plates, not photographs.",
+    "downloadNamed": "Download {{name}}",
+    "downloading": "Downloading",
+    "figureLicence": "licence",
+    "figureSize": "download",
+    "figureSpecies": "species",
     "invalid": "This pack failed validation: {{detail}}",
+    "lede": "Each checklist is a complete regional guide stored on your phone. Download what you need; remove it when the trip is over.",
     "noHeadroom": "Not enough free space for the full-resolution tier.",
+    "noneListed": "No checklists could be listed. Connect once to see what is available.",
+    "onThisDevice": "On this device",
     "persistWarning": "This browser will not protect downloads from being reclaimed. Download anyway?",
     "phase": {
       "manifest": "Reading pack…",
@@ -160,12 +169,16 @@
       "index": "Finishing…",
       "done": "Done"
     },
+    "removeNamed": "Remove {{name}}",
     "setActive": "Use this pack",
+    "setActiveNamed": "Use {{name}} as the active checklist",
     "speciesCount_one": "1 species",
     "speciesCount_other": "{{n}} species",
     "title": "Pack library",
     "update": "Update to v{{version}}",
-    "updateConfirm": "Update from v{{from}} to v{{to}}?\n\n{{affected}} of your sightings reference this pack. {{unmappable}} cannot be matched to the new version and will keep their recorded name."
+    "updateAvailable": "Update",
+    "updateConfirm": "Update from v{{from}} to v{{to}}?\n\n{{affected}} of your sightings reference this pack. {{unmappable}} cannot be matched to the new version and will keep their recorded name.",
+    "updateNamed": "Update {{name}} to version {{version}}"
   },
   "scope": {
     "label": "Scope",

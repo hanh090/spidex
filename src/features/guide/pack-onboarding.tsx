@@ -20,14 +20,15 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, Meta } from '../../ui/primitives'
+import { PackCard } from './pack-card'
+import { resolve } from '../../data/localized'
 import { FEATURED } from '../../data/pack-catalogue'
 import { downloadPack, fetchManifest, type Progress } from '../../data/pack-download'
 import { fetchPackPreview, type PackPreview } from '../../data/pack-preview'
 import { setActivePackId } from '../../data/db'
 import type { PackManifest } from '../../data/pack-manifest'
 import { packBaseUrl } from './use-pack'
-import { resolve } from '../../data/localized'
-import { formatBytes, formatNumber } from '../../i18n/format'
+import { formatNumber } from '../../i18n/format'
 
 /** Plates shown behind the headline. Four at phone width, no more. */
 const HERO_PLATES = 3
@@ -109,10 +110,6 @@ export function PackOnboarding() {
         <Hero plates={plates} totalSpecies={totalSpecies} packCount={offers.length} />
 
         <div style={{ padding: '0 var(--gutter-sm)' }}>
-          {installing && progress && (
-            <InstallStatus phase={progress.phase} done={progress.done} total={progress.total} />
-          )}
-
           {problem && (
             <p
               role="alert"
@@ -135,11 +132,25 @@ export function PackOnboarding() {
             {offers.map((offer, i) => (
               <PackCard
                 key={offer.id}
-                offer={offer}
-                primary={i === 0}
-                busy={installing !== null}
-                installing={installing === offer.id}
-                onInstall={() => void install(offer.id)}
+                manifest={offer.manifest}
+                preview={offer.preview}
+                headingLevel="h2"
+                progress={installing === offer.id && progress
+                  ? { done: progress.done, total: progress.total, label: t(`packs.phase.${progress.phase}`) }
+                  : null}
+                actions={
+                  <Button
+                    variant={i === 0 ? 'primary' : 'secondary'}
+                    full
+                    disabled={installing !== null}
+                    onClick={() => void install(offer.id)}
+                    /* Several cards carry the same visible label; the
+                       accessible name has to say which pack. */
+                    aria-label={t('onboarding.installNamed', { name: resolve(offer.manifest.name) })}
+                  >
+                    {installing === offer.id ? t('onboarding.installing') : t('onboarding.install')}
+                  </Button>
+                }
               />
             ))}
           </div>
@@ -238,102 +249,6 @@ function Stat({ value, label }: { value: string; label: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <dt className="t-meta" style={{ color: 'var(--ink-muted)', order: 2 }}>{label}</dt>
       <dd className="t-money" style={{ margin: 0, order: 1 }}>{value}</dd>
-    </div>
-  )
-}
-
-function PackCard({ offer, primary, busy, installing, onInstall }: {
-  offer: Offer
-  primary: boolean
-  busy: boolean
-  installing: boolean
-  onInstall: () => void
-}) {
-  const { t } = useTranslation()
-  const { manifest, preview } = offer
-  const size = manifest.sizeBytes?.thumb
-
-  return (
-    <article style={{
-      border: 'var(--hair) solid var(--line)', background: 'var(--panel)',
-      borderRadius: 'var(--radius-tap)', overflow: 'hidden',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* What you are actually getting, before you spend the bandwidth. */}
-      {preview.length > 0 && (
-        <div aria-hidden style={{ display: 'grid', gridTemplateColumns: `repeat(${preview.length}, 1fr)`, gap: 'var(--hair)' }}>
-          {preview.map((p) => (
-            <img
-              key={p.url}
-              src={p.url}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block', background: 'var(--paper)' }}
-            />
-          ))}
-        </div>
-      )}
-
-      <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-        <h2 className="t-heading" style={{ margin: 0 }}>{resolve(manifest.name)}</h2>
-        <Meta>
-          {/* `count` picks the plural; `n` carries Intl-formatted digits. */}
-          {t('packs.speciesCount', { count: manifest.speciesCount, n: formatNumber(manifest.speciesCount) })}
-          {' · '}{manifest.region}
-          {size ? ` · ${formatBytes(size)}` : ''}
-        </Meta>
-        <Button
-          variant={primary ? 'primary' : 'secondary'}
-          full
-          disabled={busy}
-          onClick={onInstall}
-          style={{ marginTop: 'var(--space-2)' }}
-        >
-          {installing ? t('onboarding.installing') : t('onboarding.install')}
-        </Button>
-      </div>
-    </article>
-  )
-}
-
-function InstallStatus({ phase, done, total }: { phase: Progress['phase']; done: number; total: number }) {
-  const { t } = useTranslation()
-  const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : null
-  return (
-    <div
-      role="status"
-      style={{
-        border: 'var(--hair) solid var(--accent)', background: 'var(--panel)',
-        borderRadius: 'var(--radius-tap)', padding: 'var(--space-4)',
-        marginBottom: 'var(--space-4)',
-      }}
-    >
-      <div className="t-heading" style={{ color: 'var(--accent)', marginBottom: 'var(--space-2)' }}>
-        {t(`packs.phase.${phase}`)}
-      </div>
-      {pct !== null && (
-        <>
-          <div
-            role="progressbar"
-            aria-valuenow={pct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            style={{ height: 6, background: 'var(--line)', overflow: 'hidden' }}
-          >
-            <div style={{
-              width: `${pct}%`, height: '100%', background: 'var(--accent)',
-              transition: 'width var(--move-push) var(--ease)',
-            }} />
-          </div>
-          <div className="t-unit" style={{ marginTop: 'var(--space-1)', color: 'var(--ink-muted)' }}>
-            {formatNumber(done)} / {formatNumber(total)}
-          </div>
-        </>
-      )}
-      <div style={{ marginTop: 'var(--space-2)' }}>
-        <Meta>{t('onboarding.installNote')}</Meta>
-      </div>
     </div>
   )
 }
