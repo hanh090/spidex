@@ -71,7 +71,7 @@ export function PackCard({
       style={{
         position: 'relative', isolation: 'isolate',
         border: `var(--hair) solid ${current ? 'var(--ink)' : 'var(--line)'}`,
-        borderRadius: 'var(--radius-tap)', overflow: 'hidden',
+        borderRadius: 'var(--radius-card)', overflow: 'hidden',
         background: 'var(--paper)',
       }}
     >
@@ -129,13 +129,10 @@ export function PackCard({
         )}
 
         {/* The three figures a download decision actually turns on. */}
-        <dl style={{
-          display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: 'var(--space-2)', margin: 0,
-          borderTop: 'var(--hair) solid var(--line)',
-          borderBottom: 'var(--hair) solid var(--line)',
-          padding: 'var(--space-3) 0',
-        }}>
+        {/* No rules above and below. The card edge already encloses this
+            group; a second and third line inside it divides a card that is
+            only four elements tall into four boxed compartments. */}
+        <dl style={{ display: 'flex', gap: 'var(--space-6)', margin: 0 }}>
           {/* Two figures, not three. The pack licence is catalogue metadata, not
               something a download decision turns on — the attribution that
               matters legally is per-image and lives on the species page. */}

@@ -21,7 +21,8 @@ export function Button({ variant = 'secondary', full, children, style, ...rest }
     alignItems: 'center',
     justifyContent: 'center',
     gap: 'var(--space-2)',
-    borderRadius: 'var(--radius)',
+    /* The pressable surface the radius override exists for. */
+    borderRadius: 'var(--radius-tap)',
     transition: `background var(--move-push) var(--ease), color var(--move-push) var(--ease)`,
   }
   const skin: Record<string, React.CSSProperties> = {

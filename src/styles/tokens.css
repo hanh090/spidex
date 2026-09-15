@@ -67,8 +67,9 @@
    * untouched: plates, rules, panels and dividers stay at --radius.
    * Revert by setting both to 0.
    */
-  --radius-tap:  10px;  /* species cards, search field, sheets */
-  --radius-chip: 18px;  /* pill controls: filter chips, pack scope */
+  --radius-tap:  10px;  /* controls: buttons, search field, sheets, plates */
+  --radius-card: 16px;  /* content cards, which sit a step above a control */
+  --radius-chip: 18px;  /* pill controls: filter chips, pack scope, status */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

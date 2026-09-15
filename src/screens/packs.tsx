@@ -181,9 +181,13 @@ export function Packs() {
                 {t('packs.setActive')}
               </Button>
             )}
+            {/* A bordered control, not a bare link: Remove is frequently the
+                only action on an installed pack, and a lone text link on an
+                otherwise complete card reads as an afterthought. */}
             {localPack && (
               <Button
-                variant="inline"
+                variant="secondary"
+                full
                 onClick={() => void remove(localPack)}
                 aria-label={t('packs.removeNamed', { name })}
               >
