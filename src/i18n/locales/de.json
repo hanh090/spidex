@@ -169,6 +169,7 @@
       "index": "Wird abgeschlossen…",
       "done": "Fertig"
     },
+    "placeholderPlates": "Für die meisten Arten dieser Checkliste werden die Tafeln noch gezeichnet.",
     "removeNamed": "{{name}} entfernen",
     "setActive": "Dieses Paket nutzen",
     "setActiveNamed": "{{name}} als aktive Checkliste verwenden",

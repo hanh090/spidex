@@ -164,6 +164,7 @@
       "index": "Đang hoàn tất…",
       "done": "Xong"
     },
+    "placeholderPlates": "Phần lớn loài trong danh lục này vẫn đang được vẽ bản mẫu vật.",
     "removeNamed": "Xoá {{name}}",
     "setActive": "Dùng gói này",
     "setActiveNamed": "Dùng {{name}} làm danh lục hiện hành",

@@ -55,6 +55,14 @@
    to switch the whole band off. */
 :root[data-theme='sun'] .hero-plates { display: none !important; }
 
+/*
+ * The pack card's ground is NOT dropped in Sun the way the hero band is: it
+ * carries information, telling seven otherwise identical cards apart. It is
+ * pulled back instead, so enough hue survives to distinguish a pack while the
+ * ground returns to near-white and Sun's contrast contract holds.
+ */
+:root[data-theme='sun'] .pack-ground img { opacity: 0.3; }
+
 /* Sun leans on weight as well as colour — glare eats thin strokes. */
 :root[data-theme='sun'] body {
   --type-body:  500 16px/1.55 var(--font-sans);

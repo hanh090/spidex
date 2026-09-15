@@ -169,6 +169,7 @@
       "index": "Finishing…",
       "done": "Done"
     },
+    "placeholderPlates": "Illustrated plates are still being drawn for most species in this checklist.",
     "removeNamed": "Remove {{name}}",
     "setActive": "Use this pack",
     "setActiveNamed": "Use {{name}} as the active checklist",
