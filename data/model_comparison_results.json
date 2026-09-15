@@ -1,0 +1,204 @@
+{
+  "models": [
+    {
+      "slug": "openai/gpt-image-2",
+      "key": "gpt-image-2",
+      "label": "GPT Image 2",
+      "vendor": "OpenAI"
+    },
+    {
+      "slug": "openai/gpt-5-image",
+      "key": "gpt-5-image",
+      "label": "GPT-5 Image",
+      "vendor": "OpenAI"
+    },
+    {
+      "slug": "microsoft/mai-image-2.6-flash",
+      "key": "mai-image-2.6-flash",
+      "label": "MAI-Image-2.6 Flash",
+      "vendor": "Microsoft AI"
+    },
+    {
+      "slug": "google/gemini-3-pro-image",
+      "key": "gemini-3-pro-image",
+      "label": "Nano Banana Pro",
+      "vendor": "Google"
+    }
+  ],
+  "species": [
+    {
+      "index": 38,
+      "id": "butterfly-butterfly_papilio_paris",
+      "sciName": "Papilio paris",
+      "commonNameVi": "Bướm Phượng đuôi công",
+      "commonNameEn": "Paris Peacock",
+      "family": "Papilionidae",
+      "fieldMarks": "Velvety black dusted with glittering green scales, huge brilliant metallic peacock-blue patch on hindwings",
+      "plateReady": true,
+      "plateUrl": "museum_specimens/butterfly_papilio_paris_plate.jpg",
+      "rawUrl": "museum_specimens/butterfly_papilio_paris_raw.jpg",
+      "modelEngine": "gemini-flash"
+    },
+    {
+      "index": 39,
+      "id": "butterfly-butterfly_troides_aeacus",
+      "sciName": "Troides aeacus",
+      "commonNameVi": "Bướm Phượng cánh chim vàng",
+      "commonNameEn": "Golden Birdwing",
+      "family": "Papilionidae",
+      "fieldMarks": "Large birdwing; velvety black forewings, expansive bright golden-yellow hindwings with black conical spots",
+      "plateReady": true,
+      "plateUrl": "museum_specimens/butterfly_troides_aeacus_plate.jpg",
+      "rawUrl": "museum_specimens/butterfly_troides_aeacus_raw.jpg",
+      "modelEngine": "gemini-flash"
+    },
+    {
+      "index": 40,
+      "id": "butterfly-butterfly_hebomoia_glaucippe",
+      "sciName": "Hebomoia glaucippe",
+      "commonNameVi": "Bướm đầu cam lớn",
+      "commonNameEn": "Great Orange Tip",
+      "family": "Pieridae",
+      "fieldMarks": "Very large pierid; chalk-white wings with prominent bright fiery-orange forewing apical tips",
+      "plateReady": true,
+      "plateUrl": "museum_specimens/butterfly_hebomoia_glaucippe_plate.jpg",
+      "rawUrl": "museum_specimens/butterfly_hebomoia_glaucippe_raw.jpg",
+      "modelEngine": "gemini-flash"
+    },
+    {
+      "index": 41,
+      "id": "butterfly-butterfly_appias_albina",
+      "sciName": "Appias albina",
+      "commonNameVi": "Bướm phấn trắng",
+      "commonNameEn": "Common Albatross",
+      "family": "Pieridae",
+      "fieldMarks": "Chalky white wings with narrow dark apical margin in male, broad dark border in female",
+      "plateReady": true,
+      "plateUrl": "museum_specimens/butterfly_appias_albina_plate.jpg",
+      "rawUrl": "museum_specimens/butterfly_appias_albina_raw.jpg",
+      "modelEngine": "gemini-flash"
+    }
+  ],
+  "results": {
+    "gpt-image-2": {
+      "Papilio paris": {
+        "file": "gpt-image-2__papilio_paris.png",
+        "status": "ok",
+        "seconds": 18.1,
+        "cost": 0.012753,
+        "bytes": 2066706
+      },
+      "Troides aeacus": {
+        "file": "gpt-image-2__troides_aeacus.png",
+        "status": "ok",
+        "seconds": 19.1,
+        "cost": 0.018067,
+        "bytes": 1936582
+      },
+      "Hebomoia glaucippe": {
+        "file": "gpt-image-2__hebomoia_glaucippe.png",
+        "status": "ok",
+        "seconds": 21.9,
+        "cost": 0.022803,
+        "bytes": 2320479
+      },
+      "Appias albina": {
+        "file": "gpt-image-2__appias_albina.png",
+        "status": "ok",
+        "seconds": 34.7,
+        "cost": 0.048892,
+        "bytes": 2154548
+      }
+    },
+    "gpt-5-image": {
+      "Papilio paris": {
+        "file": "gpt-5-image__papilio_paris.png",
+        "status": "ok",
+        "seconds": 36.2,
+        "cost": 0.17414,
+        "bytes": 2234574
+      },
+      "Troides aeacus": {
+        "file": "gpt-5-image__troides_aeacus.png",
+        "status": "ok",
+        "seconds": 35.2,
+        "cost": 0.17418,
+        "bytes": 2012937
+      },
+      "Hebomoia glaucippe": {
+        "file": "gpt-5-image__hebomoia_glaucippe.png",
+        "status": "ok",
+        "seconds": 37.3,
+        "cost": 0.1741,
+        "bytes": 1873247
+      },
+      "Appias albina": {
+        "file": "gpt-5-image__appias_albina.png",
+        "status": "ok",
+        "seconds": 34.3,
+        "cost": 0.17409,
+        "bytes": 1788280
+      }
+    },
+    "mai-image-2.6-flash": {
+      "Papilio paris": {
+        "file": "mai-image-2.6-flash__papilio_paris.png",
+        "status": "ok",
+        "seconds": 19.8,
+        "cost": 0.0217095,
+        "bytes": 1813507
+      },
+      "Troides aeacus": {
+        "file": "mai-image-2.6-flash__troides_aeacus.png",
+        "status": "ok",
+        "seconds": 20.6,
+        "cost": 0.021845,
+        "bytes": 1540198
+      },
+      "Hebomoia glaucippe": {
+        "file": "mai-image-2.6-flash__hebomoia_glaucippe.png",
+        "status": "ok",
+        "seconds": 21.7,
+        "cost": 0.02244,
+        "bytes": 1659913
+      },
+      "Appias albina": {
+        "file": "mai-image-2.6-flash__appias_albina.png",
+        "status": "ok",
+        "seconds": 19.7,
+        "cost": 0.02182925,
+        "bytes": 1553179
+      }
+    },
+    "gemini-3-pro-image": {
+      "Papilio paris": {
+        "file": "gemini-3-pro-image__papilio_paris.png",
+        "status": "ok",
+        "seconds": 23.0,
+        "cost": 0.136344,
+        "bytes": 1271586
+      },
+      "Troides aeacus": {
+        "file": "gemini-3-pro-image__troides_aeacus.png",
+        "status": "ok",
+        "seconds": 23.3,
+        "cost": 0.136348,
+        "bytes": 1344108
+      },
+      "Hebomoia glaucippe": {
+        "file": "gemini-3-pro-image__hebomoia_glaucippe.png",
+        "status": "ok",
+        "seconds": 22.7,
+        "cost": 0.136346,
+        "bytes": 1249347
+      },
+      "Appias albina": {
+        "file": "gemini-3-pro-image__appias_albina.png",
+        "status": "ok",
+        "seconds": 37.2,
+        "cost": 0.136672,
+        "bytes": 1151748
+      }
+    }
+  }
+}

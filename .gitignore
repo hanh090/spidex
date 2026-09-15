@@ -1,0 +1,25 @@
+node_modules/
+dist/
+dev-dist/
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+
+# Pre-migration data snapshots (scripts/migrate_pack_language.py)
+backups/
+
+# Generated specimen imagery. Plates are reproducible from scripts/ via the
+# spidex:specimen-plate skill, so the bulk archive stays out of git.
+public/museum_specimens/
+public/packs/*/img/
+public/packs/*/species.ndjson.bak-*
+
+# Scratch artefacts
+scratch_*.png
+scratch_*.jpg
+
+# Python bytecode
+__pycache__/
+*.pyc

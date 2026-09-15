@@ -1,0 +1,47 @@
+[
+  {
+    "sciName": "Pantala flavescens",
+    "commonNameEn": "Wandering Glider",
+    "commonNameVi": "Chuồn chuồn vàng",
+    "fieldMarks": "Golden-yellow to amber abdomen, very broad hindwing bases, amber wash at hindwing base",
+    "rawUrl": "museum_specimens/dragonfly_pantala_flavescens_raw.jpg",
+    "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/37215836/large.jpeg",
+    "attribution": "(c) Roger Rittmaster, some rights reserved (CC BY)",
+    "license": "cc-by",
+    "source": "iNaturalist (Vietnam)",
+    "observer": "rogerritt",
+    "observation_id": 24063907,
+    "width": 2048,
+    "height": 1638
+  },
+  {
+    "sciName": "Crocothemis servilia",
+    "commonNameEn": "Scarlet Skimmer",
+    "commonNameVi": "Chuồn chuồn đỏ",
+    "fieldMarks": "Male entirely brilliant blood-red including face, eyes and abdomen, thin dark mid-dorsal line, amber patch at hindwing base",
+    "rawUrl": "museum_specimens/dragonfly_crocothemis_servilia_raw.jpg",
+    "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/602130444/large.jpg",
+    "attribution": "(c) Ben Costamagna, some rights reserved (CC BY)",
+    "license": "cc-by",
+    "source": "iNaturalist (Vietnam)",
+    "observer": "bencostamagna",
+    "observation_id": 331863844,
+    "width": 2048,
+    "height": 2048
+  },
+  {
+    "sciName": "Orthetrum sabina",
+    "commonNameEn": "Slender Skimmer",
+    "commonNameVi": "Chuồn chuồn kim vàng",
+    "fieldMarks": "Pale greenish-yellow body banded with black, strongly constricted waist-like abdomen swelling at the tip, clear wings",
+    "rawUrl": "museum_specimens/dragonfly_orthetrum_sabina_raw.jpg",
+    "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/600680559/large.jpg",
+    "attribution": "(c) Mark Clarke, some rights reserved (CC BY)",
+    "license": "cc-by",
+    "source": "iNaturalist (Vietnam)",
+    "observer": "hatwise",
+    "observation_id": 331158246,
+    "width": 2048,
+    "height": 1843
+  }
+]
