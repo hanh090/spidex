@@ -27,7 +27,9 @@ export function Button({ variant = 'secondary', full, children, style, ...rest }
   }
   const skin: Record<string, React.CSSProperties> = {
     primary: { background: 'var(--accent)', color: 'var(--paper)' },
-    secondary: { background: 'transparent', color: 'var(--ink)', border: 'var(--hair) solid var(--ink)' },
+    /* Resting control edge, not a structural one: a secondary button sits
+       inside a card and must not out-weigh the card's own edge. */
+    secondary: { background: 'transparent', color: 'var(--ink)', border: 'var(--hair) solid var(--ink-muted)' },
     inline: { background: 'transparent', color: 'var(--accent)' },
   }
   return <button style={{ ...shared, ...skin[variant], ...style }} {...rest}>{children}</button>

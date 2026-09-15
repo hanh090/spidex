@@ -99,7 +99,7 @@ export function Explore() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
           height: 48, margin: 'var(--space-3) var(--gutter-sm) 0',
-          background: 'var(--paper)', border: 'var(--hair) solid var(--ink)',
+          background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
           borderRadius: 'var(--radius-tap)', padding: '0 var(--space-4)',
         }}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
@@ -182,7 +182,7 @@ export function Explore() {
                 height: 48, minHeight: 48, flex: 'none', padding: '0 var(--space-4)',
                 display: 'grid', placeItems: 'center', whiteSpace: 'nowrap',
                 font: 'var(--type-action)', borderRadius: 'var(--radius-tap)',
-                border: `var(--hair) solid ${active ? 'var(--ink)' : 'var(--line)'}`,
+                border: `var(--hair) solid ${active ? 'var(--ink-muted)' : 'var(--line)'}`,
                 color: active ? 'var(--ink)' : 'var(--ink-muted)',
                 cursor: active ? 'pointer' : 'default',
               }}

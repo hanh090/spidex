@@ -130,7 +130,7 @@ export function SignInModal({ open, onClose }: Props) {
                     placeholder="Jane"
                     style={{
                       width: '100%', padding: '10px 12px',
-                      background: 'var(--paper)', border: 'var(--hair) solid var(--ink)',
+                      background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
                       color: 'var(--ink)', font: 'inherit',
                     }}
                   />
@@ -144,7 +144,7 @@ export function SignInModal({ open, onClose }: Props) {
                     placeholder="Doe"
                     style={{
                       width: '100%', padding: '10px 12px',
-                      background: 'var(--paper)', border: 'var(--hair) solid var(--ink)',
+                      background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
                       color: 'var(--ink)', font: 'inherit',
                     }}
                   />
@@ -162,7 +162,7 @@ export function SignInModal({ open, onClose }: Props) {
                 placeholder="naturalist@example.com"
                 style={{
                   width: '100%', padding: '10px 12px',
-                  background: 'var(--paper)', border: 'var(--hair) solid var(--ink)',
+                  background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
                   color: 'var(--ink)', font: 'inherit',
                 }}
               />
@@ -179,7 +179,7 @@ export function SignInModal({ open, onClose }: Props) {
                 placeholder="••••••••"
                 style={{
                   width: '100%', padding: '10px 12px',
-                  background: 'var(--paper)', border: 'var(--hair) solid var(--ink)',
+                  background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
                   color: 'var(--ink)', font: 'inherit',
                 }}
               />

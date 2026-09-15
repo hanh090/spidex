@@ -76,7 +76,7 @@ export function FilterChips({ tags, hints, onOpenSheet, onClearAll }: Props) {
           ...chip,
           background: active ? 'var(--ink)' : 'var(--paper)',
           color: active ? 'var(--paper)' : 'var(--ink)',
-          borderColor: 'var(--ink)',
+          borderColor: active ? 'var(--ink)' : 'var(--ink-muted)',
         }}
       >
         <IconFilter size={15} />

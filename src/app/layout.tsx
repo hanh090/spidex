@@ -86,7 +86,7 @@ export function Layout() {
             style={{
               width: 44, height: 44, minHeight: 44, flex: 'none',
               display: 'grid', placeItems: 'center',
-              background: 'var(--paper)', border: 'var(--hair) solid var(--ink)',
+              background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
               color: 'var(--ink)',
             }}
           >
