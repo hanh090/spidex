@@ -51,3 +51,6 @@ lich_trinh_nha_trang.*
 
 # Singapore butterfly pack: 126MB of images, too large for git without LFS
 public/packs/butterfly-sg/
+
+# Working plans and reports stay local
+plans/
