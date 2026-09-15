@@ -153,7 +153,6 @@
     "download": "Download",
     "downloadNamed": "Download {{name}}",
     "downloading": "Downloading",
-    "figureLicence": "licence",
     "figureSize": "download",
     "figureSpecies": "species",
     "invalid": "This pack failed validation: {{detail}}",

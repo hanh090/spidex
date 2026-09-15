@@ -130,17 +130,17 @@ export function PackCard({
 
         {/* The three figures a download decision actually turns on. */}
         <dl style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gap: 'var(--space-2)', margin: 0,
           borderTop: 'var(--hair) solid var(--line)',
           borderBottom: 'var(--hair) solid var(--line)',
           padding: 'var(--space-3) 0',
         }}>
+          {/* Two figures, not three. The pack licence is catalogue metadata, not
+              something a download decision turns on — the attribution that
+              matters legally is per-image and lives on the species page. */}
           <Figure value={formatNumber(manifest.speciesCount)} label={t('packs.figureSpecies')} />
           <Figure value={formatBytes(manifest.sizeBytes.thumb)} label={t('packs.figureSize')} />
-          {/* A licence is an identifier, not a quantity — it does not get the
-              figure size, and it must be allowed to break. */}
-          <Figure value={manifest.license} label={t('packs.figureLicence')} size={13} />
         </dl>
 
         {placeholderPlates && (

@@ -13,7 +13,13 @@ backups/
 # Generated specimen imagery. Plates are reproducible from scripts/ via the
 # spidex:specimen-plate skill, so the bulk archive stays out of git.
 public/museum_specimens/
-public/packs/*/img/
+# Pack photography is bulk content and stays out of git. The archetype plates
+# are the exception: they are the app's own artwork, a few hundred bytes each,
+# and 95% of Butterflies of Vietnam renders one, so the app is wrong without
+# them. Ignoring the contents rather than the directory is what lets the
+# negation below apply at all.
+public/packs/*/img/*
+!public/packs/*/img/*archetype*.svg
 public/packs/*/species.ndjson.bak-*
 
 # Scratch artefacts
