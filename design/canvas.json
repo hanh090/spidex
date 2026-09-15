@@ -1,0 +1,52 @@
+{
+  "artboards": [
+    { "file": "Logo.dc.html", "x": 0, "y": 0, "w": 880, "h": 620, "title": "Identity" },
+
+    { "file": "Main.dc.html", "x": 0, "y": 860, "w": 390, "h": 844, "title": "S02 Explore — live filter", "is_interactive": true },
+    { "file": "Species.dc.html", "x": 470, "y": 860, "w": 390, "h": 844, "title": "S03 Species detail" },
+    { "file": "Compare.dc.html", "x": 940, "y": 860, "w": 390, "h": 844, "title": "S04 Compare" },
+    { "file": "LogUnknown.dc.html", "x": 1410, "y": 860, "w": 390, "h": 844, "title": "S07 Log unknown" },
+    { "file": "Sightings.dc.html", "x": 1880, "y": 860, "w": 390, "h": 844, "title": "S08 Sightings" },
+
+    { "file": "Themes.dc.html", "x": 0, "y": 1880, "w": 1680, "h": 900, "title": "Four themes" },
+    { "file": "German.dc.html", "x": 1800, "y": 1880, "w": 390, "h": 844, "title": "S02 in German" }
+  ],
+  "annotations": [
+    {
+      "id": "live-filter",
+      "x": 0,
+      "y": 690,
+      "w": 380,
+      "text": "Explore is live — tap a size, colour or pattern and the count and grid update. The other five phone screens are static mockups."
+    },
+    {
+      "id": "placeholders",
+      "x": 940,
+      "y": 690,
+      "w": 380,
+      "text": "Specimen art is PLACEHOLDER: abstract wing forms standing in for photographs. Real imagery arrives with the content pilot."
+    },
+    {
+      "id": "tap-targets",
+      "x": 1880,
+      "y": 690,
+      "w": 380,
+      "text": "Every control is 48px or taller and every primary action 56px — the field rule, since one hand is holding binoculars."
+    },
+    {
+      "id": "dawn-note",
+      "x": 0,
+      "y": 1710,
+      "w": 520,
+      "text": "Dawn holds every hue between 5 and 25 degrees, so no pixel emits blue-white and night vision survives a 4am start."
+    },
+    {
+      "id": "german-note",
+      "x": 1800,
+      "y": 1710,
+      "w": 560,
+      "text": "German stress test. Chips never break mid-word — the row rewraps around them, and the pack title ellipsises. 'Augenflecken' and 'Alle zurücksetzen' are the strings that force it."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

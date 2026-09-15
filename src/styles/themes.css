@@ -1,0 +1,64 @@
+/*
+ * Field themes.
+ *
+ * The published design system ships Day and Night only (see tokens.css).
+ * Sun and Dawn are carried over from the accepted product brief, where they
+ * were stated as functional requirements rather than preferences:
+ *
+ *   Sun  — direct tropical sunlight. Maximum contrast, heavier weights.
+ *          No grey lighter than #2a2a2a is permitted for text.
+ *   Dawn — pre-dawn birding. Every hue held between 5deg and 25deg so no
+ *          pixel emits blue-white and the user's dark adaptation survives.
+ *
+ * They swap the same token contract as Day and Night, so removing them is
+ * deleting these two blocks and two entries from THEMES in lib/theme.ts.
+ */
+
+:root[data-theme='sun'] {
+  --ink:       #000000;
+  --ink-muted: #2a2a2a; /* the contrast floor — never lighter */
+  --paper:     #ffffff;
+  --panel:     #ededed;
+  --canvas:    #d8d8d8;
+  --line:      #000000;
+  --alert:     #ffe9c4;
+  --accent:    #96101a;
+  --accent-press: #6d0b12;
+  --warn:      #7a4c00;
+  --ok:        #14532d;
+  --scrim:     rgba(0, 0, 0, 0.5);
+  --hair: 2px; /* hairlines vanish in glare */
+}
+
+:root[data-theme='dawn'] {
+  --ink:       #e8968a;
+  --ink-muted: #a35a4e;
+  --paper:     #120705;
+  --panel:     #170907;
+  --canvas:    #090402;
+  --line:      #3d1a14;
+  --alert:     #2a0f0a;
+  --accent:    #ff6b5a;
+  --accent-press: #c2705f;
+  --warn:      #c2703a;
+  --ok:        #b9705f;
+  --scrim:     rgba(9, 4, 2, 0.66);
+}
+
+/*
+ * Sun drops decoration. The onboarding plate band is ornament, and in direct
+ * tropical sunlight ornament behind type is the first thing that costs you a
+ * reading. The cards, counts and actions are untouched.
+ */
+/* !important because the band carries an inline grid whose column count is
+   computed from how many plates actually loaded. A theme must still be able
+   to switch the whole band off. */
+:root[data-theme='sun'] .hero-plates { display: none !important; }
+
+/* Sun leans on weight as well as colour — glare eats thin strokes. */
+:root[data-theme='sun'] body {
+  --type-body:  500 16px/1.55 var(--font-sans);
+  --type-label: 600 12.5px/1.35 var(--font-sans);
+  --type-tab:   700 11.5px/1.15 var(--font-sans);
+  --type-meta:  600 11px/1.25 var(--font-mono);
+}

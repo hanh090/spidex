@@ -1,0 +1,117 @@
+/*
+ * Spidex design tokens — transcribed from "Spidex Design System" v1.0 (08 Sep 2026).
+ * Values are lifted verbatim from that document. Two deliberate deviations are
+ * marked OVERRIDE below; nothing else here is invented.
+ */
+
+:root {
+  /* ---- 03 · Colour (Day) ------------------------------------------------ */
+  --ink:        #141110;  /* text, borders, primary fills — the default */
+  --ink-muted:  #3c3630;  /* secondary text, metadata, scientific names */
+  --paper:      #faf7f2;  /* screen and card ground */
+  --panel:      #f0ebe1;  /* headers, footers, drawers, selected rows */
+  --canvas:     #e6e0d4;  /* outside the device — desk surface, page ground */
+  --line:       #ddd5c8;  /* internal dividers only, never a container edge */
+  --alert:      #f7ecd9;  /* conflict and irreversible-choice grounds only */
+  --accent:     #b8232c;  /* ONE action per screen, links, differences */
+  --accent-press: #8f1a21;
+  --warn:       #b47818;  /* offline, update available, processing cost */
+  --ok:         #3f6b45;  /* reviewed, verified, free, synced */
+  --scrim:      rgba(20, 17, 16, 0.36);
+
+  /* ---- 04 · Type -------------------------------------------------------- */
+  --font-serif: Spectral, Georgia, serif;
+  --font-sans:  Archivo, system-ui, sans-serif;
+  --font-mono:  'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Scientific names are a type role, not an italic span. */
+  --type-display: 700 32px/1.1  var(--font-serif);
+  --type-title:   700 26px/1.15 var(--font-serif);
+  --type-heading: 700 19px/1.25 var(--font-serif);
+  --type-name:    600 17.5px/1.25 var(--font-serif);
+  --type-sci:     italic 400 14px/1.3 var(--font-serif);
+  --type-body:    400 16px/1.55 var(--font-sans);
+  --type-action:  600 16px/1 var(--font-sans);
+  --type-money:   500 19px/1 var(--font-mono);
+
+  /*
+   * OVERRIDE: the published system sets a 13px floor and gives every piece of
+   * secondary text one role — 10px uppercase mono, 0.1em tracked. On a page
+   * that reads well; on a phone at arm's length it was the single largest
+   * source of illegibility, and it was carrying eight unrelated jobs (section
+   * headings, form labels, back labels, tab labels, image credits, chip
+   * labels, counts, month initials). Uppercase destroys word shape, mono
+   * widens it, tracking pulls it apart, and Vietnamese stacks diacritics on
+   * top of all three.
+   *
+   * The role is split. --type-label is prose-like secondary text and is the
+   * default; --type-meta keeps the mono treatment but is now reserved for
+   * counts, units and measurements, where fixed-width digits earn it.
+   * Revert by collapsing both back to `400 10px/1 var(--font-mono)`.
+   */
+  --type-label:   500 12.5px/1.35 var(--font-sans);
+  --type-tab:     600 11.5px/1.15 var(--font-sans);
+  --type-meta:    500 11px/1.25 var(--font-mono);
+  --meta-tracking: 0.06em;
+
+  /* ---- 05 · Structure --------------------------------------------------- */
+  --hair: 1.5px;      /* rules, not shadows */
+  --radius: 0;        /* structure stays square: rules, edges, panels, plates */
+
+  /*
+   * OVERRIDE: the published system rounds nothing, anywhere. One exception is
+   * carved out — surfaces the user can press. With everything square, a chip
+   * and a label are the same shape, and on a touch screen that is the only
+   * cue distinguishing them. Rounding *only* what is tappable makes the
+   * affordance carry information instead of decoration. Structure is
+   * untouched: plates, rules, panels and dividers stay at --radius.
+   * Revert by setting both to 0.
+   */
+  --radius-tap:  10px;  /* species cards, search field, sheets */
+  --radius-chip: 18px;  /* pill controls: filter chips, pack scope */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --gutter-sm: 16px;
+  --gutter-lg: 28px;
+
+  /* ---- Touch & density --------------------------------------------------
+   * OVERRIDE: the design system specifies 44px / 52px. Spidex is used with
+   * wet and gloved hands in a jungle, one-handed, with the other hand on
+   * binoculars — 44px is a desk-and-pocket minimum written for a different
+   * context. Raised to 48/56 by explicit decision. Revert these two lines to
+   * 44px/52px to return to the published system.
+   */
+  --tap-min: 48px;
+  --tap-primary: 56px;
+
+  /* ---- 07 · Motion ------------------------------------------------------ */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --move-push: 160ms;
+  --move-sheet: 200ms;
+}
+
+/* ---- Night ------------------------------------------------------------- */
+:root[data-theme='night'] {
+  --ink:       #f2ece1;
+  --ink-muted: #a8a099;
+  --paper:     #1c1917;
+  --panel:     #12100e;
+  --canvas:    #0c0a09;
+  --line:      #34302b;
+  --alert:     #2a2016;
+  --accent:    #d9535c;
+  --accent-press: #b8232c;
+  --scrim:     rgba(0, 0, 0, 0.56);
+}
+
+/* Motion is a preference, not a decoration. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --move-push: 0ms;
+    --move-sheet: 0ms;
+  }
+}

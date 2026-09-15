@@ -1,0 +1,11 @@
+# SPA history fallback for Cloudflare Pages.
+#
+# Pages serves an existing static file first, so /packs/*, /assets/*, /sw.js and
+# /manifest.webmanifest resolve normally; only paths with no file on disk fall
+# through to the app. Without this, a deep link to /library or /identify 404s —
+# the same class of bug as the /packs route collision found locally.
+#
+# /api/* is handled by Pages Functions and must NOT be swallowed by the
+# fallback, so it is excluded explicitly before the catch-all.
+/api/*  /api/:splat  200
+/*      /index.html  200

@@ -1,0 +1,41 @@
+{
+  "id": "bird-min",
+  "name": { "en": "Birds (fixture)", "de": "Vögel (Testdaten)", "vi": "Chim (dữ liệu mẫu)" },
+  "taxonGroup": "aves",
+  "region": "fixture",
+  "version": 1,
+  "license": "CC0-1.0",
+  "sources": ["fixture — not real content"],
+  "speciesCount": 4,
+  "sizeBytes": { "thumb": 3400, "full": 3400 },
+  "idRemap": [],
+  "traitSchema": {
+    "traits": [
+      { "key": "sizeRef", "label": { "en": "Size", "de": "Größe", "vi": "Kích cỡ" }, "type": "single", "render": "referent-image",
+        "options": [
+          { "v": "sparrow", "img": "img/ref-sparrow.svg", "label": { "en": "Sparrow", "de": "Sperling", "vi": "Sẻ" } },
+          { "v": "robin", "img": "img/ref-robin.svg", "label": { "en": "Robin", "de": "Rotkehlchen", "vi": "Chim ức đỏ" } },
+          { "v": "crow", "img": "img/ref-crow.svg", "label": { "en": "Crow", "de": "Krähe", "vi": "Quạ" } },
+          { "v": "goose", "img": "img/ref-goose.svg", "label": { "en": "Goose", "de": "Gans", "vi": "Ngỗng" } }
+        ] },
+      { "key": "behaviour", "label": { "en": "Behaviour", "de": "Verhalten", "vi": "Tập tính" }, "type": "multi", "render": "chip",
+        "options": [
+          { "v": "ground", "label": { "en": "On the ground", "de": "Am Boden", "vi": "Trên mặt đất" } },
+          { "v": "trees", "label": { "en": "In trees", "de": "In Bäumen", "vi": "Trên cây" } },
+          { "v": "water", "label": { "en": "Swimming", "de": "Schwimmend", "vi": "Bơi" } },
+          { "v": "soaring", "label": { "en": "Soaring", "de": "Segelnd", "vi": "Bay vòng" } }
+        ] },
+      { "key": "bill", "label": { "en": "Bill shape", "de": "Schnabelform", "vi": "Hình mỏ" }, "type": "single", "render": "chip",
+        "options": [
+          { "v": "conical", "label": { "en": "Conical", "de": "Kegelförmig", "vi": "Hình nón" } },
+          { "v": "hooked", "label": { "en": "Hooked", "de": "Hakenförmig", "vi": "Móc" } },
+          { "v": "long", "label": { "en": "Long, straight", "de": "Lang, gerade", "vi": "Dài, thẳng" } }
+        ] }
+    ],
+    "aspects": { "required": ["standing"], "optional": ["flight", "male", "female"] },
+    "sections": [
+      { "key": "call", "label": { "en": "Call", "de": "Ruf", "vi": "Tiếng gọi" } },
+      { "key": "flight", "label": { "en": "Flight", "de": "Flugbild", "vi": "Kiểu bay" } }
+    ]
+  }
+}

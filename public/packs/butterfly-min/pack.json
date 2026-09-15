@@ -1,0 +1,43 @@
+{
+  "id": "butterfly-min",
+  "name": { "en": "Butterflies (fixture)", "de": "Schmetterlinge (Testdaten)", "vi": "Bướm (dữ liệu mẫu)" },
+  "taxonGroup": "lepidoptera",
+  "region": "fixture",
+  "version": 1,
+  "license": "CC0-1.0",
+  "sources": ["fixture — not real content"],
+  "speciesCount": 5,
+  "sizeBytes": { "thumb": 4200, "full": 4200 },
+  "idRemap": [],
+  "traitSchema": {
+    "traits": [
+      { "key": "size", "label": { "en": "Wingspan", "de": "Flügelspannweite", "vi": "Sải cánh" }, "type": "single", "render": "chip",
+        "options": [
+          { "v": "tiny", "label": { "en": "< 30 mm", "de": "< 30 mm", "vi": "< 30 mm" } },
+          { "v": "small", "label": { "en": "30–50 mm", "de": "30–50 mm", "vi": "30–50 mm" } },
+          { "v": "med", "label": { "en": "50–90 mm", "de": "50–90 mm", "vi": "50–90 mm" } },
+          { "v": "large", "label": { "en": "> 90 mm", "de": "> 90 mm", "vi": "> 90 mm" } }
+        ] },
+      { "key": "colour", "label": { "en": "Main colour", "de": "Hauptfarbe", "vi": "Màu chính" }, "type": "multi", "render": "swatch", "max": 3,
+        "options": [
+          { "v": "black", "hex": "#1b1713", "label": { "en": "Black", "de": "Schwarz", "vi": "Đen" } },
+          { "v": "white", "hex": "#f6f2ea", "label": { "en": "White", "de": "Weiß", "vi": "Trắng" } },
+          { "v": "gold", "hex": "#d4a017", "label": { "en": "Gold", "de": "Gold", "vi": "Vàng" } },
+          { "v": "orange", "hex": "#cf7a1e", "label": { "en": "Orange", "de": "Orange", "vi": "Cam" } },
+          { "v": "red", "hex": "#b8232c", "label": { "en": "Red", "de": "Rot", "vi": "Đỏ" } },
+          { "v": "blue", "hex": "#2f5fa8", "label": { "en": "Blue", "de": "Blau", "vi": "Xanh" } }
+        ] },
+      { "key": "pattern", "label": { "en": "Pattern", "de": "Zeichnung", "vi": "Hoa văn" }, "type": "multi", "render": "chip",
+        "options": [
+          { "v": "spots", "label": { "en": "Spots", "de": "Punkte", "vi": "Đốm" } },
+          { "v": "bands", "label": { "en": "Bands", "de": "Binden", "vi": "Dải" } },
+          { "v": "eyespots", "label": { "en": "Eyespots", "de": "Augenflecken", "vi": "Mắt giả" } },
+          { "v": "plain", "label": { "en": "Plain", "de": "Einfarbig", "vi": "Trơn" } }
+        ] }
+    ],
+    "aspects": { "required": ["dorsal", "ventral"], "optional": ["male", "female"] },
+    "sections": [
+      { "key": "hostPlants", "label": { "en": "Host plants", "de": "Wirtspflanzen", "vi": "Cây chủ" } }
+    ]
+  }
+}

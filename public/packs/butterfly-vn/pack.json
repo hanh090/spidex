@@ -1,0 +1,199 @@
+{
+  "id": "butterfly-vn",
+  "name": {
+    "en": "Butterflies of Vietnam",
+    "vi": "Bướm Việt Nam"
+  },
+  "taxonGroup": "lepidoptera",
+  "region": "Vietnam",
+  "version": 2,
+  "license": "CC-BY-SA-4.0",
+  "sources": [
+    "A. L. Monastyrskii & A. L. Devyatkin (Butterflies of Vietnam)",
+    "Vietnam Biodiversity Checklist & iNaturalist Research Specimens",
+    "Spidex Natural History Museum Plate Collection"
+  ],
+  "speciesCount": 1429,
+  "sizeBytes": {
+    "thumb": 17529308,
+    "full": 17529308
+  },
+  "idRemap": [],
+  "traitSchema": {
+    "traits": [
+      {
+        "key": "size",
+        "label": {
+          "en": "Wingspan",
+          "vi": "Sải cánh"
+        },
+        "type": "single",
+        "render": "chip",
+        "options": [
+          {
+            "v": "tiny",
+            "label": {
+              "en": "< 30 mm",
+              "vi": "< 30 mm"
+            }
+          },
+          {
+            "v": "small",
+            "label": {
+              "en": "30–50 mm",
+              "vi": "30–50 mm"
+            }
+          },
+          {
+            "v": "med",
+            "label": {
+              "en": "50–90 mm",
+              "vi": "50–90 mm"
+            }
+          },
+          {
+            "v": "large",
+            "label": {
+              "en": "> 90 mm",
+              "vi": "> 90 mm"
+            }
+          }
+        ]
+      },
+      {
+        "key": "colour",
+        "label": {
+          "en": "Main colour",
+          "vi": "Màu chính"
+        },
+        "type": "multi",
+        "render": "swatch",
+        "max": 3,
+        "options": [
+          {
+            "v": "black",
+            "hex": "#1b1713",
+            "label": {
+              "en": "Black",
+              "vi": "Đen"
+            }
+          },
+          {
+            "v": "white",
+            "hex": "#f6f2ea",
+            "label": {
+              "en": "White",
+              "vi": "Trắng"
+            }
+          },
+          {
+            "v": "gold",
+            "hex": "#d4a017",
+            "label": {
+              "en": "Gold",
+              "vi": "Vàng"
+            }
+          },
+          {
+            "v": "orange",
+            "hex": "#cf7a1e",
+            "label": {
+              "en": "Orange",
+              "vi": "Cam"
+            }
+          },
+          {
+            "v": "red",
+            "hex": "#b8232c",
+            "label": {
+              "en": "Red",
+              "vi": "Đỏ"
+            }
+          },
+          {
+            "v": "blue",
+            "hex": "#2f5fa8",
+            "label": {
+              "en": "Blue",
+              "vi": "Xanh"
+            }
+          },
+          {
+            "v": "brown",
+            "hex": "#5c3d2e",
+            "label": {
+              "en": "Brown",
+              "vi": "Nâu"
+            }
+          },
+          {
+            "v": "green",
+            "hex": "#3d7a44",
+            "label": {
+              "en": "Green",
+              "vi": "Xanh lục"
+            }
+          }
+        ]
+      },
+      {
+        "key": "pattern",
+        "label": {
+          "en": "Pattern",
+          "vi": "Hoa văn"
+        },
+        "type": "multi",
+        "render": "chip",
+        "options": [
+          {
+            "v": "spots",
+            "label": {
+              "en": "Spots",
+              "vi": "Đốm"
+            }
+          },
+          {
+            "v": "bands",
+            "label": {
+              "en": "Bands",
+              "vi": "Dải"
+            }
+          },
+          {
+            "v": "eyespots",
+            "label": {
+              "en": "Eyespots",
+              "vi": "Mắt giả"
+            }
+          },
+          {
+            "v": "plain",
+            "label": {
+              "en": "Plain",
+              "vi": "Trơn"
+            }
+          }
+        ]
+      }
+    ],
+    "aspects": {
+      "required": [
+        "dorsal"
+      ],
+      "optional": [
+        "ventral",
+        "male",
+        "female"
+      ]
+    },
+    "sections": [
+      {
+        "key": "hostPlants",
+        "label": {
+          "en": "Host plants",
+          "vi": "Cây chủ"
+        }
+      }
+    ]
+  }
+}
