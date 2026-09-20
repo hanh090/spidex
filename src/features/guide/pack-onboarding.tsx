@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Meta } from '../../ui/primitives'
 import { PackCard } from './pack-card'
 import { resolve } from '../../data/localized'
-import { FEATURED } from '../../data/pack-catalogue'
+import { fetchPackIndex } from '../../data/pack-index'
 import { downloadPack, fetchManifest, type Progress } from '../../data/pack-download'
 import { fetchPackPreview, type PackPreview } from '../../data/pack-preview'
 import { setActivePackId } from '../../data/db'
@@ -47,14 +47,16 @@ export function PackOnboarding() {
   const [progress, setProgress] = useState<Progress | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
 
-  // Manifests come from the bundled packs, so this works with no network.
-  // Previews are best-effort and never gate the cards.
+  // Manifests come from the packs named by the published index — or the
+  // bundled fallback when the index cannot be fetched. Previews are
+  // best-effort and never gate the cards.
   useEffect(() => {
     const ac = new AbortController()
     let cancelled = false
     void (async () => {
+      const { featured } = await fetchPackIndex()
       const found = await Promise.all(
-        FEATURED.map(async (id) => {
+        featured.map(async (id) => {
           const res = await fetchManifest(packBaseUrl(id))
           if (!res.ok) return null
           const preview = await fetchPackPreview(packBaseUrl(id), 3, ac.signal)
@@ -105,7 +107,7 @@ export function PackOnboarding() {
 
   return (
     <div className="scroll-y" style={{ height: '100%', width: '100%' }}>
-      <div style={{ maxWidth: 600, margin: '0 auto', paddingBottom: 'var(--space-8)' }}>
+      <div className="column" style={{ paddingBottom: 'var(--space-8)' }}>
 
         <Hero plates={plates} totalSpecies={totalSpecies} packCount={offers.length} />
 

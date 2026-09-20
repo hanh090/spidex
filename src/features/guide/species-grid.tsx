@@ -13,9 +13,11 @@
  * ("Đuôi cụt cánh xanh"), and without a reserved height every row in the grid
  * settles at a different baseline.
  */
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { StoredSpecies } from '../../data/db'
 import { resolve } from '../../data/localized'
+import { inferSpeciesArchetype } from '../../data/archetypes'
 
 export function SpeciesGrid({ species, baseUrl }: { species: StoredSpecies[]; baseUrl: string }) {
   return (
@@ -53,25 +55,37 @@ export function Plate({ sp, baseUrl, size, ratio = '4 / 3' }: {
   size?: number
   ratio?: string
 }) {
+  const [imgFailed, setImgFailed] = useState(false)
   const first = sp.images[0]
+  const archetype = inferSpeciesArchetype(sp)
+  const fallbackUrl = `${baseUrl}/img/${archetype}`
+  const targetUrl = !first || imgFailed ? fallbackUrl : `${baseUrl}/${first.thumbUrl}`
+  const isArchetype = !first || imgFailed || /archetype/i.test(first.thumbUrl)
+  const title = isArchetype
+    ? `${sp.sciName} · Spidex Archetype Plate`
+    : `${first?.credit} · ${first?.license}`
+
   return (
     <div style={{
       aspectRatio: ratio, width: size, background: 'var(--panel)',
       border: 'var(--hair) solid var(--line)', borderRadius: 'var(--radius-tap)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     }}>
-      {first
-        ? <img
-            src={`${baseUrl}/${first.thumbUrl}`}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            /* Attribution stays reachable on every image, including thumbnails,
-               where a visible caption would not be legible. */
-            title={`${first.credit} · ${first.license}`}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        : <span className="t-unit" style={{ color: 'var(--ink-muted)' }}>—</span>}
+      <img
+        src={targetUrl}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => {
+          if (!imgFailed && first && `${baseUrl}/${first.thumbUrl}` !== fallbackUrl) {
+            setImgFailed(true)
+          }
+        }}
+        /* Attribution stays reachable on every image, including thumbnails,
+           where a visible caption would not be legible. */
+        title={title}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
     </div>
   )
 }

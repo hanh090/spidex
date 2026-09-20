@@ -22,17 +22,29 @@ def slugify(text):
 
 def infer_bird_archetype(family):
     fam = family.lower()
-    if any(k in fam for k in ["accipitridae", "falconidae", "strigidae", "tytonidae", "pandionidae"]):
+    if any(k in fam for k in ["strigidae", "tytonidae"]):
+        return "bird-archetype-owl.svg"
+    elif any(k in fam for k in ["accipitridae", "falconidae", "pandionidae"]):
         return "bird-archetype-raptor.svg"
     elif any(k in fam for k in ["ardeidae", "ciconiidae", "rallidae", "laridae", "charadriidae", "scolopacidae", "podicipedidae", "sulidae"]):
         return "bird-archetype-waterbird.svg"
     elif any(k in fam for k in ["anatidae"]):
         return "bird-archetype-waterfowl.svg"
-    elif any(k in fam for k in ["alcedinidae", "meropidae", "coraciidae", "bucerotidae", "picidae", "megalaimidae"]):
+    elif any(k in fam for k in ["picidae", "megalaimidae"]):
+        return "bird-archetype-woodpecker.svg"
+    elif any(k in fam for k in ["alcedinidae", "meropidae", "coraciidae", "bucerotidae"]):
         return "bird-archetype-kingfisher.svg"
+    elif any(k in fam for k in ["columbidae"]):
+        return "bird-archetype-pigeon.svg"
+    elif any(k in fam for k in ["nectariniidae"]):
+        return "bird-archetype-sunbird.svg"
+    elif any(k in fam for k in ["apodidae", "hirundinidae"]):
+        return "bird-archetype-swift.svg"
+    elif any(k in fam for k in ["phasianidae"]):
+        return "bird-archetype-gamebird.svg"
     elif any(k in fam for k in ["corvidae", "dicruridae"]):
         return "bird-archetype-corvid.svg"
-    elif any(k in fam for k in ["passeridae", "motacillidae", "emberizidae", "fringillidae"]):
+    elif any(k in fam for k in ["passeridae", "motacillidae", "emberizidae", "fringillidae", "estrildidae", "ploceidae"]):
         return "bird-archetype-sparrow.svg"
     else:
         return "bird-archetype-songbird.svg"

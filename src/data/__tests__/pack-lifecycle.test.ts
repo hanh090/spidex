@@ -43,6 +43,7 @@ function species(packId: string, id: string, over: Partial<StoredSpecies> = {}):
     traits: { size: 'a' }, keyFeatures: [], taxonFields: {}, similarTo: [], months: [],
     sensitivity: 0,
     images: [{ id: `${id}-i`, aspect: 'dorsal', credit: 'C', license: 'CC0-1.0', thumbUrl: 'img/a.svg' }],
+    sounds: [],
     searchBlob: `sci ${id} common ${id}`,
     ...over,
   }

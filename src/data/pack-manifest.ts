@@ -108,6 +108,31 @@ export const zSpeciesImage = z.object({
 })
 export type SpeciesImage = z.infer<typeof zSpeciesImage>
 
+/**
+ * A sound recording attached to a species — a bird's song or call.
+ *
+ * Same attribution contract as images: `credit` and `license` are mandatory.
+ * `url` is the playable file (streamed, never bundled — audio would multiply
+ * pack size by an order of magnitude, and the licence check that matters is
+ * the one run when the voice pack is compiled, not at playback).
+ */
+export const zSpeciesSound = z.object({
+  id: z.string().min(1),
+  url: z.string().min(1),
+  credit: z.string().min(1),
+  license: z.string().min(1),
+  /** 'song', 'call', 'drumming'… free text from the source archive. */
+  type: z.string().optional(),
+  durationSec: z.number().positive().optional(),
+  /** Origin archive, e.g. 'xeno-canto' — lets the UI link back to source. */
+  source: z.string().optional(),
+  /** Link to the recording's page in the source archive. */
+  sourceUrl: z.string().optional(),
+  /** Canonical licence URL — CC compliance wants the licence linked, not just named. */
+  licenseUrl: z.string().optional(),
+})
+export type SpeciesSound = z.infer<typeof zSpeciesSound>
+
 export const zSpeciesRecord = z.object({
   id: z.string().min(1),
   /** Never localized — the universal key across every language. */
@@ -130,6 +155,7 @@ export const zSpeciesRecord = z.object({
    */
   status: zMaybeLocalized.optional(),
   images: z.array(zSpeciesImage).min(1),
+  sounds: z.array(zSpeciesSound).default([]),
 })
 export type SpeciesRecord = z.infer<typeof zSpeciesRecord>
 

@@ -37,10 +37,12 @@ export interface PackCardProps {
   headingLevel?: 'h2' | 'h3'
   /** Progress bar while installing. */
   progress?: { done: number; total: number; label: string } | null
+  /** Catalogue number in the published index — the library reads as a catalogue. */
+  catNo?: number
 }
 
 export function PackCard({
-  manifest, preview, actions, status, headingLevel: H = 'h3', progress,
+  manifest, preview, actions, status, headingLevel: H = 'h3', progress, catNo,
 }: PackCardProps) {
   const { t } = useTranslation()
   const name = resolve(manifest.name)
@@ -69,12 +71,14 @@ export function PackCard({
       style={{
         position: 'relative', isolation: 'isolate',
         /*
-         * One edge weight for every card. An ink border on the mounted pack
-         * put a near-black rectangle around the one card that already says
-         * "In use" in a filled pill — two signals for one state, and the
-         * heavier of the two fighting a soft blurred ground.
+         * Lifted off the page rather than outlined on it. A drawn edge has to
+         * be dark enough to see, and at that weight it rings a card that is
+         * already a distinct shape and colour — the mounted pack ended up with
+         * a near-black rectangle around the one card that also says "In use"
+         * in a filled pill. Elevation separates the card from the screen
+         * without adding a second signal for a state the pill already carries.
          */
-        border: 'var(--hair) solid var(--line)',
+        boxShadow: 'var(--lift)',
         borderRadius: 'var(--radius-card)', overflow: 'hidden',
         background: 'var(--paper)',
       }}
@@ -87,6 +91,7 @@ export function PackCard({
           <div style={{ minWidth: 0, flex: 1 }}>
             <H className="t-heading" style={{ margin: 0, textWrap: 'balance' }}>{name}</H>
             <div className="t-meta" style={{ color: 'var(--ink-muted)', marginTop: 2 }}>
+              {catNo != null && <span style={{ color: 'var(--accent)' }}>№ {catNo} · </span>}
               {manifest.region} · v{formatNumber(manifest.version)}
             </div>
           </div>

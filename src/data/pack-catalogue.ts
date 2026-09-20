@@ -1,11 +1,12 @@
 /**
- * The packs bundled with this build.
+ * The packs bundled with this build — now a FALLBACK, not the catalogue.
  *
- * This is the single list. The pack library screen and the first-run
- * onboarding both read it, and both take every display string — name, species
- * count, region, licence — from the pack's own manifest. Nothing about a pack
- * is written twice, and nothing about a pack is written in one language:
- * `name` is LocalizedText and resolves per the interface language.
+ * The published catalogue lives at `public/packs/index.json` and is fetched
+ * at runtime by `pack-index.ts`, so a new pack can be offered without an app
+ * release. This list remains for two cases: the index fetch failing (offline,
+ * or a deploy that predates it), and onboarding before the network has
+ * answered. Keep it in sync with the index — `scripts/build_pack_index.py`
+ * regenerates the index from the pack manifests on disk.
  */
 
 /** Every pack shipped in `public/packs/`, in library display order. */

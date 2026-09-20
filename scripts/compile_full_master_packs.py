@@ -92,21 +92,7 @@ def infer_bird_colours(name_vi, name_en, family):
     return colours[:3] if colours else ["brown"]
 
 def infer_bird_archetype(family):
-    fam = family.lower()
-    if any(k in fam for k in ["accipitridae", "falconidae", "strigidae", "tytonidae", "pandionidae"]):
-        return "bird-archetype-raptor.svg"
-    elif any(k in fam for k in ["ardeidae", "ciconiidae", "rallidae", "laridae", "charadriidae", "scolopacidae", "podicipedidae", "sulidae"]):
-        return "bird-archetype-waterbird.svg"
-    elif any(k in fam for k in ["anatidae"]):
-        return "bird-archetype-waterfowl.svg"
-    elif any(k in fam for k in ["alcedinidae", "meropidae", "coraciidae", "bucerotidae", "picidae", "megalaimidae"]):
-        return "bird-archetype-kingfisher.svg"
-    elif any(k in fam for k in ["corvidae", "dicruridae"]):
-        return "bird-archetype-corvid.svg"
-    elif any(k in fam for k in ["passeridae", "motacillidae", "emberizidae", "fringillidae"]):
-        return "bird-archetype-sparrow.svg"
-    else:
-        return "bird-archetype-songbird.svg"
+    return "bird.svg"
 
 def infer_butterfly_size(family, sci_name):
     fam = family.lower()
@@ -147,18 +133,22 @@ def infer_butterfly_patterns(name_vi, name_en):
 def infer_butterfly_archetype(family, genus):
     fam = family.lower()
     g = genus.lower()
-    if "papilionidae" in fam or g in ["troides", "papilio", "atrophaneura"]:
+    if "graphium" in g:
+        return "bf-archetype-graphium.svg"
+    elif "papilionidae" in fam or g in ["troides", "papilio", "atrophaneura"]:
         return "bf-archetype-papilionid.svg"
-    elif "pieridae" in fam or g in ["delias", "catopsilia", "eurema", "pieris"]:
+    elif "pieridae" in fam or g in ["delias", "catopsilia", "eurema", "pieris", "appias", "cepora"]:
         return "bf-archetype-pierid.svg"
     elif "lycaenidae" in fam:
         return "bf-archetype-lycaenid.svg"
     elif "hesperiidae" in fam:
-        return "bf-archetype-general.svg"
-    elif "graphium" in g:
-        return "bf-archetype-graphium.svg"
-    else:
+        return "bf-archetype-hesperiid.svg"
+    elif "riodinidae" in fam:
+        return "bf-archetype-riodinid.svg"
+    elif "nymphalidae" in fam:
         return "bf-archetype-nymphalid.svg"
+    else:
+        return "bf-archetype-general.svg"
 
 def compile_birds():
     print("=== Compiling Full Birds of Vietnam Pack (962 species) ===")
