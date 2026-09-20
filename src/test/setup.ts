@@ -13,6 +13,11 @@ if (!globalThis.crypto?.randomUUID) {
   Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
 }
 
+// The integrity check reads navigator.onLine; node 20 (CI) has no navigator.
+if (!('navigator' in globalThis)) {
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } })
+}
+
 // `caches` is only touched by pack download and the integrity check; a minimal
 // in-memory stand-in keeps those paths exercisable without a service worker.
 if (!('caches' in globalThis)) {
