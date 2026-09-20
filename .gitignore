@@ -23,3 +23,39 @@ scratch_*.jpg
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Build artifacts
+tsconfig.tsbuildinfo
+.wrangler/
+
+# Large exploration / comparison renders, not part of the app
+# (regenerable from scripts/: generate_showcase_html, generate_dragonfly_preview,
+# generate_model_comparison_html, generate_vn_top100_showcase, generate_archetype_plates)
+museum_specimens/
+museum_showcase.html
+public/museum_showcase.html
+public/specimen_showcase.html
+public/model_comparison/
+public/model_comparison.html
+public/gpt5_comparison/
+public/gpt5_model_comparison.html
+public/dragonfly_preview.html
+public/vn_top100.html
+public/placeholders/
+gpt5_model_comparison.html
+scripts/test_output/
+
+# Superseded UI screenshots
+public/spidex_*_preview*.png
+public/spidex_species_detail_scrolled*.png
+
+# Personal files that landed in the repo root
+lich_trinh_nha_trang.*
+
+# Agent tooling config, not application source
+.claude/
+.agentkit/
+.devin/
+
+# Working plans and reports stay local
+plans/
