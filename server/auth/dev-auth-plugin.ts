@@ -6,7 +6,7 @@ import {
   createUser,
   getOAuthAuthorizationUrl,
   authenticateWithCode,
-  workos,
+  getWorkos,
   type AuthSessionUser,
 } from './workos-service'
 
@@ -361,7 +361,7 @@ async function handleAdmin(req: any, res: any): Promise<void> {
 
     if (method === 'GET' && pathname === '/api/admin/users') {
       try {
-        const list = await workos.userManagement.listUsers({ limit: 100 })
+        const list = await getWorkos().userManagement.listUsers({ limit: 100 })
         return send({
           users: list.data.map((u: any) => ({
             id: u.id, email: u.email, firstName: u.firstName, lastName: u.lastName,

@@ -18,10 +18,17 @@ function loadEnv() {
 
 loadEnv()
 
-const apiKey = process.env.WORKOS_API_KEY || ''
 const clientId = process.env.WORKOS_CLIENT_ID || ''
 
-export const workos = new WorkOS(apiKey, { clientId })
+// Lazy: vite.config imports this module for the dev plugin, and CI/test runs
+// have no WorkOS credentials — constructing at load would kill the config.
+let _workos: WorkOS | undefined
+export function getWorkos(): WorkOS {
+  if (!_workos) {
+    _workos = new WorkOS(process.env.WORKOS_API_KEY || '', { clientId })
+  }
+  return _workos
+}
 export { clientId }
 
 export interface AuthSessionUser {
@@ -45,7 +52,7 @@ export interface AuthResponse {
  * Crucial for iOS standalone PWA where redirects break session partitions.
  */
 export async function authenticateWithPassword(email: string, password: string): Promise<AuthResponse> {
-  const res = await workos.userManagement.authenticateWithPassword({
+  const res = await getWorkos().userManagement.authenticateWithPassword({
     email,
     password,
     clientId,
@@ -70,7 +77,7 @@ export async function authenticateWithPassword(email: string, password: string):
  * Creates a new user account with email and password
  */
 export async function createUser(email: string, password: string, firstName?: string, lastName?: string): Promise<AuthSessionUser> {
-  const user = await workos.userManagement.createUser({
+  const user = await getWorkos().userManagement.createUser({
     email,
     password,
     firstName,
@@ -92,7 +99,7 @@ export async function createUser(email: string, password: string, firstName?: st
  * Generates OAuth Authorization URL for Google or Microsoft
  */
 export function getOAuthAuthorizationUrl(provider: 'GoogleOAuth' | 'MicrosoftOAuth' | 'authkit', redirectUri: string): string {
-  return workos.userManagement.getAuthorizationUrl({
+  return getWorkos().userManagement.getAuthorizationUrl({
     provider,
     redirectUri,
     clientId,
@@ -103,7 +110,7 @@ export function getOAuthAuthorizationUrl(provider: 'GoogleOAuth' | 'MicrosoftOAu
  * Exchanges OAuth authorization code for session & user profile
  */
 export async function authenticateWithCode(code: string): Promise<AuthResponse> {
-  const res = await workos.userManagement.authenticateWithCode({
+  const res = await getWorkos().userManagement.authenticateWithCode({
     code,
     clientId,
   })
@@ -128,7 +135,7 @@ export async function authenticateWithCode(code: string): Promise<AuthResponse> 
  */
 export async function getUser(userId: string): Promise<AuthSessionUser | null> {
   try {
-    const user = await workos.userManagement.getUser(userId)
+    const user = await getWorkos().userManagement.getUser(userId)
     return {
       id: user.id,
       email: user.email,
