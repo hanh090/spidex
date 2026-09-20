@@ -1,0 +1,12 @@
+name = "spidex"
+pages_build_output_dir = "dist"
+
+# Admin resource store. Create once:
+#   wrangler d1 create spidex-admin
+# then paste the returned database_id below and run the migration:
+#   wrangler d1 execute spidex-admin --file=migrations/0001_admin.sql
+# (add --remote for the deployed database)
+[[d1_databases]]
+binding = "DB"
+database_name = "spidex-admin"
+database_id = "ffb145fd-0807-461f-b262-caa5ba1c4b7b"
