@@ -119,6 +119,54 @@
    "url": "https://xeno-canto.org/37534/download"
   }
  ],
+ "Accipiter trivirgatus": [
+  {
+   "credit": "Ray Tsu 诸仁",
+   "durationSec": 10,
+   "id": "xc986339",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/986339",
+   "type": "song",
+   "url": "https://xeno-canto.org/986339/download"
+  },
+  {
+   "credit": "Ding Li Yong",
+   "durationSec": 12,
+   "id": "xc861942",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/861942",
+   "type": "song",
+   "url": "https://xeno-canto.org/861942/download"
+  }
+ ],
+ "Accipiter virgatus": [
+  {
+   "credit": "Ray Tsu 诸仁",
+   "durationSec": 213,
+   "id": "xc1142797",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1142797",
+   "type": "song",
+   "url": "https://xeno-canto.org/1142797/download"
+  },
+  {
+   "credit": "Ray Tsu 诸仁",
+   "durationSec": 66,
+   "id": "xc981291",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/981291",
+   "type": "song",
+   "url": "https://xeno-canto.org/981291/download"
+  }
+ ],
  "Acridotheres burmannicus": [
   {
    "credit": "Sam Hambly",
@@ -214,6 +262,30 @@
    "sourceUrl": "https://xeno-canto.org/1157330",
    "type": "song",
    "url": "https://xeno-canto.org/1157330/download"
+  }
+ ],
+ "Acrocephalus agricola": [
+  {
+   "credit": "Agris Celmins",
+   "durationSec": 27,
+   "id": "xc1177946",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1177946",
+   "type": "song",
+   "url": "https://xeno-canto.org/1177946/download"
+  },
+  {
+   "credit": "Agris Celmins",
+   "durationSec": 152,
+   "id": "xc1177941",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1177941",
+   "type": "song",
+   "url": "https://xeno-canto.org/1177941/download"
   }
  ],
  "Acrocephalus arundinaceus": [
@@ -1400,6 +1472,30 @@
    "url": "https://xeno-canto.org/568941/download"
   }
  ],
+ "Anas zonorhyncha": [
+  {
+   "credit": "Ray Tsu 诸仁",
+   "durationSec": 17,
+   "id": "xc1175301",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1175301",
+   "type": "wing beats",
+   "url": "https://xeno-canto.org/1175301/download"
+  },
+  {
+   "credit": "小菜鸟",
+   "durationSec": 36,
+   "id": "xc920581",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/920581",
+   "type": "call",
+   "url": "https://xeno-canto.org/920581/download"
+  }
+ ],
  "Anastomus oscitans": [
   {
    "credit": "vir joshi",
@@ -1470,6 +1566,30 @@
    "sourceUrl": "https://xeno-canto.org/156462",
    "type": "call",
    "url": "https://xeno-canto.org/156462/download"
+  }
+ ],
+ "Anous stolidus": [
+  {
+   "credit": "Johannes Fischer",
+   "durationSec": 9,
+   "id": "xc148686",
+   "license": "CC BY-NC-SA 3.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/3.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/148686",
+   "type": "call",
+   "url": "https://xeno-canto.org/148686/download"
+  },
+  {
+   "credit": "Dries Van de Loock",
+   "durationSec": 49,
+   "id": "xc1061230",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1061230",
+   "type": "begging call",
+   "url": "https://xeno-canto.org/1061230/download"
   }
  ],
  "Anser albifrons": [
@@ -1712,6 +1832,30 @@
    "sourceUrl": "https://xeno-canto.org/1169334",
    "type": "song",
    "url": "https://xeno-canto.org/1169334/download"
+  }
+ ],
+ "Anthus novaeseelandiae": [
+  {
+   "credit": "David Boyle",
+   "durationSec": 19,
+   "id": "xc973177",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/973177",
+   "type": "song",
+   "url": "https://xeno-canto.org/973177/download"
+  },
+  {
+   "credit": "David Boyle",
+   "durationSec": 30,
+   "id": "xc973176",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/973176",
+   "type": "song",
+   "url": "https://xeno-canto.org/973176/download"
   }
  ],
  "Anthus pratensis": [
@@ -3207,6 +3351,30 @@
    "url": "https://xeno-canto.org/1153969/download"
   }
  ],
+ "Calidris acuminata": [
+  {
+   "credit": "Andrew Spencer",
+   "durationSec": 7,
+   "id": "xc425083",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/425083",
+   "type": "song",
+   "url": "https://xeno-canto.org/425083/download"
+  },
+  {
+   "credit": "Lim Ying Hien 林勇贤",
+   "durationSec": 17,
+   "id": "xc1032738",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1032738",
+   "type": "uncertain",
+   "url": "https://xeno-canto.org/1032738/download"
+  }
+ ],
  "Calidris alba": [
   {
    "credit": "Jorge Leitão",
@@ -3733,6 +3901,30 @@
    "sourceUrl": "https://xeno-canto.org/1141997",
    "type": "song",
    "url": "https://xeno-canto.org/1141997/download"
+  }
+ ],
+ "Carpospiza brachydactyla": [
+  {
+   "credit": "Geoff Carey",
+   "durationSec": 53,
+   "id": "xc1049267",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1049267",
+   "type": "song",
+   "url": "https://xeno-canto.org/1049267/download"
+  },
+  {
+   "credit": "Manuel Oudard",
+   "durationSec": 34,
+   "id": "xc971538",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/971538",
+   "type": "song",
+   "url": "https://xeno-canto.org/971538/download"
   }
  ],
  "Cecropis daurica": [
@@ -4456,6 +4648,30 @@
    "sourceUrl": "https://xeno-canto.org/1074252",
    "type": "song",
    "url": "https://xeno-canto.org/1074252/download"
+  }
+ ],
+ "Chroicocephalus brunnicephalus": [
+  {
+   "credit": "Sreekumar Chirukandoth",
+   "durationSec": 28,
+   "id": "xc769892",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/769892",
+   "type": "call",
+   "url": "https://xeno-canto.org/769892/download"
+  },
+  {
+   "credit": "Sreekumar Chirukandoth",
+   "durationSec": 40,
+   "id": "xc769888",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/769888",
+   "type": "call",
+   "url": "https://xeno-canto.org/769888/download"
   }
  ],
  "Chroicocephalus genei": [
@@ -5262,6 +5478,30 @@
    "sourceUrl": "https://xeno-canto.org/726245",
    "type": "song",
    "url": "https://xeno-canto.org/726245/download"
+  }
+ ],
+ "Columba oenas": [
+  {
+   "credit": "Beatrix Saadi-Varchmin",
+   "durationSec": 17,
+   "id": "xc1138083",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1138083",
+   "type": "song",
+   "url": "https://xeno-canto.org/1138083/download"
+  },
+  {
+   "credit": "Jarek Matusiak",
+   "durationSec": 188,
+   "id": "xc961404",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/961404",
+   "type": "song",
+   "url": "https://xeno-canto.org/961404/download"
   }
  ],
  "Columba palumbus": [
@@ -6570,6 +6810,30 @@
    "url": "https://xeno-canto.org/209509/download"
   }
  ],
+ "Dendrocopos leucotos": [
+  {
+   "credit": "Lars Edenius",
+   "durationSec": 112,
+   "id": "xc1102707",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1102707",
+   "type": "drumming",
+   "url": "https://xeno-canto.org/1102707/download"
+  },
+  {
+   "credit": "Anders Eriksson",
+   "durationSec": 135,
+   "id": "xc1089517",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1089517",
+   "type": "drumming",
+   "url": "https://xeno-canto.org/1089517/download"
+  }
+ ],
  "Dendrocopos major": [
   {
    "credit": "Lars Lachmann",
@@ -6688,6 +6952,30 @@
    "sourceUrl": "https://xeno-canto.org/1135256",
    "type": "song",
    "url": "https://xeno-canto.org/1135256/download"
+  }
+ ],
+ "Dicaeum agile": [
+  {
+   "credit": "Greg Irving",
+   "durationSec": 21,
+   "id": "xc804094",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/804094",
+   "type": "song",
+   "url": "https://xeno-canto.org/804094/download"
+  },
+  {
+   "credit": "Lim Ying Hien",
+   "durationSec": 8,
+   "id": "xc774929",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/774929",
+   "type": "song",
+   "url": "https://xeno-canto.org/774929/download"
   }
  ],
  "Dicaeum concolor": [
@@ -7245,6 +7533,30 @@
   }
  ],
  "Emberiza aureola": [],
+ "Emberiza buchanani": [
+  {
+   "credit": "Richard E. Webster",
+   "durationSec": 71,
+   "id": "xc1024142",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1024142",
+   "type": "call",
+   "url": "https://xeno-canto.org/1024142/download"
+  },
+  {
+   "credit": "Erik Hansson",
+   "durationSec": 102,
+   "id": "xc1007812",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1007812",
+   "type": "song",
+   "url": "https://xeno-canto.org/1007812/download"
+  }
+ ],
  "Emberiza caesia": [
   {
    "credit": "Stanislas Wroza",
@@ -8317,6 +8629,30 @@
    "url": "https://xeno-canto.org/864140/download"
   }
  ],
+ "Ficedula semitorquata": [
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 5363,
+   "id": "xc1134962",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1134962",
+   "type": "song",
+   "url": "https://xeno-canto.org/1134962/download"
+  },
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 239,
+   "id": "xc1134956",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1134956",
+   "type": "song",
+   "url": "https://xeno-canto.org/1134956/download"
+  }
+ ],
  "Ficedula strophiata": [
   {
    "credit": "Marc Anderson",
@@ -8701,6 +9037,30 @@
    "url": "https://xeno-canto.org/1168756/download"
   }
  ],
+ "Gallinago media": [
+  {
+   "credit": "Ulf Elman",
+   "durationSec": 150,
+   "id": "xc1151422",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1151422",
+   "type": "song",
+   "url": "https://xeno-canto.org/1151422/download"
+  },
+  {
+   "credit": "János Schadl",
+   "durationSec": 9,
+   "id": "xc1133855",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1133855",
+   "type": "dawn song",
+   "url": "https://xeno-canto.org/1133855/download"
+  }
+ ],
  "Gallinago stenura": [
   {
    "credit": "Bo Shunqi 薄顺奇",
@@ -8822,9 +9182,35 @@
    "url": "https://xeno-canto.org/1161781/download"
   }
  ],
+ "Garrulax albogularis": [],
  "Garrulax annamensis": [],
  "Garrulax canorus": [],
+ "Garrulax castanotis": [
+  {
+   "credit": "Dave Guo",
+   "durationSec": 70,
+   "id": "xc999988",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/999988",
+   "type": "call",
+   "url": "https://xeno-canto.org/999988/download"
+  },
+  {
+   "credit": "Remco Hofland",
+   "durationSec": 51,
+   "id": "xc895720",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/895720",
+   "type": "duet",
+   "url": "https://xeno-canto.org/895720/download"
+  }
+ ],
  "Garrulax chinensis": [],
+ "Garrulax konkakinhensis": [],
  "Garrulax leucolophus": [
   {
    "credit": "Ding Li Yong",
@@ -9314,6 +9700,30 @@
    "sourceUrl": "https://xeno-canto.org/908644",
    "type": "call",
    "url": "https://xeno-canto.org/908644/download"
+  }
+ ],
+ "Gymnoris xanthocollis": [
+  {
+   "credit": "Omar Alshaheen",
+   "durationSec": 64,
+   "id": "xc1029947",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1029947",
+   "type": "song",
+   "url": "https://xeno-canto.org/1029947/download"
+  },
+  {
+   "credit": "Manuel Oudard",
+   "durationSec": 9,
+   "id": "xc972228",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/972228",
+   "type": "song",
+   "url": "https://xeno-canto.org/972228/download"
   }
  ],
  "Gypaetus barbatus": [
@@ -9845,6 +10255,78 @@
    "url": "https://xeno-canto.org/1176087/download"
   }
  ],
+ "Hippolais icterina": [
+  {
+   "credit": "Ulf Elman",
+   "durationSec": 95,
+   "id": "xc1145290",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1145290",
+   "type": "song",
+   "url": "https://xeno-canto.org/1145290/download"
+  },
+  {
+   "credit": "Ulf Elman",
+   "durationSec": 365,
+   "id": "xc1145289",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1145289",
+   "type": "song",
+   "url": "https://xeno-canto.org/1145289/download"
+  }
+ ],
+ "Hippolais languida": [
+  {
+   "credit": "Manuel Oudard",
+   "durationSec": 42,
+   "id": "xc972233",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/972233",
+   "type": "song",
+   "url": "https://xeno-canto.org/972233/download"
+  },
+  {
+   "credit": "Manuel Oudard",
+   "durationSec": 27,
+   "id": "xc972221",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/972221",
+   "type": "song",
+   "url": "https://xeno-canto.org/972221/download"
+  }
+ ],
+ "Hippolais olivetorum": [
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 279,
+   "id": "xc1134687",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1134687",
+   "type": "song",
+   "url": "https://xeno-canto.org/1134687/download"
+  },
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 157,
+   "id": "xc1134686",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1134686",
+   "type": "song",
+   "url": "https://xeno-canto.org/1134686/download"
+  }
+ ],
  "Hirundapus caudacutus": [
   {
    "credit": "Uku Paal",
@@ -10321,6 +10803,30 @@
   }
  ],
  "Irena puella": [],
+ "Ixobrychus cinnamomeus": [
+  {
+   "credit": "脉动",
+   "durationSec": 11,
+   "id": "xc917578",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/917578",
+   "type": "song",
+   "url": "https://xeno-canto.org/917578/download"
+  },
+  {
+   "credit": "小菜鸟",
+   "durationSec": 384,
+   "id": "xc909292",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/909292",
+   "type": "dawn song",
+   "url": "https://xeno-canto.org/909292/download"
+  }
+ ],
  "Ixos mcclellandii": [
   {
    "credit": "Feather V",
@@ -11012,6 +11518,30 @@
    "url": "https://xeno-canto.org/1155033/download"
   }
  ],
+ "Liocichla phoenicea": [
+  {
+   "credit": "JYOTIRMAY BAISHYA",
+   "durationSec": 19,
+   "id": "xc1161684",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1161684",
+   "type": "song",
+   "url": "https://xeno-canto.org/1161684/download"
+  },
+  {
+   "credit": "Lars Lachmann",
+   "durationSec": 15,
+   "id": "xc891977",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/891977",
+   "type": "song",
+   "url": "https://xeno-canto.org/891977/download"
+  }
+ ],
  "Liocichla ripponi": [
   {
    "credit": "JJSUN",
@@ -11131,6 +11661,30 @@
    "sourceUrl": "https://xeno-canto.org/1148211",
    "type": "song",
    "url": "https://xeno-canto.org/1148211/download"
+  }
+ ],
+ "Locustella tacsanowskia": [
+  {
+   "credit": "Peter Boesman",
+   "durationSec": 72,
+   "id": "xc1147614",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1147614",
+   "type": "song",
+   "url": "https://xeno-canto.org/1147614/download"
+  },
+  {
+   "credit": "Peter Boesman",
+   "durationSec": 93,
+   "id": "xc1147613",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1147613",
+   "type": "song",
+   "url": "https://xeno-canto.org/1147613/download"
   }
  ],
  "Lonchura atricapilla": [
@@ -11667,6 +12221,7 @@
    "url": "https://xeno-canto.org/991469/download"
   }
  ],
+ "Megapomatorhinus hypoleucos": [],
  "Meiglyptes jugularis": [
   {
    "credit": "Ding Li Yong",
@@ -11713,6 +12268,30 @@
    "sourceUrl": "https://xeno-canto.org/939025",
    "type": "call",
    "url": "https://xeno-canto.org/939025/download"
+  }
+ ],
+ "Melanocorypha bimaculata": [
+  {
+   "credit": "Manuel Oudard",
+   "durationSec": 56,
+   "id": "xc972271",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/972271",
+   "type": "song",
+   "url": "https://xeno-canto.org/972271/download"
+  },
+  {
+   "credit": "Manuel Oudard",
+   "durationSec": 34,
+   "id": "xc972269",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/972269",
+   "type": "song",
+   "url": "https://xeno-canto.org/972269/download"
   }
  ],
  "Melanocorypha calandra": [
@@ -12121,6 +12700,30 @@
    "sourceUrl": "https://xeno-canto.org/1138383",
    "type": "song",
    "url": "https://xeno-canto.org/1138383/download"
+  }
+ ],
+ "Milvus milvus": [
+  {
+   "credit": "Olivier SWIFT",
+   "durationSec": 43,
+   "id": "xc879251",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/879251",
+   "type": "song",
+   "url": "https://xeno-canto.org/879251/download"
+  },
+  {
+   "credit": "Olivier SWIFT",
+   "durationSec": 7,
+   "id": "xc879195",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/879195",
+   "type": "song",
+   "url": "https://xeno-canto.org/879195/download"
   }
  ],
  "Minla cyanouroptera": [],
@@ -12800,6 +13403,30 @@
    "url": "https://xeno-canto.org/789306/download"
   }
  ],
+ "Niltava oatesi": [
+  {
+   "credit": "Shuangqi Liu",
+   "durationSec": 69,
+   "id": "xc1140031",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1140031",
+   "type": "song",
+   "url": "https://xeno-canto.org/1140031/download"
+  },
+  {
+   "credit": "Shuangqi Liu",
+   "durationSec": 92,
+   "id": "xc1140034",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1140034",
+   "type": "song",
+   "url": "https://xeno-canto.org/1140034/download"
+  }
+ ],
  "Niltava sundara": [
   {
    "credit": "Shuangqi Liu",
@@ -13038,6 +13665,30 @@
    "sourceUrl": "https://xeno-canto.org/598921",
    "type": "call",
    "url": "https://xeno-canto.org/598921/download"
+  }
+ ],
+ "Oena capensis": [
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 41,
+   "id": "xc951388",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/951388",
+   "type": "song",
+   "url": "https://xeno-canto.org/951388/download"
+  },
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 17,
+   "id": "xc951387",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/951387",
+   "type": "song",
+   "url": "https://xeno-canto.org/951387/download"
   }
  ],
  "Oenanthe finschii": [
@@ -14651,6 +15302,30 @@
   }
  ],
  "Phyllergates cuculatus": [],
+ "Phylloscopus affinis": [
+  {
+   "credit": "Yang Li",
+   "durationSec": 52,
+   "id": "xc1146880",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1146880",
+   "type": "song",
+   "url": "https://xeno-canto.org/1146880/download"
+  },
+  {
+   "credit": "Yang Li",
+   "durationSec": 38,
+   "id": "xc1146878",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1146878",
+   "type": "song",
+   "url": "https://xeno-canto.org/1146878/download"
+  }
+ ],
  "Phylloscopus borealis": [
   {
    "credit": "Anne McCormack",
@@ -15822,6 +16497,30 @@
    "url": "https://xeno-canto.org/1097809/download"
   }
  ],
+ "Podiceps grisegena": [
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 23,
+   "id": "xc1168814",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1168814",
+   "type": "song",
+   "url": "https://xeno-canto.org/1168814/download"
+  },
+  {
+   "credit": "Stanislas Wroza",
+   "durationSec": 122,
+   "id": "xc1168813",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1168813",
+   "type": "call",
+   "url": "https://xeno-canto.org/1168813/download"
+  }
+ ],
  "Podiceps nigricollis": [
   {
    "credit": "Julien Piette",
@@ -16139,6 +16838,30 @@
  ],
  "Porzana cinerea": [],
  "Porzana fusca": [],
+ "Porzana porzana": [
+  {
+   "credit": "János Schadl",
+   "durationSec": 92,
+   "id": "xc1142470",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1142470",
+   "type": "call",
+   "url": "https://xeno-canto.org/1142470/download"
+  },
+  {
+   "credit": "Simon Gillings",
+   "durationSec": 131,
+   "id": "xc1137697",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1137697",
+   "type": "song",
+   "url": "https://xeno-canto.org/1137697/download"
+  }
+ ],
  "Porzana pusilla": [],
  "Prinia atrogularis": [
   {
@@ -16332,6 +17055,30 @@
    "url": "https://xeno-canto.org/1107617/download"
   }
  ],
+ "Prinia subflava": [
+  {
+   "credit": "Albert Lastukhin",
+   "durationSec": 9,
+   "id": "xc1146553",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1146553",
+   "type": "song",
+   "url": "https://xeno-canto.org/1146553/download"
+  },
+  {
+   "credit": "Oscar Campbell",
+   "durationSec": 77,
+   "id": "xc1076885",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1076885",
+   "type": "song",
+   "url": "https://xeno-canto.org/1076885/download"
+  }
+ ],
  "Prinia superciliaris": [
   {
    "credit": "Dave Guo",
@@ -16474,6 +17221,30 @@
    "sourceUrl": "https://xeno-canto.org/1095803",
    "type": "song",
    "url": "https://xeno-canto.org/1095803/download"
+  }
+ ],
+ "Pseudibis davisoni": [
+  {
+   "credit": "Sophea Chea",
+   "durationSec": 25,
+   "id": "xc754790",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/754790",
+   "type": "call",
+   "url": "https://xeno-canto.org/754790/download"
+  },
+  {
+   "credit": "Sophea Chea",
+   "durationSec": 15,
+   "id": "xc754789",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/754789",
+   "type": "call",
+   "url": "https://xeno-canto.org/754789/download"
   }
  ],
  "Psilopogon annamensis": [
@@ -16764,6 +17535,30 @@
    "url": "https://xeno-canto.org/35509/download"
   }
  ],
+ "Psittacula cyanocephala": [
+  {
+   "credit": "Conrad Pinto",
+   "durationSec": 29,
+   "id": "xc161248",
+   "license": "CC BY-NC-ND 3.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/3.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/161248",
+   "type": "call",
+   "url": "https://xeno-canto.org/161248/download"
+  },
+  {
+   "credit": "Marc Anderson",
+   "durationSec": 48,
+   "id": "xc809699",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/809699",
+   "type": "call",
+   "url": "https://xeno-canto.org/809699/download"
+  }
+ ],
  "Psittacula eupatria": [
   {
    "credit": "Stanislas Wroza",
@@ -16786,6 +17581,30 @@
    "sourceUrl": "https://xeno-canto.org/628899",
    "type": "alarm call",
    "url": "https://xeno-canto.org/628899/download"
+  }
+ ],
+ "Psittacula finschii": [
+  {
+   "credit": "Pritam Baruah",
+   "durationSec": 45,
+   "id": "xc209821",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/209821",
+   "type": "call",
+   "url": "https://xeno-canto.org/209821/download"
+  },
+  {
+   "credit": "Sam Hambly",
+   "durationSec": 41,
+   "id": "xc965055",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/965055",
+   "type": "call",
+   "url": "https://xeno-canto.org/965055/download"
   }
  ],
  "Psittacula krameri": [
@@ -17319,6 +18138,30 @@
    "url": "https://xeno-canto.org/1098944/download"
   }
  ],
+ "Pycnonotus leucotis": [
+  {
+   "credit": "David Darrell-Lambert",
+   "durationSec": 15,
+   "id": "xc1166095",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1166095",
+   "type": "song",
+   "url": "https://xeno-canto.org/1166095/download"
+  },
+  {
+   "credit": "David Darrell-Lambert",
+   "durationSec": 19,
+   "id": "xc1166040",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1166040",
+   "type": "song",
+   "url": "https://xeno-canto.org/1166040/download"
+  }
+ ],
  "Pycnonotus melanicterus": [],
  "Pycnonotus sinensis": [
   {
@@ -17607,6 +18450,30 @@
    "sourceUrl": "https://xeno-canto.org/1151366",
    "type": "song",
    "url": "https://xeno-canto.org/1151366/download"
+  }
+ ],
+ "Remiz consobrinus": [
+  {
+   "credit": "Bo Shunqi 薄顺奇",
+   "durationSec": 113,
+   "id": "xc841441",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/841441",
+   "type": "song",
+   "url": "https://xeno-canto.org/841441/download"
+  },
+  {
+   "credit": "Tiantian Zhao 赵天天",
+   "durationSec": 14,
+   "id": "xc803282",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/803282",
+   "type": "song",
+   "url": "https://xeno-canto.org/803282/download"
   }
  ],
  "Remiz pendulinus": [
@@ -18117,6 +18984,7 @@
   }
  ],
  "Seicercus affinis": [],
+ "Seicercus burkii": [],
  "Seicercus castaniceps": [],
  "Seicercus omeiensis": [],
  "Seicercus poliogenys": [],
@@ -19109,6 +19977,30 @@
    "url": "https://xeno-canto.org/1067468/download"
   }
  ],
+ "Strix seloputo": [
+  {
+   "credit": "Ding Li Yong",
+   "durationSec": 135,
+   "id": "xc755038",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/755038",
+   "type": "song",
+   "url": "https://xeno-canto.org/755038/download"
+  },
+  {
+   "credit": "Daan Drukker",
+   "durationSec": 7,
+   "id": "xc1063210",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1063210",
+   "type": "call",
+   "url": "https://xeno-canto.org/1063210/download"
+  }
+ ],
  "Sturnia malabarica": [
   {
    "credit": "Sam Hambly",
@@ -19179,6 +20071,30 @@
    "sourceUrl": "https://xeno-canto.org/1101346",
    "type": "song",
    "url": "https://xeno-canto.org/1101346/download"
+  }
+ ],
+ "Sula leucogaster": [
+  {
+   "credit": "JAYRSON ARAUJO DE OLIVEIRA",
+   "durationSec": 14,
+   "id": "xc927122",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/927122",
+   "type": "call",
+   "url": "https://xeno-canto.org/927122/download"
+  },
+  {
+   "credit": "JAYRSON ARAUJO DE OLIVEIRA",
+   "durationSec": 3,
+   "id": "xc927112",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/927112",
+   "type": "call",
+   "url": "https://xeno-canto.org/927112/download"
   }
  ],
  "Sula sula": [
@@ -20840,6 +21756,30 @@
    "sourceUrl": "https://xeno-canto.org/1160214",
    "type": "song",
    "url": "https://xeno-canto.org/1160214/download"
+  }
+ ],
+ "Turnix sylvaticus": [
+  {
+   "credit": "Campbell Fleming",
+   "durationSec": 7,
+   "id": "xc1177965",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1177965",
+   "type": "call",
+   "url": "https://xeno-canto.org/1177965/download"
+  },
+  {
+   "credit": "Faansie Peacock",
+   "durationSec": 32,
+   "id": "xc382899",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/382899",
+   "type": "song",
+   "url": "https://xeno-canto.org/382899/download"
   }
  ],
  "Turnix tanki": [
