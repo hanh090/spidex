@@ -108,7 +108,7 @@ export function LogSighting() {
         fallback="/sightings"
       />
 
-      <div style={{ padding: 'var(--space-4) var(--gutter-sm) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <div className="column" style={{ padding: 'var(--space-4) var(--gutter-sm) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
 
         <section>
           <div style={{ marginBottom: 'var(--space-2)' }}><Meta>{t('log.photos')}</Meta></div>
@@ -205,10 +205,12 @@ export function LogSighting() {
         borderTop: 'var(--hair) solid var(--line)',
         padding: 'var(--space-3) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))',
       }}>
+        <div className="column">
         <Button variant="primary" full disabled={saving} onClick={() => void save()}>
           {savedId ? t('log.retryPhotos') : species ? t('log.save') : t('log.saveToNeedsId')}
         </Button>
         {!species && <div style={{ textAlign: 'center', marginTop: 'var(--space-2)' }}><Meta>{t('log.resolveLater')}</Meta></div>}
+        </div>
       </div>
     </div>
   )

@@ -45,7 +45,9 @@
     "language": "Sprache",
     "settings": "Einstellungen",
     "storage": "Speicher",
-    "theme": "Darstellung"
+    "theme": "Darstellung",
+    "admin": "Admin-Konsole",
+    "field": "Feldeinsatz"
   },
   "explore": {
     "clearAll": "Alle zurücksetzen",
@@ -232,7 +234,13 @@
     "save": "Merken",
     "saved": "Gemerkt",
     "seasonality": "Flugzeit",
-    "sensitive": "Geschützter Fundort"
+    "sensitive": "Geschützter Fundort",
+    "sounds": "Stimme",
+    "soundsOffline": "Aufnahmen werden aus dem Archiv gestreamt — zum Anhören online gehen.",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "seek": "Spulen",
+    "viewPlate": "Tafel von {{name}} im Vollbild ansehen"
   },
   "storage": {
     "notPersisted": "Downloads können gelöscht werden",
@@ -253,5 +261,52 @@
     "available": "Eine neue Version ist bereit",
     "later": "Später",
     "reload": "Jetzt aktualisieren"
+  },
+  "field": {
+    "targets": "Größere Tippflächen",
+    "targetsHint": "Für Handschuhe oder einhändige Bedienung"
+  },
+  "admin": {
+    "title": "Admin",
+    "section": {
+      "overview": "Übersicht",
+      "resources": "Ressourcen",
+      "users": "Nutzer"
+    },
+    "signInTitle": "Anmeldung erforderlich",
+    "signInFix": "Die Konsole erfordert ein Team-Konto.",
+    "deniedTitle": "Kein Administrator",
+    "deniedFix": "{{email}} ist angemeldet, steht aber nicht auf der Admin-Liste.",
+    "noStore": "Ressourcenspeicher nicht konfiguriert — Lesen geht, Schreiben braucht die D1-Bindung (siehe wrangler.toml).",
+    "catalogueError": "Katalog konnte nicht gelesen werden: {{detail}}",
+    "packsListed_one": "{{n}} Pack im Katalog",
+    "packsListed_other": "{{n}} Packs im Katalog",
+    "featured": "Empfohlen",
+    "missing": "Manifest fehlt",
+    "published": "Veröffentlicht",
+    "unpublished": "Verborgen",
+    "publish": "Veröffentlichen",
+    "unpublish": "Verbergen",
+    "addResource": "Ressource hinzufügen",
+    "fieldKind": "Art",
+    "fieldId": "ID (optional)",
+    "fieldTitle": "Titel",
+    "fieldMeta": "Metadaten (JSON)",
+    "add": "Hinzufügen",
+    "saving": "Speichern…",
+    "all": "Alle",
+    "noResources": "Noch keine Ressourcen.",
+    "deleteConfirm": "{{title}} löschen?",
+    "delete": "Löschen",
+    "userCount_one": "{{n}} Nutzer",
+    "userCount_other": "{{n}} Nutzer",
+    "verified": "Verifiziert",
+    "kind": {
+      "pack": "Pack",
+      "checklist": "Checkliste",
+      "dataset": "Datensatz",
+      "audio": "Audio",
+      "note": "Notiz"
+    }
   }
 }

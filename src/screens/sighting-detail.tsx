@@ -55,7 +55,7 @@ export function SightingDetail() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
       <NavBar title={sighting.speciesSnapshot?.commonName ?? t('sightings.unidentified')} />
 
-      <div style={{ padding: 'var(--space-3) var(--gutter-sm) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div className="column" style={{ padding: 'var(--space-3) var(--gutter-sm) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {photos.length > 0 && (
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             {photos.map((p) => <PhotoThumb key={p.id} photo={p} />)}
@@ -112,7 +112,7 @@ export function SightingDetail() {
 
       <div style={{ flex: 1 }} />
 
-      <div style={{ flex: 'none', padding: 'var(--space-6) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))', display: 'flex', gap: 'var(--space-2)' }}>
+      <div className="column" style={{ flex: 'none', padding: 'var(--space-6) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))', display: 'flex', gap: 'var(--space-2)' }}>
         <Button variant="secondary" onClick={async () => {
           await updateSighting(sighting.id, { count: sighting.count + 1 })
           setSighting({ ...sighting, count: sighting.count + 1 })

@@ -32,7 +32,7 @@ export function Compare() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
         {topNav}
-        <div style={{ flex: 1, padding: 'var(--space-4) var(--gutter-sm)' }}>
+        <div className="column" style={{ flex: 1, padding: 'var(--space-4) var(--gutter-sm)' }}>
           <EmptyState title={t('compare.empty')} fix={t('compare.emptyFix')} />
         </div>
       </div>
@@ -57,7 +57,7 @@ export function Compare() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
       {topNav}
 
-      <div style={{ padding: 'var(--space-3) var(--gutter-sm) max(var(--space-6), calc(var(--space-4) + env(safe-area-inset-bottom)))' }}>
+      <div className="column" style={{ padding: 'var(--space-3) var(--gutter-sm) max(var(--space-6), calc(var(--space-4) + env(safe-area-inset-bottom)))' }}>
         <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 'var(--space-2)' }}>
           <div />
           {chosen.map((sp) => (

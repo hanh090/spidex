@@ -61,7 +61,8 @@ export function Sightings() {
   return (
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
 
-      <div style={{ flex: 'none', display: 'flex', borderBottom: 'var(--hair) solid var(--line)' }}>
+      <div style={{ flex: 'none', borderBottom: 'var(--hair) solid var(--line)' }}>
+        <div className="column" style={{ display: 'flex' }}>
         {(['log', 'life'] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)} aria-pressed={tab === tb}
             style={{
@@ -73,13 +74,17 @@ export function Sightings() {
             <span className="t-meta">{t(tb === 'log' ? 'sightings.title' : 'sightings.lifeList')}</span>
           </button>
         ))}
+        </div>
       </div>
 
       {tab === 'log' && (
         <div style={{
-          flex: 'none', display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
-          padding: 'var(--space-2) var(--gutter-sm)', borderBottom: 'var(--hair) solid var(--line)',
+          flex: 'none', borderBottom: 'var(--hair) solid var(--line)',
           background: trip ? 'var(--panel)' : 'transparent',
+        }}>
+        <div className="column" style={{
+          display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+          padding: 'var(--space-2) var(--gutter-sm)',
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <Meta tone={trip ? 'ok' : 'muted'}>{trip ? t('sightings.tripActive') : t('sightings.tripNone')}</Meta>
@@ -88,9 +93,10 @@ export function Sightings() {
             {trip ? t('sightings.endTrip') : t('sightings.startTrip')}
           </Button>
         </div>
+        </div>
       )}
 
-      <div className="scroll-y" style={{ flex: 1, minHeight: 0 }}>
+      <div className="scroll-y column" style={{ flex: 1, minHeight: 0 }}>
         {tab === 'life'
           ? <LifeList entries={life} />
           : all.length === 0
@@ -161,7 +167,7 @@ export function Sightings() {
             )}
       </div>
 
-      <div style={{ flex: 'none', padding: 'var(--space-3) var(--gutter-sm) var(--space-4)' }}>
+      <div className="column" style={{ flex: 'none', padding: 'var(--space-3) var(--gutter-sm) var(--space-4)' }}>
         <Button variant="primary" full onClick={() => navigate('/log')}>
           <IconPlus /> {t('sightings.log')}
         </Button>

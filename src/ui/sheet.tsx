@@ -131,10 +131,10 @@ export function Sheet({
           <div style={{ width: 44, height: 5, borderRadius: 3, background: 'var(--ink-muted)' }} />
         </div>
 
-        <div style={{
-          flex: 'none', padding: '0 var(--gutter-sm) var(--space-3)',
+        <div style={{ flex: 'none', borderBottom: 'var(--hair) solid var(--line)' }}>
+        <div className="column" style={{
+          padding: '0 var(--gutter-sm) var(--space-3)',
           display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
-          borderBottom: 'var(--hair) solid var(--line)',
         }}>
           <span className="t-heading">{title}</span>
           {status && <span style={{ marginLeft: 'auto' }}>{status}</span>}
@@ -150,19 +150,24 @@ export function Sheet({
             <IconClose size={16} />
           </button>
         </div>
+        </div>
 
-        <div className="scroll-y" style={{ flex: 1, minHeight: 0, padding: 'var(--space-4) var(--gutter-sm)' }}>
+        <div className="scroll-y column" style={{ flex: 1, minHeight: 0, padding: 'var(--space-4) var(--gutter-sm)' }}>
           {children}
         </div>
 
         {footer && (
           <div style={{
-            flex: 'none', padding: 'var(--space-3) var(--gutter-sm)',
-            paddingBottom: 'max(var(--space-3), env(safe-area-inset-bottom))',
+            flex: 'none',
             borderTop: 'var(--hair) solid var(--line)', background: 'var(--panel)',
-            display: 'flex', gap: 'var(--space-2)', alignItems: 'center',
           }}>
-            {footer}
+            <div className="column" style={{
+              padding: 'var(--space-3) var(--gutter-sm)',
+              paddingBottom: 'max(var(--space-3), env(safe-area-inset-bottom))',
+              display: 'flex', gap: 'var(--space-2)', alignItems: 'center',
+            }}>
+              {footer}
+            </div>
           </div>
         )}
       </div>

@@ -17,6 +17,7 @@ import { useActivePackName } from '../features/guide/use-active-pack-name'
 import {
   applyTheme, readThemeSetting, resolveTheme, writeThemeSetting, type ThemeSetting,
 } from '../lib/theme'
+import { applyDensity, readDensitySetting, writeDensitySetting, type Density } from '../lib/density'
 import {
   estimate, schedulePersistRequests, type PersistState, type StorageEstimate,
 } from '../lib/storage'
@@ -29,6 +30,7 @@ export function Layout() {
   const { name: packName } = useActivePackName()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [themeSetting, setThemeSetting] = useState<ThemeSetting>(readThemeSetting)
+  const [density, setDensity] = useState<Density>(readDensitySetting)
   const [persist, setPersist] = useState<PersistState | null>(null)
   const [usage, setUsage] = useState<StorageEstimate | null>(null)
 
@@ -55,9 +57,16 @@ export function Layout() {
   // Top on push, restored position on back. See use-scroll-restoration.
   useScrollRestoration(mainRef)
 
+  useEffect(() => { applyDensity(density) }, [density])
+
   const onTheme = (next: ThemeSetting) => {
     setThemeSetting(next)
     writeThemeSetting(next)
+  }
+
+  const onDensity = (next: Density) => {
+    setDensity(next)
+    writeDensitySetting(next)
   }
 
   const tabs = useMemo(() => ([
@@ -183,6 +192,8 @@ export function Layout() {
         onClose={() => setDrawerOpen(false)}
         themeSetting={themeSetting}
         onTheme={onTheme}
+        density={density}
+        onDensity={onDensity}
         persist={persist}
         usage={usage}
       />

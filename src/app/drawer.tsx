@@ -3,11 +3,13 @@
  * Per the design system: the full lockup, pack scope, pack library, language,
  * theme. Nothing that a user would navigate to as a task.
  */
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LANGUAGES, setLanguage, type LanguageCode } from '../i18n'
 import { THEMES, type ThemeSetting } from '../lib/theme'
+import type { Density } from '../lib/density'
+import { fetchAdminStatus } from '../features/admin/admin-api'
 import { formatBytes } from '../i18n/format'
 import { Meta, Row } from '../ui/primitives'
 import { IconClose } from '../ui/icons'
@@ -23,17 +25,32 @@ interface Props {
   onClose: () => void
   themeSetting: ThemeSetting
   onTheme: (t: ThemeSetting) => void
+  density: Density
+  onDensity: (d: Density) => void
   persist: PersistState | null
   usage: StorageEstimate | null
 }
 
-export function Drawer({ open, onClose, themeSetting, onTheme, persist, usage }: Props) {
+export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensity, persist, usage }: Props) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { name: packName } = useActivePackName()
   const { user, isGuest, signOut } = useAuth()
   const [signInOpen, setSignInOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  /*
+   * The admin row appears only for allowlisted staff. This is presentation,
+   * not the boundary — /api/admin/* re-verifies on every call regardless of
+   * what the drawer chose to render.
+   */
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return }
+    let cancelled = false
+    void fetchAdminStatus().then((s) => { if (!cancelled) setIsAdmin(s.isAdmin) })
+    return () => { cancelled = true }
+  }, [user])
 
   /*
    * Escape, focus trap, focus restore, and inert-when-closed. The panel stays
@@ -124,6 +141,9 @@ export function Drawer({ open, onClose, themeSetting, onTheme, persist, usage }:
                 onClick={() => void signOut()}
               />
             )}
+            {isAdmin && (
+              <Row label={t('drawer.admin', 'Admin console')} onClick={() => { onClose(); navigate('/admin') }} />
+            )}
           </Section>
 
           <Section label={t('drawer.language')}>
@@ -158,6 +178,21 @@ export function Drawer({ open, onClose, themeSetting, onTheme, persist, usage }:
                 onClick={() => onTheme(th.id)}
               />
             ))}
+          </Section>
+
+          <Section label={t('drawer.field', 'Field use')}>
+            <Row
+              label={
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: 'block' }}>{t('field.targets', 'Larger touch targets')}</span>
+                  <span className="t-meta" style={{ color: 'var(--ink-muted)' }}>
+                    {t('field.targetsHint', 'For gloved or one-handed use')}
+                  </span>
+                </span>
+              }
+              selected={density === 'field'}
+              onClick={() => onDensity(density === 'field' ? 'standard' : 'field')}
+            />
           </Section>
 
           <Section label={t('drawer.storage')}>

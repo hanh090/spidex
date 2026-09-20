@@ -60,7 +60,7 @@ export function Identify() {
   if (showResults || done) {
     return (
       <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{
+        <div className="column" style={{
           flex: 'none', padding: 'var(--space-3) var(--gutter-sm)',
           display: 'flex', alignItems: 'baseline', gap: 'var(--space-3)',
         }}>
@@ -69,7 +69,7 @@ export function Identify() {
           </h1>
           <Button variant="inline" onClick={restart}>{t('identify.startOver')}</Button>
         </div>
-        <div className="scroll-y" style={{ flex: 1, minHeight: 0, width: '100%' }}>
+        <div className="scroll-y column" style={{ flex: 1, minHeight: 0 }}>
           <RelaxBanner
             schema={schema}
             relaxedKey={relaxedKey}
@@ -80,7 +80,7 @@ export function Identify() {
           <SpeciesGrid species={results} baseUrl={baseUrl} />
         </div>
         {results.length >= 2 && results.length <= 6 && (
-          <div style={{ flex: 'none', width: '100%', padding: 'var(--space-3) var(--gutter-sm) var(--space-4)' }}>
+          <div className="column" style={{ flex: 'none', padding: 'var(--space-3) var(--gutter-sm) var(--space-4)' }}>
             <Button variant="primary" full
               onClick={() => navigate(`/compare?ids=${results.slice(0, 3).map((s) => s.uid).join(',')}`)}>
               {t('identify.compareTop')}
@@ -97,7 +97,7 @@ export function Identify() {
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
 
       {/* Where you are, and the way back out. */}
-      <div style={{ flex: 'none', padding: 'var(--space-3) var(--gutter-sm) 0' }}>
+      <div className="column" style={{ flex: 'none', padding: 'var(--space-3) var(--gutter-sm) 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
           <button
             onClick={() => setStep((s) => s - 1)}
@@ -132,7 +132,7 @@ export function Identify() {
         the action stranded at the bottom edge.
       */}
       <div
-        className="scroll-y"
+        className="scroll-y column"
         style={{
           flex: 1, minHeight: 0, padding: 'var(--space-4) var(--gutter-sm)',
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 'var(--space-6)',
@@ -150,7 +150,7 @@ export function Identify() {
         </div>
       </div>
 
-      <div style={{
+      <div className="column" style={{
         flex: 'none', padding: 'var(--space-3) var(--gutter-sm)',
         paddingBottom: 'max(var(--space-4), env(safe-area-inset-bottom))',
         display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',

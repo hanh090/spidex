@@ -65,7 +65,7 @@ export function Explore() {
 
   if (loading) {
     return (
-      <div style={{
+      <div className="column" style={{
         display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
         gap: 'var(--space-4) var(--space-3)', padding: 'var(--gutter-sm)',
       }}>
@@ -96,6 +96,7 @@ export function Explore() {
       <h1 className="sr-only">{t('explore.title')}</h1>
 
       <div style={{ flex: 'none', background: 'var(--panel)', borderBottom: 'var(--hair) solid var(--line)' }}>
+        <div className="column">
         <div style={{
           display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
           height: 48, margin: 'var(--space-3) var(--gutter-sm) 0',
@@ -134,9 +135,10 @@ export function Explore() {
           onOpenSheet={() => setSheetOpen(true)}
           onClearAll={() => setSelection(clearAll())}
         />
+        </div>
       </div>
 
-      <div className="scroll-y" style={{ flex: 1, minHeight: 0 }}>
+      <div className="scroll-y column" style={{ flex: 1, minHeight: 0 }}>
         <div style={{
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
           gap: 'var(--space-3)', padding: 'var(--space-3) var(--gutter-sm) 0',

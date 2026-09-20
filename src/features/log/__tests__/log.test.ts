@@ -32,6 +32,7 @@ function species(over: Partial<StoredSpecies> = {}): StoredSpecies {
     months: [],
     sensitivity: 0,
     images: [{ id: 'i1', aspect: 'dorsal', credit: 'C', license: 'CC0-1.0', thumbUrl: 'img/a.svg' }],
+    sounds: [],
     searchBlob: 'troides helena common birdwing',
     ...over,
   }

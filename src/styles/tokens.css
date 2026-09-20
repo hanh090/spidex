@@ -59,6 +59,21 @@
   --radius: 0;        /* structure stays square: rules, edges, panels, plates */
 
   /*
+   * OVERRIDE: the published system draws rules and never shadows. A content
+   * card is the one place that fails, because the card's ground and the page's
+   * ground are both --paper: without an edge the lower half of a card, buttons
+   * included, dissolves into the screen behind it. Lifting the card off the
+   * page separates the two without drawing a line around the content.
+   *
+   * Each theme states its own, because elevation is not one effect. On a light
+   * ground a cast shadow reads as height. On a dark ground it cannot — there is
+   * nothing darker than the page to cast onto — so Night and Dawn carry a faint
+   * rim of their own ink instead, which is how a raised surface catches light.
+   * Revert by setting this to `none` and restoring the card's border.
+   */
+  --lift: 0 1px 2px rgba(20, 17, 16, 0.05), 0 6px 16px -4px rgba(20, 17, 16, 0.13);
+
+  /*
    * OVERRIDE: the published system rounds nothing, anywhere. One exception is
    * carved out — surfaces the user can press. With everything square, a chip
    * and a label are the same shape, and on a touch screen that is the only
@@ -79,6 +94,12 @@
   --gutter-sm: 16px;
   --gutter-lg: 28px;
 
+  /* One measure for every column of content. The app is a phone held in one
+     hand; on a tablet or a laptop the bars still run the full width of the
+     glass, but the content they frame stops here and centres, so a line of
+     body text never runs the width of a monitor. */
+  --content-max: 600px;
+
   /* ---- Touch & density --------------------------------------------------
    * OVERRIDE: the design system specifies 44px / 52px. Spidex is used with
    * wet and gloved hands in a jungle, one-handed, with the other hand on
@@ -89,10 +110,26 @@
   --tap-min: 48px;
   --tap-primary: 56px;
 
+  /*
+   * Density is a second axis from theme: :root[data-density='field'] raises
+   * the floors below. The values live next to the defaults so the two states
+   * are compared on one screen, not discovered in two files.
+   */
+
   /* ---- 07 · Motion ------------------------------------------------------ */
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --move-push: 160ms;
   --move-sheet: 200ms;
+}
+
+/*
+ * Field density — gloved, wet, one-handed, on a moving trail. Every tappable
+ * surface grows a full step; text sizes are untouched because legibility in
+ * glare is Sun's job, not density's.
+ */
+:root[data-density='field'] {
+  --tap-min: 56px;
+  --tap-primary: 64px;
 }
 
 /* ---- Night ------------------------------------------------------------- */
@@ -107,6 +144,8 @@
   --accent:    #d9535c;
   --accent-press: #b8232c;
   --scrim:     rgba(0, 0, 0, 0.56);
+  /* A cast shadow is invisible here; the rim of light does the lifting. */
+  --lift: 0 0 0 1px rgba(242, 236, 225, 0.07), 0 10px 24px -8px rgba(0, 0, 0, 0.7);
 }
 
 /* Motion is a preference, not a decoration. */

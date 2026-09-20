@@ -5,8 +5,12 @@
  * does not know what a butterfly is. Dorsal/ventral for Lepidoptera and
  * call/flight for birds are the same code path with different declarations.
  *
- * Every image shows its credit and licence. No exception, no truncation that
- * hides it.
+ * The plate is mounted like a museum plate: a white mat, a hairline frame,
+ * and a printed caption carrying `credit` and `license`. Attribution is a
+ * licence term of nearly every source photograph, so it is part of the plate
+ * furniture — visible on the page and in the fullscreen viewer alike.
+ * Voices (xeno-canto recordings) render under the same contract: recordist
+ * and licence ride on every row.
  */
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -14,9 +18,12 @@ import { useTranslation } from 'react-i18next'
 import { db } from '../data/db'
 import { useSpecies, useActivePack } from '../features/guide/use-pack'
 import { Plate } from '../features/guide/species-grid'
+import { SoundList } from '../features/guide/sound-player'
 import { Button, Meta, Badge } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
+import { PlateViewer } from '../ui/lightbox'
 import { resolve, resolveAll } from '../data/localized'
+import { inferSpeciesArchetype } from '../data/archetypes'
 
 export function SpeciesDetail() {
   const { id } = useParams()
@@ -25,6 +32,8 @@ export function SpeciesDetail() {
   const { species: sp, similar, loading } = useSpecies(id)
   const { pack, baseUrl } = useActivePack()
   const [aspect, setAspect] = useState<string | null>(null)
+  const [imgFailed, setImgFailed] = useState(false)
+  const [viewerOpen, setViewerOpen] = useState(false)
 
   const schema = pack?.manifest.traitSchema
 
@@ -35,30 +44,67 @@ export function SpeciesDetail() {
   const available = order.filter((a) => sp.images.some((im) => im.aspect === a))
   const shown = aspect && available.includes(aspect) ? aspect : available[0]
   const image = sp.images.find((im) => im.aspect === shown) ?? sp.images[0]
-
+  const archetype = inferSpeciesArchetype(sp)
+  const fallbackUrl = `${baseUrl}/img/${archetype}`
+  const targetUrl = !image || imgFailed ? fallbackUrl : `${baseUrl}/${image.thumbUrl}`
+  const fullUrl = image?.fullUrl ? `${baseUrl}/${image.fullUrl}` : targetUrl
+  const caption = image ? `${image.credit} · ${image.license}` : undefined
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
-
       <NavBar
         title={resolve(sp.commonNames)}
         action={<FavouriteToggle packId={sp.packId} speciesId={sp.id} />}
       />
 
-      {/* Gallery */}
+      {/*
+       * The mount. Plates are drawn on white stock; giving the mount a white
+       * ground and a hairline frame reads as a framed specimen in every theme
+       * — Night included, where the paper-white mat is the point, not a bug.
+       * Tapping opens the viewer: identification lives or dies on detail the
+       * thumbnail cannot hold.
+       */}
       <div style={{
         flex: 'none', width: '100%', aspectRatio: '4 / 3', maxHeight: '42vh', background: 'var(--panel)',
         borderBlock: 'var(--hair) solid var(--line)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        {image
-          ? <img src={`${baseUrl}/${image.thumbUrl}`} alt={`${resolve(sp.commonNames)} — ${shown}`}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          : <Meta>{t('species.imageMissing')}</Meta>}
+        <div className="column" style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-2)' }}>
+          <button
+            onClick={() => setViewerOpen(true)}
+            aria-label={t('species.viewPlate', { name: resolve(sp.commonNames) })}
+            style={{
+              height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: '#fff', border: 'var(--hair) solid var(--line)', borderRadius: 'var(--radius-tap)',
+              overflow: 'hidden', cursor: 'zoom-in', padding: 0,
+            }}
+          >
+            <img
+              src={targetUrl}
+              alt={`${resolve(sp.commonNames)} — ${shown ?? 'specimen'}`}
+              onError={() => {
+                if (!imgFailed && image && `${baseUrl}/${image.thumbUrl}` !== fallbackUrl) {
+                  setImgFailed(true)
+                }
+              }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </button>
+        </div>
       </div>
 
+      {/* The plate's printed caption: attribution is a licence term. */}
+      {caption && (
+        <div className="column" style={{ flex: 'none', padding: 'var(--space-1) var(--gutter-sm)' }}>
+          <div className="t-meta" style={{ color: 'var(--ink-muted)', textAlign: 'center', overflowWrap: 'anywhere' }}>
+            {caption}
+          </div>
+        </div>
+      )}
+
       {available.length > 1 && (
-        <div style={{ flex: 'none', display: 'flex', borderBottom: 'var(--hair) solid var(--line)' }}>
+        <div style={{ flex: 'none', borderBottom: 'var(--hair) solid var(--line)' }}>
+          <div className="column" style={{ display: 'flex' }}>
           {available.map((a) => (
             <button
               key={a}
@@ -74,16 +120,12 @@ export function SpeciesDetail() {
               <span className="t-meta">{t(`aspect.${a}`, { defaultValue: a })}</span>
             </button>
           ))}
+          </div>
         </div>
       )}
 
-      {/*
-        Names first. Attribution is not optional and is never truncated, but it
-        sat ABOVE the species name in 10px uppercase mono, which made the
-        licence string the loudest block on the page. It now follows the name
-        it belongs to, at the weight of a caption.
-      */}
-      <div style={{ flex: 'none', padding: 'var(--space-4) var(--gutter-sm) 0' }}>
+      {/* Names first: the plate above is identified before anything else. */}
+      <div className="column" style={{ flex: 'none', padding: 'var(--space-4) var(--gutter-sm) 0' }}>
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
           <h1 className="t-title" style={{ margin: 0, flex: 1, textWrap: 'pretty' }}>{resolve(sp.commonNames)}</h1>
           {sp.sensitivity >= 2 && <Badge tone="warn">{t('species.sensitive')}</Badge>}
@@ -98,8 +140,11 @@ export function SpeciesDetail() {
         )}
       </div>
 
-      {/* Attribution is not optional — it captions the plate above. */}
-      {image && <CreditLine credit={image.credit} license={image.license} />}
+      {sp.sounds.length > 0 && (
+        <Block label={t('species.sounds')}>
+          <SoundList sounds={sp.sounds} />
+        </Block>
+      )}
 
       {sp.keyFeatures.length > 0 && (
         <Block label={t('species.keyFeatures')}>
@@ -156,17 +201,28 @@ export function SpeciesDetail() {
         background: 'var(--panel)', borderTop: 'var(--hair) solid var(--line)',
         padding: 'var(--space-3) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))',
       }}>
-        <Button variant="primary" full onClick={() => navigate(`/log?speciesId=${sp.uid}`)}>
-          {t('species.iSawThis')}
-        </Button>
+        <div className="column">
+          <Button variant="primary" full onClick={() => navigate(`/log?speciesId=${sp.uid}`)}>
+            {t('species.iSawThis')}
+          </Button>
+        </div>
       </div>
+
+      {viewerOpen && (
+        <PlateViewer
+          src={fullUrl}
+          alt={`${resolve(sp.commonNames)} — ${shown ?? 'specimen'}`}
+          caption={caption}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
     </div>
   )
 }
 
 function Block({ label, action, children }: { label: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section style={{ flex: 'none', padding: 'var(--space-4) var(--gutter-sm) 0' }}>
+    <section className="column" style={{ flex: 'none', padding: 'var(--space-4) var(--gutter-sm) 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 'var(--space-2)' }}>
         <Meta>{label}</Meta>
         {action}
@@ -226,16 +282,3 @@ function FavouriteToggle({ packId, speciesId }: { packId: string; speciesId: str
   )
 }
 
-/**
- * Image attribution. Required on every image, never truncated, never hidden
- * behind a tap — and never louder than the species it captions.
- */
-function CreditLine({ credit, license }: { credit: string; license: string }) {
-  return (
-    <div style={{ flex: 'none', padding: 'var(--space-2) var(--gutter-sm) 0' }}>
-      <span className="t-meta" style={{ color: 'var(--ink-muted)', textWrap: 'pretty' }}>
-        {credit} · {license}
-      </span>
-    </div>
-  )
-}

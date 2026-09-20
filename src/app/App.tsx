@@ -8,6 +8,7 @@ import { Compare } from '../screens/compare'
 import { LogSighting } from '../screens/log-sighting'
 import { SightingDetail } from '../screens/sighting-detail'
 import { Packs } from '../screens/packs'
+import { Admin } from '../screens/admin'
 import { AuthCallback } from '../screens/auth-callback'
 import { AuthProvider } from '../features/auth/auth-context'
 import { NotFound } from '../screens/not-found'
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       { path: 'log', element: <LogSighting /> },
       { path: 'sightings/:id', element: <SightingDetail /> },
       { path: 'library', element: <Packs /> },
+      { path: 'admin', element: <Admin /> },
       { path: 'auth/callback', element: <AuthCallback /> },
       // Anything else. Without this, an unknown path raises out of the router
       // and the user gets React Router's raw error page.

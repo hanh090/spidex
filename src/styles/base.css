@@ -111,6 +111,18 @@ button {
 .hair-b { border-bottom: var(--hair) solid var(--line); }
 .edge   { border: var(--hair) solid var(--ink); }
 
+/*
+ * The content column.
+ *
+ * Every screen is authored at phone width. Past ~600px the phone layout does
+ * not improve by stretching — a row of species meta ends up with the label on
+ * one edge of a monitor and its value on the other. So content wears this and
+ * centres, while the surfaces behind it (the shell header, the tab bar, a
+ * sheet, a plate's ground) keep running edge to edge: a bar that stopped
+ * mid-screen would read as a broken layout, which is the thing this avoids.
+ */
+.column { width: 100%; max-width: var(--content-max); margin-inline: auto; }
+
 .scroll-y { overflow-y: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .scroll-y::-webkit-scrollbar { width: 0; height: 0; }
 

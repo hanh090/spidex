@@ -17,7 +17,7 @@ import type { PackManifest } from '../data/pack-manifest'
 import { Button } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { PackCard } from '../features/guide/pack-card'
-import { CATALOGUE } from '../data/pack-catalogue'
+import { fetchPackIndex } from '../data/pack-index'
 import { fetchPackPreview, type PackPreview } from '../data/pack-preview'
 import { resolve } from '../data/localized'
 import { formatNumber } from '../i18n/format'
@@ -29,6 +29,8 @@ interface Listed {
   local: boolean
   /** A few real plates, so a pack is judged on what it looks like. */
   preview: PackPreview[]
+  /** Position in the published catalogue — the pack's catalogue number. */
+  catNo?: number
 }
 
 export function Packs() {
@@ -45,9 +47,14 @@ export function Packs() {
    * works with no network. Catalogue entries are then merged in on top when
    * they can be fetched — offline you can still see, scope and delete what you
    * already have, which was the whole point of downloading it.
+   *
+   * The catalogue itself is remote: index.json on the server names every
+   * published pack, so a new checklist reaches the library without an app
+   * update. Offline the index fetch fails and falls back to the bundled list,
+   * whose remote manifests fail in turn — leaving exactly the installed set.
    */
   const refresh = useCallback(async () => {
-    const [packs, active] = await Promise.all([db.packs.toArray(), getActivePackId()])
+    const [packs, active, index] = await Promise.all([db.packs.toArray(), getActivePackId(), fetchPackIndex()])
     setInstalled(packs)
     setActiveId(active)
 
@@ -55,12 +62,13 @@ export function Packs() {
       packs.map((p) => [p.id, { id: p.id, manifest: p.manifest, local: true, preview: [] }]),
     )
 
-    for (const id of CATALOGUE) {
+    for (const [i, id] of index.packs.entries()) {
       const m = await fetchManifest(packBaseUrl(id))
       // A failed fetch is the normal offline case, not an error: an installed
       // entry already covers it, and one not installed simply cannot be
       // downloaded right now.
-      if (m.ok) byId.set(id, { id, manifest: m.manifest, local: false, preview: [] })
+      if (m.ok) byId.set(id, { id, manifest: m.manifest, local: false, preview: [], catNo: i + 1 })
+      else if (byId.has(id)) byId.get(id)!.catNo = i + 1
     }
 
     // Plates are decorative and best-effort; a pack lists with or without them.
@@ -140,6 +148,7 @@ export function Packs() {
         key={entry.id}
         manifest={entry.manifest}
         preview={entry.preview}
+        catNo={entry.catNo}
         headingLevel="h3"
         status={
           p ? { label: t('packs.downloading'), tone: 'warn' }
@@ -204,61 +213,59 @@ export function Packs() {
       <NavBar title={t('packs.title')} />
 
       <div
-        className="scroll-y"
+        className="scroll-y column"
         style={{
           flex: 1, width: '100%',
           padding: 'var(--space-4) var(--gutter-sm)',
           paddingBottom: 'max(var(--space-8), env(safe-area-inset-bottom))',
         }}
       >
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          {/* The screen's own heading. NavBar carries a title but it is chrome,
-              not an outline entry, so heading navigation had nothing to land on. */}
-          <h1 className="t-title" style={{ margin: '0 0 var(--space-2)' }}>{t('packs.title')}</h1>
-          <p className="t-body" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-6)', textWrap: 'pretty' }}>
-            {t('packs.lede')}
+        {/* The screen's own heading. NavBar carries a title but it is chrome,
+            not an outline entry, so heading navigation had nothing to land on. */}
+        <h1 className="t-title" style={{ margin: '0 0 var(--space-2)' }}>{t('packs.title')}</h1>
+        <p className="t-body" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-6)', textWrap: 'pretty' }}>
+          {t('packs.lede')}
+        </p>
+
+        {problem && (
+          <p
+            role="alert"
+            className="t-body"
+            style={{
+              background: 'var(--alert)', border: 'var(--hair) solid var(--warn)',
+              borderRadius: 'var(--radius-tap)', padding: 'var(--space-3)',
+              margin: '0 0 var(--space-4)',
+            }}
+          >
+            {problem}
           </p>
+        )}
 
-          {problem && (
-            <p
-              role="alert"
-              className="t-body"
-              style={{
-                background: 'var(--alert)', border: 'var(--hair) solid var(--warn)',
-                borderRadius: 'var(--radius-tap)', padding: 'var(--space-3)',
-                margin: '0 0 var(--space-4)',
-              }}
-            >
-              {problem}
-            </p>
-          )}
+        {installedList.length > 0 && (
+          <section style={{ marginBottom: 'var(--space-8)' }}>
+            <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
+              {t('packs.onThisDevice', { count: installedList.length, n: formatNumber(installedList.length) })}
+            </h2>
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+              {installedList.map(renderCard)}
+            </div>
+          </section>
+        )}
 
-          {installedList.length > 0 && (
-            <section style={{ marginBottom: 'var(--space-8)' }}>
-              <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
-                {t('packs.onThisDevice', { count: installedList.length, n: formatNumber(installedList.length) })}
-              </h2>
-              <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-                {installedList.map(renderCard)}
-              </div>
-            </section>
-          )}
+        {availableList.length > 0 && (
+          <section>
+            <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
+              {t('packs.available')}
+            </h2>
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+              {availableList.map(renderCard)}
+            </div>
+          </section>
+        )}
 
-          {availableList.length > 0 && (
-            <section>
-              <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
-                {t('packs.available')}
-              </h2>
-              <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-                {availableList.map(renderCard)}
-              </div>
-            </section>
-          )}
-
-          {listed.length === 0 && (
-            <p className="t-body" style={{ color: 'var(--ink-muted)' }}>{t('packs.noneListed')}</p>
-          )}
-        </div>
+        {listed.length === 0 && (
+          <p className="t-body" style={{ color: 'var(--ink-muted)' }}>{t('packs.noneListed')}</p>
+        )}
       </div>
     </div>
   )

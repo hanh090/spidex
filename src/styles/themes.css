@@ -28,6 +28,9 @@
   --ok:        #14532d;
   --scrim:     rgba(0, 0, 0, 0.5);
   --hair: 2px; /* hairlines vanish in glare */
+  /* Glare flattens a soft shadow, so this one is darker and held close to the
+     card rather than spread wide, where the wash would simply disappear. */
+  --lift: 0 1px 3px rgba(0, 0, 0, 0.16), 0 5px 14px -4px rgba(0, 0, 0, 0.24);
 }
 
 :root[data-theme='dawn'] {
@@ -43,6 +46,9 @@
   --warn:      #c2703a;
   --ok:        #b9705f;
   --scrim:     rgba(9, 4, 2, 0.66);
+  /* Warm rim, never a white one: a blue-white hairline at 04:00 costs the
+     user the dark adaptation this whole theme exists to protect. */
+  --lift: 0 0 0 1px rgba(232, 150, 138, 0.09), 0 10px 24px -8px rgba(0, 0, 0, 0.72);
 }
 
 /*

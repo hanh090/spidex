@@ -45,7 +45,9 @@
     "language": "Language",
     "settings": "Settings",
     "storage": "Storage",
-    "theme": "Theme"
+    "theme": "Theme",
+    "admin": "Admin console",
+    "field": "Field use"
   },
   "explore": {
     "clearAll": "Clear all",
@@ -232,7 +234,13 @@
     "save": "Save",
     "saved": "Saved",
     "seasonality": "Seasonality",
-    "sensitive": "Sensitive locality"
+    "sensitive": "Sensitive locality",
+    "sounds": "Voice",
+    "soundsOffline": "Recordings stream from the archive — connect to listen.",
+    "play": "Play",
+    "pause": "Pause",
+    "seek": "Seek",
+    "viewPlate": "View the {{name}} plate full screen"
   },
   "storage": {
     "notPersisted": "Downloads may be reclaimed",
@@ -253,5 +261,52 @@
     "available": "A new version is ready",
     "later": "Later",
     "reload": "Update now"
+  },
+  "field": {
+    "targets": "Larger touch targets",
+    "targetsHint": "For gloved or one-handed use"
+  },
+  "admin": {
+    "title": "Admin",
+    "section": {
+      "overview": "Overview",
+      "resources": "Resources",
+      "users": "Users"
+    },
+    "signInTitle": "Sign in required",
+    "signInFix": "The console needs a staff account.",
+    "deniedTitle": "Not an administrator",
+    "deniedFix": "{{email}} is signed in but is not on the admin allowlist.",
+    "noStore": "Resource store is not configured — reads work, writes need the D1 binding (see wrangler.toml).",
+    "catalogueError": "Catalogue could not be read: {{detail}}",
+    "packsListed_one": "{{n}} pack in the catalogue",
+    "packsListed_other": "{{n}} packs in the catalogue",
+    "featured": "Featured",
+    "missing": "Manifest missing",
+    "published": "Published",
+    "unpublished": "Hidden",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "addResource": "Add resource",
+    "fieldKind": "Kind",
+    "fieldId": "ID (optional)",
+    "fieldTitle": "Title",
+    "fieldMeta": "Metadata (JSON)",
+    "add": "Add",
+    "saving": "Saving…",
+    "all": "All",
+    "noResources": "No resources yet.",
+    "deleteConfirm": "Delete {{title}}?",
+    "delete": "Delete",
+    "userCount_one": "{{n}} user",
+    "userCount_other": "{{n}} users",
+    "verified": "Verified",
+    "kind": {
+      "pack": "Pack",
+      "checklist": "Checklist",
+      "dataset": "Dataset",
+      "audio": "Audio",
+      "note": "Note"
+    }
   }
 }
