@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "featured": ["bird-vn", "butterfly-vn"],
+  "packs": [
+    "butterfly-vn",
+    "bird-vn",
+    "butterfly-th",
+    "bird-th",
+    "butterfly-sg",
+    "butterfly-min",
+    "bird-min"
+  ]
+}

@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+    body { margin: 0; font-family: Archivo, "Helvetica Neue", sans-serif; }
+    a { color: #b8232c; } a:hover { color: #8c1a21; }
+    .meta { font: 600 10px/1 Archivo, sans-serif; letter-spacing: .15em; text-transform: uppercase; }
+    .cap { font: 700 15px/1 Spectral, Georgia, serif; }
+    .capsub { font: 400 11px/1.45 Archivo, sans-serif; margin-top: 5px; min-height: 32px; }
+    .kid { display: flex; gap: 7px; font: 400 12px/1.4 Archivo, sans-serif; }
+    .mon { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; }
+    .mon div { height: 14px; }
+  </style>
+</helmet>
+
+<div style="width: 1680px; height: 880px; background: #e8e2d6; padding: 24px; box-sizing: border-box;">
+
+  <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #c8bfae; padding-bottom: 11px; margin-bottom: 18px;">
+    <div class="meta" style="color: #5c5449;">Spidex · Four themes · Species detail</div>
+    <div class="meta" style="color: #5c5449;">Day &amp; Night follow the system · Sun &amp; Dawn are manual only</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;">
+
+    <!-- DAY -->
+    <div style="display: flex; flex-direction: column; gap: 11px;">
+      <div>
+        <div class="cap" style="color: #141110;">Day</div>
+        <div class="capsub" style="color: #5c5449;">Default. Warm paper ground — reads like the printed guide it replaces.</div>
+      </div>
+      <div style="height: 664px; background: #faf7f2; border: 1px solid #cfc6b6; display: flex; flex-direction: column; color: #141110;">
+        <div style="height: 44px; flex-shrink: 0; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; background: #f0ebe1; border-bottom: 1px solid #ddd5c8;">
+          <span class="meta">Butterflies of VN</span>
+          <span class="meta" style="color: #b47818;">Offline</span>
+        </div>
+        <div style="height: 196px; flex-shrink: 0; background: #efe9dd; border-bottom: 1px solid #ddd5c8; display: flex; align-items: center; justify-content: center;">
+          <svg width="150" height="150" viewBox="0 0 64 64"><path d="M32 52 C32 30 43 12 58 7 C58 28 48 46 32 52 Z" fill="#d4a017"/><path d="M32 52 C32 30 21 12 6 7 C6 28 16 46 32 52 Z" fill="#141110"/><path d="M31 12 h2 v40 h-2 Z" fill="#141110"/></svg>
+        </div>
+        <div style="padding: 13px 14px 0;">
+          <div style="font: 700 20px/1.1 Spectral, Georgia, serif;">Common Birdwing</div>
+          <div style="font: italic 400 13px/1.3 Spectral, serif; color: #3c352d; margin-top: 3px;">Troides helena</div>
+          <div class="meta" style="color: #6b6258; margin: 15px 0 7px;">Key ID features</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div class="kid"><span style="color: #b8232c;">—</span><span>Hindwing golden, black veins</span></div>
+            <div class="kid"><span style="color: #b8232c;">—</span><span>Forewing matte black</span></div>
+            <div class="kid"><span style="color: #b8232c;">—</span><span>140–170 mm — very large</span></div>
+          </div>
+          <div class="meta" style="color: #6b6258; margin: 15px 0 6px;">Seasonality</div>
+          <div class="mon">
+            <div style="background:#e6dfd2"></div><div style="background:#e6dfd2"></div><div style="background:#d9a97d"></div><div style="background:#d9a97d"></div><div style="background:#b8232c"></div><div style="background:#b8232c"></div><div style="background:#b8232c"></div><div style="background:#b8232c"></div><div style="background:#d9a97d"></div><div style="background:#d9a97d"></div><div style="background:#e6dfd2"></div><div style="background:#e6dfd2"></div>
+          </div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div style="flex-shrink: 0; padding: 11px 14px 14px; background: #f0ebe1; border-top: 1px solid #ddd5c8;">
+          <div style="height: 56px; background: #b8232c; display: flex; align-items: center; justify-content: center; font: 600 15px/1 Archivo, sans-serif; color: #faf7f2;">I saw this</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NIGHT -->
+    <div style="display: flex; flex-direction: column; gap: 11px;">
+      <div>
+        <div class="cap" style="color: #141110;">Night</div>
+        <div class="capsub" style="color: #5c5449;">What system dark maps to. Conventional dark — for reading indoors, not in the field.</div>
+      </div>
+      <div style="height: 664px; background: #16130f; border: 1px solid #332c24; display: flex; flex-direction: column; color: #f2ece2;">
+        <div style="height: 44px; flex-shrink: 0; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; background: #211c17; border-bottom: 1px solid #332c24;">
+          <span class="meta">Butterflies of VN</span>
+          <span class="meta" style="color: #d9a24f;">Offline</span>
+        </div>
+        <div style="height: 196px; flex-shrink: 0; background: #1d1813; border-bottom: 1px solid #332c24; display: flex; align-items: center; justify-content: center;">
+          <svg width="150" height="150" viewBox="0 0 64 64"><path d="M32 52 C32 30 43 12 58 7 C58 28 48 46 32 52 Z" fill="#d4a017"/><path d="M32 52 C32 30 21 12 6 7 C6 28 16 46 32 52 Z" fill="#4a423a"/><path d="M31 12 h2 v40 h-2 Z" fill="#0e0c09"/></svg>
+        </div>
+        <div style="padding: 13px 14px 0;">
+          <div style="font: 700 20px/1.1 Spectral, Georgia, serif;">Common Birdwing</div>
+          <div style="font: italic 400 13px/1.3 Spectral, serif; color: #cdc3b4; margin-top: 3px;">Troides helena</div>
+          <div class="meta" style="color: #9a8f81; margin: 15px 0 7px;">Key ID features</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div class="kid"><span style="color: #d9534f;">—</span><span>Hindwing golden, black veins</span></div>
+            <div class="kid"><span style="color: #d9534f;">—</span><span>Forewing matte black</span></div>
+            <div class="kid"><span style="color: #d9534f;">—</span><span>140–170 mm — very large</span></div>
+          </div>
+          <div class="meta" style="color: #9a8f81; margin: 15px 0 6px;">Seasonality</div>
+          <div class="mon">
+            <div style="background:#2b251e"></div><div style="background:#2b251e"></div><div style="background:#7a5230"></div><div style="background:#7a5230"></div><div style="background:#d9534f"></div><div style="background:#d9534f"></div><div style="background:#d9534f"></div><div style="background:#d9534f"></div><div style="background:#7a5230"></div><div style="background:#7a5230"></div><div style="background:#2b251e"></div><div style="background:#2b251e"></div>
+          </div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div style="flex-shrink: 0; padding: 11px 14px 14px; background: #211c17; border-top: 1px solid #332c24;">
+          <div style="height: 56px; background: #d9534f; display: flex; align-items: center; justify-content: center; font: 600 15px/1 Archivo, sans-serif; color: #16130f;">I saw this</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUN -->
+    <div style="display: flex; flex-direction: column; gap: 11px;">
+      <div>
+        <div class="cap" style="color: #141110;">Sun</div>
+        <div class="capsub" style="color: #5c5449;">Direct sunlight. Pure black on white, heavier weights, 1.5px rules. No grey below #2a2a2a anywhere.</div>
+      </div>
+      <div style="height: 664px; background: #ffffff; border: 1.5px solid #000000; display: flex; flex-direction: column; color: #000000;">
+        <div style="height: 44px; flex-shrink: 0; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; background: #ededed; border-bottom: 1.5px solid #000000;">
+          <span class="meta" style="font-weight: 700;">Butterflies of VN</span>
+          <span class="meta" style="font-weight: 700; color: #7a4c00;">Offline</span>
+        </div>
+        <div style="height: 196px; flex-shrink: 0; background: #ededed; border-bottom: 1.5px solid #000000; display: flex; align-items: center; justify-content: center;">
+          <svg width="150" height="150" viewBox="0 0 64 64"><path d="M32 52 C32 30 43 12 58 7 C58 28 48 46 32 52 Z" fill="#c79000" stroke="#000" stroke-width="1"/><path d="M32 52 C32 30 21 12 6 7 C6 28 16 46 32 52 Z" fill="#000000"/><path d="M31 12 h2 v40 h-2 Z" fill="#000000"/></svg>
+        </div>
+        <div style="padding: 13px 14px 0;">
+          <div style="font: 700 21px/1.1 Spectral, Georgia, serif;">Common Birdwing</div>
+          <div style="font: italic 600 13px/1.3 Spectral, serif; color: #000000; margin-top: 3px;">Troides helena</div>
+          <div class="meta" style="font-weight: 700; color: #2a2a2a; margin: 15px 0 7px;">Key ID features</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div class="kid" style="font-weight: 500;"><span style="color: #96101a; font-weight: 700;">—</span><span>Hindwing golden, black veins</span></div>
+            <div class="kid" style="font-weight: 500;"><span style="color: #96101a; font-weight: 700;">—</span><span>Forewing matte black</span></div>
+            <div class="kid" style="font-weight: 500;"><span style="color: #96101a; font-weight: 700;">—</span><span>140–170 mm — very large</span></div>
+          </div>
+          <div class="meta" style="font-weight: 700; color: #2a2a2a; margin: 15px 0 6px;">Seasonality</div>
+          <div class="mon">
+            <div style="background:#d6d6d6"></div><div style="background:#d6d6d6"></div><div style="background:#8a5a00"></div><div style="background:#8a5a00"></div><div style="background:#96101a"></div><div style="background:#96101a"></div><div style="background:#96101a"></div><div style="background:#96101a"></div><div style="background:#8a5a00"></div><div style="background:#8a5a00"></div><div style="background:#d6d6d6"></div><div style="background:#d6d6d6"></div>
+          </div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div style="flex-shrink: 0; padding: 11px 14px 14px; background: #ededed; border-top: 1.5px solid #000000;">
+          <div style="height: 56px; background: #96101a; display: flex; align-items: center; justify-content: center; font: 700 16px/1 Archivo, sans-serif; color: #ffffff;">I saw this</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAWN -->
+    <div style="display: flex; flex-direction: column; gap: 11px;">
+      <div>
+        <div class="cap" style="color: #141110;">Dawn</div>
+        <div class="capsub" style="color: #5c5449;">Pre-dawn birding. Every hue red-shifted to 5–25° so nothing emits blue-white and night vision holds.</div>
+      </div>
+      <div style="height: 664px; background: #090402; border: 1px solid #3d1a14; display: flex; flex-direction: column; color: #e0857a;">
+        <div style="height: 44px; flex-shrink: 0; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; background: #170907; border-bottom: 1px solid #3d1a14;">
+          <span class="meta">Butterflies of VN</span>
+          <span class="meta" style="color: #b9604f;">Offline</span>
+        </div>
+        <div style="height: 196px; flex-shrink: 0; background: #120705; border-bottom: 1px solid #3d1a14; display: flex; align-items: center; justify-content: center;">
+          <svg width="150" height="150" viewBox="0 0 64 64"><path d="M32 52 C32 30 43 12 58 7 C58 28 48 46 32 52 Z" fill="#8c3a2c"/><path d="M32 52 C32 30 21 12 6 7 C6 28 16 46 32 52 Z" fill="#2a100c"/><path d="M31 12 h2 v40 h-2 Z" fill="#140705"/></svg>
+        </div>
+        <div style="padding: 13px 14px 0;">
+          <div style="font: 700 20px/1.1 Spectral, Georgia, serif; color: #e8968a;">Common Birdwing</div>
+          <div style="font: italic 400 13px/1.3 Spectral, serif; color: #c2705f; margin-top: 3px;">Troides helena</div>
+          <div class="meta" style="color: #a35a4e; margin: 15px 0 7px;">Key ID features</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div class="kid"><span style="color: #ff6b5a;">—</span><span>Hindwing golden, black veins</span></div>
+            <div class="kid"><span style="color: #ff6b5a;">—</span><span>Forewing matte black</span></div>
+            <div class="kid"><span style="color: #ff6b5a;">—</span><span>140–170 mm — very large</span></div>
+          </div>
+          <div class="meta" style="color: #a35a4e; margin: 15px 0 6px;">Seasonality</div>
+          <div class="mon">
+            <div style="background:#26100c"></div><div style="background:#26100c"></div><div style="background:#6b2b20"></div><div style="background:#6b2b20"></div><div style="background:#ff6b5a"></div><div style="background:#ff6b5a"></div><div style="background:#ff6b5a"></div><div style="background:#ff6b5a"></div><div style="background:#6b2b20"></div><div style="background:#6b2b20"></div><div style="background:#26100c"></div><div style="background:#26100c"></div>
+          </div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div style="flex-shrink: 0; padding: 11px 14px 14px; background: #170907; border-top: 1px solid #3d1a14;">
+          <div style="height: 56px; background: #7a2a1e; border: 1px solid #ff6b5a; display: flex; align-items: center; justify-content: center; font: 600 15px/1 Archivo, sans-serif; color: #ffb3a5;">I saw this</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

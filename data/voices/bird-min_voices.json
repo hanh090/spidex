@@ -1,0 +1,98 @@
+{
+ "Alcedo atthis": [
+  {
+   "credit": "Regina Eidner",
+   "durationSec": 81,
+   "id": "xc581603",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/581603",
+   "type": "call",
+   "url": "https://xeno-canto.org/581603/download"
+  },
+  {
+   "credit": "Regina Eidner",
+   "durationSec": 47,
+   "id": "xc581598",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/581598",
+   "type": "call",
+   "url": "https://xeno-canto.org/581598/download"
+  }
+ ],
+ "Egretta garzetta": [
+  {
+   "credit": "Olivier SWIFT",
+   "durationSec": 161,
+   "id": "xc1151421",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1151421",
+   "type": "call",
+   "url": "https://xeno-canto.org/1151421/download"
+  },
+  {
+   "credit": "FREDERIC Lionel",
+   "durationSec": 344,
+   "id": "xc998785",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/998785",
+   "type": "begging call",
+   "url": "https://xeno-canto.org/998785/download"
+  }
+ ],
+ "Nisaetus nipalensis": [
+  {
+   "credit": "Albert Lastukhin",
+   "durationSec": 14,
+   "id": "xc1138415",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1138415",
+   "type": "call",
+   "url": "https://xeno-canto.org/1138415/download"
+  },
+  {
+   "credit": "Albert Lastukhin",
+   "durationSec": 11,
+   "id": "xc1138414",
+   "license": "CC BY-NC-ND 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1138414",
+   "type": "call",
+   "url": "https://xeno-canto.org/1138414/download"
+  }
+ ],
+ "Pycnonotus jocosus": [
+  {
+   "credit": "Dave Guo",
+   "durationSec": 67,
+   "id": "xc1147095",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1147095",
+   "type": "song",
+   "url": "https://xeno-canto.org/1147095/download"
+  },
+  {
+   "credit": "Bo Shunqi 薄顺奇",
+   "durationSec": 35,
+   "id": "xc1098944",
+   "license": "CC BY-NC-SA 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": "xeno-canto",
+   "sourceUrl": "https://xeno-canto.org/1098944",
+   "type": "song",
+   "url": "https://xeno-canto.org/1098944/download"
+  }
+ ]
+}
