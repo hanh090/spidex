@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Spidex — offline-first field guide",
+    "output": "architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1260, 700]
+  },
+  "components": [
+    { "id": "sw", "type": "frontend", "label": "Service Worker", "sublabel": "app shell precache", "pos": [60, 90], "size": [150, 56] },
+    { "id": "pwa", "type": "frontend", "label": "Spidex PWA", "sublabel": "Explore · Identify · Log", "pos": [60, 260], "size": [160, 72], "brand": "react" },
+    { "id": "idb", "type": "database", "label": "Dexie / IndexedDB", "sublabel": "sightings · life list", "pos": [60, 440], "size": [160, 60] },
+    { "id": "packcache", "type": "database", "label": "Pack cache", "sublabel": "downloaded packs", "pos": [240, 430], "size": [160, 60] },
+
+    { "id": "pages", "type": "cloud", "label": "Pages", "sublabel": "app + static packs", "pos": [440, 260], "size": [160, 64], "brand": "cloudflare" },
+    { "id": "fns", "type": "backend", "label": "Pages Functions", "sublabel": "/api/auth · /api/admin", "pos": [680, 260], "size": [180, 72] },
+    { "id": "d1", "type": "database", "label": "D1", "sublabel": "admin resources · audit", "pos": [940, 290], "size": [160, 60] },
+    { "id": "workos", "type": "security", "label": "WorkOS AuthKit", "sublabel": "sign-in + sessions", "pos": [920, 60], "size": [170, 64], "tag": "OAuth + password" },
+    { "id": "gha", "type": "backend", "label": "GitHub Actions", "sublabel": "typecheck · test · build", "pos": [660, 430], "size": [170, 64], "brand": "github-actions" },
+
+    { "id": "pipeline", "type": "backend", "label": "Pack pipeline", "sublabel": "scripts/ · Python", "pos": [940, 440], "size": [170, 64], "brand": "python" },
+    { "id": "checklists", "type": "database", "label": "Checklists", "sublabel": "data/checklists/", "pos": [860, 570], "size": [150, 56] },
+    { "id": "xeno", "type": "external", "label": "xeno-canto", "sublabel": "bird voices API v3", "pos": [1040, 570], "size": [150, 56] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "On the device", "wraps": ["sw", "pwa", "idb", "packcache"] },
+    { "kind": "region", "label": "Cloudflare", "wraps": ["pages", "fns", "d1"] },
+    { "kind": "region", "label": "Content pipeline", "wraps": ["checklists", "xeno", "pipeline"] }
+  ],
+  "connections": [
+    { "id": "sw-serve", "from": "sw", "to": "pwa", "label": "serve shell", "fromSide": "bottom", "toSide": "top" },
+    { "id": "pwa-idb", "from": "pwa", "to": "idb", "fromSide": "bottom", "toSide": "top" },
+    { "id": "pwa-packcache", "from": "pwa", "to": "packcache", "label": "downloaded packs", "fromSide": "bottom", "toSide": "top", "labelDy": 30 },
+    { "id": "pwa-pages", "from": "pwa", "to": "pages", "label": "HTTPS", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "pages-fns", "from": "pages", "to": "fns", "label": "/api/* · pack index", "fromSide": "right", "toSide": "left", "labelAt": [664, 346] },
+    { "id": "fns-workos", "from": "fns", "to": "workos", "label": "AuthKit API", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "fns-d1", "from": "fns", "to": "d1", "label": "SQL", "fromSide": "right", "toSide": "left" },
+    { "id": "gha-pages", "from": "gha", "to": "pages", "label": "deploy on merge", "variant": "dashed", "fromSide": "top", "toSide": "bottom" },
+    { "id": "pipe-pages", "from": "pipeline", "to": "pages", "label": "packs · plates · voices", "fromSide": "top", "toSide": "bottom", "labelDy": -20 },
+    { "id": "cl-pipe", "from": "checklists", "to": "pipeline", "fromSide": "top", "toSide": "bottom" },
+    { "id": "xeno-pipe", "from": "xeno", "to": "pipeline", "label": "voice metadata", "variant": "dashed", "fromSide": "top", "toSide": "bottom" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Offline by design", "items": ["App shell precaches on install; updates prompt, never swap mid-session", "Packs download into their own cache — a pack never rots mid-trip", "Sightings live in IndexedDB; the field log needs no network"] },
+    { "dot": "cyan", "title": "Edge backend", "items": ["Pages Functions serve /api/auth, /api/admin and the pack index", "D1 stores admin resources and an audit trail", "WorkOS AuthKit signs users in; sessions are signed cookies"] },
+    { "dot": "amber", "title": "Content pipeline", "items": ["Python scripts compile checklists into species.ndjson packs", "Archetype plates are hand-drawn SVG; voices come from xeno-canto", "GitHub Actions builds on every PR and deploys on merge to master"] }
+  ]
+}
