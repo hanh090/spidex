@@ -39,6 +39,35 @@
     "legend": "Differences highlighted",
     "title": "Compare"
   },
+  "contribute": {
+    "title": "Contribute a pack",
+    "lede": "Spidex is an open catalogue — any species, any region. Build a pack with the authoring guide, pick its folder here, and it goes live for everyone after review.",
+    "signInTitle": "Sign in to publish",
+    "signInFix": "Submissions are tied to your account so reviewers can reach you.",
+    "pick": "Choose a pack folder…",
+    "submit": "Upload for review",
+    "cancel": "Cancel",
+    "notePlaceholder": "Note for reviewers (optional) — sources, coverage, anything they should know",
+    "uploading": "Uploading {{done}} of {{total}} files…",
+    "doneTitle": "Submitted for review",
+    "doneFix": "{{packId}} is in the review queue. Its status is listed below.",
+    "another": "Submit another pack",
+    "mine": "Your submissions",
+    "withdraw": "Withdraw",
+    "missingFiles": "That folder needs pack.json and species.ndjson at its root.",
+    "invalidManifest": "pack.json failed validation.",
+    "invalidSpecies": "species.ndjson failed validation.",
+    "sectionTitle": "Have a checklist of your own?",
+    "sectionLede": "The catalogue is open — publish a pack for any species, any region, and it lands in everyone's library.",
+    "cta": "Publish a pack",
+    "status": {
+      "uploading": "Uploading",
+      "pending": "In review",
+      "published": "Published",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    }
+  },
   "drawer": {
     "about": "About",
     "account": "Account",
@@ -135,13 +164,13 @@
   "onboarding": {
     "browseAll": "Browse all checklists",
     "choose": "Choose your first checklist",
-    "headline": "The birds and butterflies of Vietnam, in your pocket with no signal",
+    "headline": "Every species, every region — in your pocket with no signal",
     "install": "Download and explore",
     "installNamed": "Download {{name}} and explore",
     "installNote": "Species and plates are stored on this device so the guide works fully offline.",
     "installing": "Downloading…",
     "lede": "Download a checklist once. Every species, plate and identification key then lives on the phone — deep in a national park, on a boat, at 3am with no bars.",
-    "statChecklists": "national checklists",
+    "statChecklists": "species packs",
     "statOffline": "bars needed",
     "statOfflineValue": "Zero",
     "statSpecies": "species"
@@ -158,7 +187,7 @@
     "figureSize": "download",
     "figureSpecies": "species",
     "invalid": "This pack failed validation: {{detail}}",
-    "lede": "Each checklist is a complete regional guide stored on your phone. Download what you need; remove it when the trip is over.",
+    "lede": "Each pack is a complete field guide — a region, a taxon, a project — stored on your phone. Download what you need; remove it when the trip is over.",
     "noHeadroom": "Not enough free space for the full-resolution tier.",
     "noneListed": "No checklists could be listed. Connect once to see what is available.",
     "onThisDevice": "On this device",
@@ -271,7 +300,8 @@
     "section": {
       "overview": "Overview",
       "resources": "Resources",
-      "users": "Users"
+      "users": "Users",
+      "submissions": "Review"
     },
     "signInTitle": "Sign in required",
     "signInFix": "The console needs a staff account.",
@@ -307,6 +337,21 @@
       "dataset": "Dataset",
       "audio": "Audio",
       "note": "Note"
+    },
+    "community": "Community",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectConfirm": "Reject {{id}}? The uploaded files are deleted.",
+    "noSubmissions": "Nothing awaiting review.",
+    "submissionsClosed": "Reviewed",
+    "submissionsListed_one": "{{n}} submission awaiting review",
+    "submissionsListed_other": "{{n}} submissions awaiting review",
+    "submissionStatus": {
+      "uploading": "Uploading",
+      "pending": "Awaiting review",
+      "published": "Published",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
     }
   }
 }

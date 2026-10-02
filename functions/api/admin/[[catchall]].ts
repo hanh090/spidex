@@ -18,6 +18,7 @@ interface Env {
   SESSION_SECRET?: string
   ADMIN_EMAILS?: string
   DB?: any
+  PACKS?: any
   ASSETS?: { fetch: (input: Request | string) => Promise<Response> }
 }
 
@@ -134,6 +135,71 @@ export const onRequest = async (context: any) => {
       return json({ ok: true, published: !!published })
     }
 
+    // Community pack review: submissions are admin_resources rows of
+    // kind='submission'. Approving flips a kind='pack' flag — the catalogue
+    // merge and the /packs/* asset route both consult it, so no files move.
+    if (method === 'GET' && pathname === '/api/admin/submissions') {
+      if (!env.DB) return json({ error: 'Admin store not configured', configured: false }, 503)
+      const { results } = await env.DB.prepare(
+        "SELECT * FROM admin_resources WHERE kind = 'submission' ORDER BY updated_at DESC",
+      ).all()
+      return json({ submissions: (results as ResourceRow[]).map(rowToResource) })
+    }
+
+    const reviewMatch = pathname.match(/^\/api\/admin\/submissions\/([^/]+)\/(approve|reject)$/)
+    if (reviewMatch && method === 'POST') {
+      if (!env.DB) return json({ error: 'Admin store not configured', configured: false }, 503)
+      const subId = decodeURIComponent(reviewMatch[1]!)
+      const action = reviewMatch[2]
+      const row = (await env.DB.prepare(
+        "SELECT * FROM admin_resources WHERE id = ? AND kind = 'submission'",
+      ).bind(subId).first()) as ResourceRow | null
+      if (!row) return json({ error: 'Not found' }, 404)
+      let sm: any = {}
+      try { sm = JSON.parse(row.meta) } catch { /* keep {} */ }
+      if (!['pending', 'uploading'].includes(sm.status)) {
+        return json({ error: `Submission is ${sm.status}` }, 409)
+      }
+
+      if (action === 'approve') {
+        sm.status = 'published'
+        sm.reviewedBy = session.email
+        sm.reviewedAt = Date.now()
+        await env.DB.prepare(
+          'UPDATE admin_resources SET meta = ?, updated_at = ? WHERE id = ?',
+        ).bind(JSON.stringify(sm), sm.reviewedAt, subId).run()
+        await env.DB.prepare(
+          `INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at)
+           VALUES (?, 'pack', ?, ?, 1, 0, ?)
+           ON CONFLICT(id) DO UPDATE SET published = 1, meta = excluded.meta, updated_at = excluded.updated_at`,
+        ).bind(
+          sm.packId, sm.packId,
+          JSON.stringify({ community: true, submissionId: subId, submittedBy: sm.submitter, summary: sm.summary ?? {} }),
+          sm.reviewedAt,
+        ).run()
+        await audit(env, session, 'submission.approve', `${subId}:${sm.packId}`)
+        return json({ ok: true, packId: sm.packId })
+      }
+
+      // Reject: remove the uploaded objects so storage cannot leak.
+      sm.status = 'rejected'
+      sm.reviewedBy = session.email
+      sm.reviewedAt = Date.now()
+      if (env.PACKS && sm.packId) {
+        let cursor: string | undefined
+        do {
+          const page: any = await env.PACKS.list({ prefix: `packs/${sm.packId}/`, cursor })
+          for (const o of page.objects ?? []) await env.PACKS.delete(o.key)
+          cursor = page.truncated ? page.cursor : undefined
+        } while (cursor)
+      }
+      await env.DB.prepare(
+        'UPDATE admin_resources SET meta = ?, updated_at = ? WHERE id = ?',
+      ).bind(JSON.stringify(sm), sm.reviewedAt, subId).run()
+      await audit(env, session, 'submission.reject', `${subId}:${sm.packId}`)
+      return json({ ok: true })
+    }
+
     if (method === 'GET' && pathname === '/api/admin/users') {
       const workos = new WorkOS(env.WORKOS_API_KEY, { clientId: env.WORKOS_CLIENT_ID })
       const list = await workos.userManagement.listUsers({ limit: 100 })
@@ -175,11 +241,20 @@ async function overview(request: Request, env: Env) {
       if (indexRes.ok) {
         const index: any = await indexRes.json()
         const hidden = new Set<string>()
+        const communityRows: { id: string; meta: any }[] = []
         if (env.DB) {
           const { results } = await env.DB.prepare(
-            "SELECT id FROM admin_resources WHERE kind = 'pack' AND published = 0",
+            "SELECT id, published, meta FROM admin_resources WHERE kind = 'pack'",
           ).all()
-          for (const r of results as { id: string }[]) hidden.add(r.id)
+          for (const r of results as { id: string; published: number; meta: string }[]) {
+            if (!r.published) { hidden.add(r.id); continue }
+            if (!(index.packs ?? []).includes(r.id)) {
+              try {
+                const meta = JSON.parse(r.meta)
+                if (meta?.community) communityRows.push({ id: r.id, meta })
+              } catch { /* malformed meta */ }
+            }
+          }
         }
         for (const id of index.packs ?? []) {
           try {
@@ -200,6 +275,11 @@ async function overview(request: Request, env: Env) {
           } catch {
             packs.push({ id, missing: true })
           }
+        }
+        // Community packs live in R2, not the deployed assets — their
+        // manifest summary was captured at approval time and rides in meta.
+        for (const c of communityRows) {
+          packs.push({ id: c.id, community: true, published: true, ...(c.meta.summary ?? {}) })
         }
       } else {
         catalogueError = `index.json ${indexRes.status}`

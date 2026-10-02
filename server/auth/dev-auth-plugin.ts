@@ -74,6 +74,66 @@ function devIsAdmin(user: AuthSessionUser | undefined): boolean {
   return allow.includes(user.email.toLowerCase())
 }
 
+/* ---- dev submissions + community pack serving ------------------------------
+ * Production stores uploads in the PACKS R2 bucket and gates serving on the
+ * D1 publish flag. Dev mirrors that on disk: files land in
+ * data/submissions/<packId>/ (gitignored scratch), and /packs/<id>/* falls
+ * back to it only while a published kind='pack' row marks it community.
+ */
+const SUBMISSIONS_DIR = path.resolve(process.cwd(), 'data/submissions')
+const PACK_ID_RE = /^[a-z0-9][a-z0-9-]{0,62}$/
+const UPLOADABLE_EXT = /\.(json|ndjson|webp|svg|jpe?g|png|gif|avif|mp3|ogg|opus|wav|m4a|woff2?)$/i
+const TOP_LEVEL = /^(pack\.json|species\.ndjson|img\/|audio\/|fonts\/)/
+
+const DEV_CONTENT_TYPES: Record<string, string> = {
+  '.json': 'application/json', '.ndjson': 'application/x-ndjson',
+  '.webp': 'image/webp', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.png': 'image/png', '.gif': 'image/gif', '.avif': 'image/avif',
+  '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.opus': 'audio/opus', '.wav': 'audio/wav', '.m4a': 'audio/mp4',
+  '.woff2': 'font/woff2', '.woff': 'font/woff',
+}
+
+function devSanitizePath(raw: string): string | null {
+  const p = raw.trim().replace(/^\/+/, '')
+  if (!p || p.length > 220) return null
+  if (p.includes('..') || p.includes('//') || p.includes('\\')) return null
+  if (!/^[a-zA-Z0-9._/-]+$/.test(p)) return null
+  if (!TOP_LEVEL.test(p) || !UPLOADABLE_EXT.test(p)) return null
+  return p
+}
+
+function devFindSubmission(id: string) {
+  const row = readAdminStore().find((r) => r.kind === 'submission' && r.id === id)
+  return row
+}
+
+function devUpdateSubmission(id: string, patch: (m: any) => void) {
+  const store = readAdminStore()
+  const row = store.find((r) => r.kind === 'submission' && r.id === id)
+  if (!row) return null
+  patch(row.meta)
+  row.updatedAt = Date.now()
+  writeAdminStore(store)
+  return row
+}
+
+/** Serve a community pack file from disk when its pack row is published. */
+function handleCommunityPackFile(req: any, res: any, next: () => void): void {
+  const m = (req.url ?? '').match(/^\/packs\/([^/]+)\/(.+)$/)
+  if (!m || req.method !== 'GET') return next()
+  const [, packId, file] = m
+  const row = readAdminStore().find((r) => r.kind === 'pack' && r.id === packId && r.published && (r.meta as any)?.community)
+  if (!row) return next()
+  const rel = devSanitizePath(file.split('?')[0]!)
+  if (!rel) return next()
+  const fp = path.join(SUBMISSIONS_DIR, packId, rel)
+  if (!fp.startsWith(SUBMISSIONS_DIR) || !fs.existsSync(fp) || !fs.statSync(fp).isFile()) return next()
+  res.setHeader('Content-Type', DEV_CONTENT_TYPES[path.extname(rel).toLowerCase()] ?? 'application/octet-stream')
+  res.setHeader('Content-Security-Policy', "script-src 'none'")
+  res.setHeader('Cache-Control', /^(pack\.json|species\.ndjson)$/.test(rel) ? 'no-store' : 'public, max-age=86400')
+  fs.createReadStream(fp).pipe(res)
+}
+
 export function devAuthPlugin(): Plugin {
   return {
     name: 'spidex-dev-auth-plugin',
@@ -81,6 +141,12 @@ export function devAuthPlugin(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         if (req.url?.startsWith('/api/admin/')) {
           return handleAdmin(req, res)
+        }
+        if (req.url?.startsWith('/api/submissions')) {
+          return handleSubmission(req, res)
+        }
+        if (req.url?.startsWith('/packs/')) {
+          return handleCommunityPackFile(req, res, next)
         }
         if (!req.url?.startsWith('/api/auth/')) {
           return next()
@@ -257,6 +323,160 @@ export function devAuthPlugin(): Plugin {
   }
 }
 
+/* ---- /api/submissions/* in dev ----------------------------------------------
+ * Same contract as functions/api/submissions/[[catchall]].ts, but files go to
+ * data/submissions/<packId>/ instead of R2. Requires a dev session; no admin
+ * needed — matching production, where any signed-in user may submit.
+ */
+async function handleSubmission(req: any, res: any): Promise<void> {
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost:5173'}`)
+  const pathname = url.pathname
+  const method = req.method ?? 'GET'
+
+  res.setHeader('Content-Type', 'application/json')
+  const send = (body: unknown, status = 200) => {
+    res.statusCode = status
+    res.end(JSON.stringify(body))
+  }
+  const readBody = async (): Promise<any> =>
+    new Promise((resolve) => {
+      let data = ''
+      req.on('data', (chunk: any) => { data += chunk })
+      req.on('end', () => {
+        try { resolve(data ? JSON.parse(data) : {}) } catch { resolve({}) }
+      })
+    })
+
+  const sessionId = parseCookies(req.headers.cookie)['spidex_session']
+  const user = sessionId ? sessionStore.get(sessionId)?.user : undefined
+  if (!user) return send({ error: 'Sign in required' }, 401)
+
+  try {
+    if (method === 'GET' && pathname === '/api/submissions/mine') {
+      const mine = readAdminStore()
+        .filter((r) => r.kind === 'submission' && (r.meta as any)?.submitter?.userId === user.id)
+        .map((r) => ({ id: r.id, packId: (r.meta as any).packId, status: (r.meta as any).status, issues: (r.meta as any).issues ?? [], summary: (r.meta as any).summary ?? null, updatedAt: r.updatedAt }))
+      return send({ submissions: mine })
+    }
+
+    if (method === 'POST' && pathname === '/api/submissions') {
+      const body = await readBody()
+      const packId = String(body.packId ?? '').trim()
+      if (!PACK_ID_RE.test(packId)) return send({ error: 'packId must be lowercase letters, digits and dashes' }, 400)
+      const fileCount = Number(body.fileCount)
+      const totalBytes = Number(body.totalBytes)
+      if (!Number.isInteger(fileCount) || fileCount < 2) return send({ error: 'fileCount must be at least 2' }, 400)
+      if (!Number.isFinite(totalBytes) || totalBytes <= 0) return send({ error: 'totalBytes required' }, 400)
+      if (fs.existsSync(path.resolve(process.cwd(), 'public/packs', packId, 'pack.json'))) {
+        return send({ error: 'That pack id already exists' }, 409)
+      }
+      const store = readAdminStore()
+      const taken = store.find((r) => {
+        if (r.kind === 'pack' && r.id === packId && r.published) {
+          // The pack's own author may resubmit — that is the update path.
+          return (r.meta as any)?.submittedBy?.userId !== user.id
+        }
+        return r.kind === 'submission' && (r.meta as any)?.packId === packId && ['uploading', 'pending'].includes((r.meta as any)?.status)
+      })
+      if (taken) return send({ error: 'That pack id is taken' }, 409)
+
+      const id = `sub_${crypto.randomUUID()}`
+      store.push({
+        id, kind: 'submission', title: packId,
+        meta: {
+          packId, note: String(body.note ?? '').slice(0, 500),
+          submitter: { userId: user.id, email: user.email },
+          status: 'uploading', fileCount, totalBytes, receivedFiles: 0, receivedBytes: 0,
+        },
+        published: false, sort: 0, updatedAt: Date.now(),
+      })
+      writeAdminStore(store)
+      return send({ ok: true, id }, 201)
+    }
+
+    const filesMatch = pathname.match(/^\/api\/submissions\/([^/]+)\/files$/)
+    if (filesMatch && method === 'PUT') {
+      const row = devFindSubmission(decodeURIComponent(filesMatch[1]!))
+      if (!row) return send({ error: 'Not found' }, 404)
+      const m = row.meta as any
+      if (m.submitter?.userId !== user.id) return send({ error: 'Not your submission' }, 403)
+      if (m.status !== 'uploading') return send({ error: `Submission is ${m.status}` }, 409)
+      const rel = devSanitizePath(url.searchParams.get('path') ?? '')
+      if (!rel) return send({ error: 'Unsupported path' }, 400)
+
+      const fp = path.join(SUBMISSIONS_DIR, m.packId, rel)
+      fs.mkdirSync(path.dirname(fp), { recursive: true })
+      const out = fs.createWriteStream(fp)
+      let bytes = 0
+      await new Promise<void>((resolve, reject) => {
+        req.on('data', (c: any) => { bytes += c.length })
+        req.pipe(out)
+        req.on('end', () => out.end(() => resolve()))
+        req.on('error', reject)
+      })
+      devUpdateSubmission(row.id, (mm) => { mm.receivedFiles = (mm.receivedFiles ?? 0) + 1; mm.receivedBytes = (mm.receivedBytes ?? 0) + bytes })
+      return send({ ok: true, received: (devFindSubmission(row.id)?.meta as any)?.receivedFiles ?? 0 })
+    }
+
+    const completeMatch = pathname.match(/^\/api\/submissions\/([^/]+)\/complete$/)
+    if (completeMatch && method === 'POST') {
+      const row = devFindSubmission(decodeURIComponent(completeMatch[1]!))
+      if (!row) return send({ error: 'Not found' }, 404)
+      const m = row.meta as any
+      if (m.submitter?.userId !== user.id) return send({ error: 'Not your submission' }, 403)
+      if (m.status !== 'uploading') return send({ error: `Submission is ${m.status}` }, 409)
+
+      const dir = path.join(SUBMISSIONS_DIR, m.packId)
+      const issues: { path: string; message: string }[] = []
+      let manifest: any = null
+      try { manifest = JSON.parse(fs.readFileSync(path.join(dir, 'pack.json'), 'utf8')) }
+      catch { issues.push({ path: 'pack.json', message: 'missing or invalid' }) }
+      if (manifest) {
+        if (manifest.id !== m.packId) issues.push({ path: 'pack.json', message: `id "${manifest.id}" != "${m.packId}"` })
+        if (!manifest.name?.en) issues.push({ path: 'pack.json', message: 'name.en missing' })
+        if (!manifest.traitSchema?.traits?.length) issues.push({ path: 'pack.json', message: 'traitSchema.traits missing' })
+      }
+      let count = 0
+      try {
+        for (const line of fs.readFileSync(path.join(dir, 'species.ndjson'), 'utf8').split('\n')) {
+          if (!line.trim()) continue
+          count++
+          const sp = JSON.parse(line)
+          if (!sp.id || !sp.sciName) issues.push({ path: 'species.ndjson', message: `line ${count}: id/sciName missing` })
+        }
+      } catch { issues.push({ path: 'species.ndjson', message: 'missing or invalid' }) }
+      if (!count) issues.push({ path: 'species.ndjson', message: 'no species records' })
+      if (manifest && Number.isInteger(manifest.speciesCount) && count !== manifest.speciesCount) {
+        issues.push({ path: 'species.ndjson', message: `${count} records, manifest declares ${manifest.speciesCount}` })
+      }
+      if (manifest && !issues.length) {
+        m.summary = {
+          name: manifest.name, region: manifest.region, taxonGroup: manifest.taxonGroup,
+          version: manifest.version, speciesCount: manifest.speciesCount, sizeBytes: manifest.sizeBytes,
+        }
+      }
+      devUpdateSubmission(row.id, (mm) => { mm.issues = issues; mm.status = issues.length ? 'uploading' : 'pending' })
+      return issues.length ? send({ ok: false, issues }, 422) : send({ ok: true, status: 'pending' })
+    }
+
+    const delMatch = pathname.match(/^\/api\/submissions\/([^/]+)$/)
+    if (delMatch && method === 'DELETE') {
+      const row = devFindSubmission(decodeURIComponent(delMatch[1]!))
+      if (!row) return send({ error: 'Not found' }, 404)
+      const m = row.meta as any
+      if (m.submitter?.userId !== user.id && !devIsAdmin(user)) return send({ error: 'Not your submission' }, 403)
+      if (m.status === 'published') return send({ error: 'Already published' }, 409)
+      fs.rmSync(path.join(SUBMISSIONS_DIR, m.packId), { recursive: true, force: true })
+      devUpdateSubmission(row.id, (mm) => { mm.status = 'withdrawn' })
+      return send({ ok: true })
+    }
+
+    return send({ error: 'Not found' }, 404)
+  } catch (err: any) {
+    return send({ error: err.message || 'Submission error' }, 500)
+  }
+}
+
 /* ---- /api/admin/* in dev -------------------------------------------------- */
 
 async function handleAdmin(req: any, res: any): Promise<void> {
@@ -359,6 +579,31 @@ async function handleAdmin(req: any, res: any): Promise<void> {
       return send({ ok: true, published: row.published })
     }
 
+    if (method === 'GET' && pathname === '/api/admin/submissions') {
+      return send({ submissions: readAdminStore().filter((r) => r.kind === 'submission') })
+    }
+
+    const reviewMatch = pathname.match(/^\/api\/admin\/submissions\/([^/]+)\/(approve|reject)$/)
+    if (reviewMatch && method === 'POST') {
+      const row = devFindSubmission(decodeURIComponent(reviewMatch[1]!))
+      if (!row) return send({ error: 'Not found' }, 404)
+      const m = row.meta as any
+      if (!['pending', 'uploading'].includes(m.status)) return send({ error: `Submission is ${m.status}` }, 409)
+      if (reviewMatch[2] === 'approve') {
+        devUpdateSubmission(row.id, (mm) => { mm.status = 'published'; mm.reviewedBy = user!.email; mm.reviewedAt = Date.now() })
+        const store = readAdminStore()
+        const existing = store.find((r) => r.kind === 'pack' && r.id === m.packId)
+        const meta = { community: true, submissionId: row.id, submittedBy: m.submitter, summary: m.summary ?? {} }
+        if (existing) { existing.published = true; existing.meta = meta; existing.updatedAt = Date.now() }
+        else store.push({ id: m.packId, kind: 'pack', title: m.packId, meta, published: true, sort: 0, updatedAt: Date.now() })
+        writeAdminStore(store)
+        return send({ ok: true, packId: m.packId })
+      }
+      fs.rmSync(path.join(SUBMISSIONS_DIR, m.packId), { recursive: true, force: true })
+      devUpdateSubmission(row.id, (mm) => { mm.status = 'rejected'; mm.reviewedBy = user!.email; mm.reviewedAt = Date.now() })
+      return send({ ok: true })
+    }
+
     if (method === 'GET' && pathname === '/api/admin/users') {
       try {
         const list = await getWorkos().userManagement.listUsers({ limit: 100 })
@@ -407,6 +652,14 @@ function devOverview() {
       return { id, missing: true }
     }
   })
+
+  // Community packs approved in dev: files live in data/submissions/, so the
+  // summary captured at approval time stands in for the manifest read.
+  for (const r of readAdminStore()) {
+    if (r.kind !== 'pack' || !r.published || !(r.meta as any)?.community) continue
+    if ((index.packs ?? []).includes(r.id)) continue
+    packs.push({ id: r.id, community: true, published: true, ...((r.meta as any).summary ?? {}) })
+  }
 
   return { packs, catalogueError: null, store: true, generatedAt: Date.now() }
 }

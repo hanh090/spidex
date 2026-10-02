@@ -19,12 +19,13 @@ import { SignInModal } from './sign-in-modal'
 import {
   fetchAdminOverview, fetchAdminResources, fetchAdminStatus, fetchAdminUsers,
   createAdminResource, updateAdminResource, deleteAdminResource, setPackPublished,
-  type AdminOverview, type AdminResource, type AdminStatus, type AdminUser,
+  fetchAdminSubmissions, reviewSubmission,
+  type AdminOverview, type AdminResource, type AdminStatus, type AdminSubmission, type AdminUser,
 } from '../features/admin/admin-api'
 import { resolve } from '../data/localized'
 import { formatBytes, formatNumber } from '../i18n/format'
 
-type SectionKey = 'overview' | 'resources' | 'users'
+type SectionKey = 'overview' | 'submissions' | 'resources' | 'users'
 
 const RESOURCE_KINDS = ['pack', 'checklist', 'dataset', 'audio', 'note'] as const
 
@@ -63,7 +64,7 @@ export function Admin() {
         <div style={{
           display: 'flex', borderBottom: 'var(--hair) solid var(--line)', background: 'var(--panel)', flex: 'none',
         }}>
-          {(['overview', 'resources', 'users'] as const).map((s) => (
+          {(['overview', 'submissions', 'resources', 'users'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setSection(s)}
@@ -84,6 +85,7 @@ export function Admin() {
             <Alert>{t('admin.noStore')}</Alert>
           )}
           {section === 'overview' && <Overview />}
+          {section === 'submissions' && <Submissions />}
           {section === 'resources' && <Resources />}
           {section === 'users' && <Users />}
         </div>
@@ -146,6 +148,7 @@ function Overview() {
             <span className="t-meta" style={{ color: 'var(--ink-muted)' }}>{p.id}</span>
             <span style={{ flex: 1 }} />
             {p.featured && <Badge tone="accent">{t('admin.featured')}</Badge>}
+            {p.community && <Badge tone="muted">{t('admin.community')}</Badge>}
             {p.missing
               ? <Badge tone="warn">{t('admin.missing')}</Badge>
               : <Badge tone={p.published ? 'ok' : 'warn'}>{p.published ? t('admin.published') : t('admin.unpublished')}</Badge>}
@@ -309,6 +312,106 @@ function Resources() {
               <Button variant="inline" onClick={() => void remove(r)}>{t('admin.delete')}</Button>
             </article>
           ))}
+    </div>
+  )
+}
+
+/**
+ * Community pack review queue. Approve flips the pack live in the catalogue;
+ * reject deletes the uploaded objects. Validation issues the server found at
+ * complete-time are shown inline so the reviewer sees what the uploader saw.
+ */
+function Submissions() {
+  const { t } = useTranslation()
+  const [rows, setRows] = useState<AdminSubmission[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+
+  const load = useCallback(() => {
+    fetchAdminSubmissions()
+      .then((r) => setRows(r.submissions))
+      .catch((e) => setError((e as Error).message))
+  }, [])
+  useEffect(load, [load])
+
+  const review = async (s: AdminSubmission, action: 'approve' | 'reject') => {
+    if (action === 'reject' && !confirm(t('admin.rejectConfirm', { id: s.meta.packId ?? s.id }))) return
+    setBusy(s.id)
+    try {
+      await reviewSubmission(s.id, action)
+      load()
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  if (error && !rows) return <Alert>{error}</Alert>
+  if (!rows) return <Skeleton height={120} />
+
+  const open = rows.filter((r) => r.meta.status === 'pending' || r.meta.status === 'uploading')
+  const closed = rows.filter((r) => !open.includes(r))
+
+  const renderRow = (s: AdminSubmission) => {
+    const m = s.meta
+    const reviewable = m.status === 'pending'
+    return (
+      <article
+        key={s.id}
+        style={{
+          border: 'var(--hair) solid var(--line)', borderRadius: 'var(--radius-card)',
+          padding: 'var(--space-4)', background: 'var(--paper)',
+          display: 'flex', flexDirection: 'column', gap: 'var(--space-2)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          <span className="t-heading" style={{ fontSize: 17 }}>{m.summary?.name?.en ?? m.packId ?? s.title}</span>
+          <span className="t-meta" style={{ color: 'var(--ink-muted)' }}>{m.packId}</span>
+          <span style={{ flex: 1 }} />
+          <Badge tone={m.status === 'published' ? 'ok' : m.status === 'rejected' || m.status === 'withdrawn' ? 'warn' : 'accent'}>
+            {t(`admin.submissionStatus.${m.status}`, { defaultValue: m.status })}
+          </Badge>
+        </div>
+        <div className="t-meta" style={{ color: 'var(--ink-muted)' }}>
+          {[
+            m.submitter?.email,
+            m.summary?.speciesCount != null && t('packs.speciesCount', { count: m.summary.speciesCount, n: formatNumber(m.summary.speciesCount) }),
+            m.fileCount != null && `${formatNumber(m.receivedFiles ?? 0)}/${formatNumber(m.fileCount)} files`,
+          ].filter(Boolean).join(' · ')}
+        </div>
+        {m.note && <p className="t-body" style={{ margin: 0, color: 'var(--ink-muted)' }}>{m.note}</p>}
+        {!!m.issues?.length && (
+          <div className="t-meta" style={{ color: 'var(--warn)' }}>
+            {m.issues.slice(0, 4).map((i) => <div key={`${i.path}:${i.message}`}>{i.path}: {i.message}</div>)}
+          </div>
+        )}
+        {reviewable && (
+          <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <Button variant="primary" disabled={busy === s.id} onClick={() => void review(s, 'approve')}>
+              {t('admin.approve')}
+            </Button>
+            <Button variant="secondary" disabled={busy === s.id} onClick={() => void review(s, 'reject')}>
+              {t('admin.reject')}
+            </Button>
+          </div>
+        )}
+      </article>
+    )
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+      {error && <Alert>{error}</Alert>}
+      <Meta>{t('admin.submissionsListed', { count: open.length, n: formatNumber(open.length) })}</Meta>
+      {open.map(renderRow)}
+      {!open.length && <p className="t-body" style={{ color: 'var(--ink-muted)', margin: 0 }}>{t('admin.noSubmissions')}</p>}
+      {closed.length > 0 && (
+        <>
+          <div style={{ marginTop: 'var(--space-4)' }}><Meta>{t('admin.submissionsClosed')}</Meta></div>
+          {closed.map(renderRow)}
+        </>
+      )}
     </div>
   )
 }

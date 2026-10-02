@@ -19,7 +19,14 @@ export async function requestPersist(): Promise<PersistState> {
   if (!navigator.storage?.persist) return 'unsupported'
   try {
     if (await persistedAlready()) return 'granted'
-    return (await navigator.storage.persist()) ? 'granted' : 'denied'
+    // persist() can sit on an unanswered permission prompt forever in
+    // automation and some embedded contexts — treat a hang as a refusal.
+    const answer = await Promise.race([
+      navigator.storage.persist(),
+      new Promise<null>((res) => setTimeout(() => res(null), 10_000)),
+    ])
+    if (answer === null) return 'denied'
+    return answer ? 'granted' : 'denied'
   } catch {
     return 'unsupported'
   }

@@ -6,8 +6,9 @@
 
 **A field guide for the places with no signal.**
 
-The birds and butterflies of Vietnam and Southeast Asia — species accounts,
-identification keys, and voice recordings that live entirely on your phone.
+An open catalogue of species packs — any taxon, any region, authored by
+anyone — with species accounts, identification keys, and voice recordings
+that live entirely on your phone.
 
 [![CI](https://github.com/hanh090/spidex/actions/workflows/ci.yml/badge.svg)](https://github.com/hanh090/spidex/actions/workflows/ci.yml)
 [![Staging](https://img.shields.io/badge/staging-spidex--staging.pages.dev-b8232c)](https://spidex-staging.pages.dev)
@@ -35,8 +36,9 @@ identification key works with **zero connectivity**.
 
 ## What it does
 
-- **Explore** — a browsable specimen catalogue: Vietnam, Thailand, Malaysia;
-  birds and butterflies, with every plate credited and licensed
+- **Explore** — a browsable specimen catalogue with every plate credited and
+  licensed; the built-in packs cover Vietnam, Thailand and Malaysia, and the
+  catalogue is open to community packs for any species, any region
 - **Identify** — trait-based keys that narrow a sighting to a species, built
   for wet and gloved hands: oversized touch targets, sun-readable and
   red-shifted night themes
@@ -44,9 +46,11 @@ identification key works with **zero connectivity**.
   full recordist and licence attribution
 - **Sightings** — a personal field log with photos, GPS and a life list,
   stored locally; exportable to CSV/GeoJSON
-- **Packs** — regional species packs install to IndexedDB and stay usable
-  offline; the catalogue is served remotely so new packs ship without an app
-  release
+- **Packs** — species packs install to IndexedDB and stay usable offline; the
+  catalogue is served remotely so new packs ship without an app release
+- **Open platform** — any signed-in user can publish a pack from `/contribute`
+  (files stream to R2, an admin review flips it live); see
+  [docs/authoring-packs.md](docs/authoring-packs.md)
 - **Admin** — `/admin`, a D1-backed console for the pack catalogue, resources
   and users, gated by signed sessions and an admin allowlist
 - **i18n** — English · Tiếng Việt · Deutsch
@@ -98,9 +102,10 @@ library shows only what's installed. Removing a pack never removes your
 sightings.
 
 **Bird voices.** `scripts/fetch_bird_voices.py` pulls CC-licensed recordings
-from the xeno-canto API (non-commercial licences included — the app is free)
-into `data/voices/`, then `apply_voices_to_pack.py` merges `sounds[]` into a
-pack's `species.ndjson`. Audio streams at playback — packs stay small.
+from the xeno-canto API into `data/voices/`, keeping only commercial-safe
+licences (CC BY, BY-SA, BY-ND, CC0 — NC is excluded because the app charges a
+fee), then `apply_voices_to_pack.py` merges `sounds[]` into a pack's
+`species.ndjson`. Audio streams at playback — packs stay small.
 
 ## Deploy
 

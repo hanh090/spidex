@@ -16,13 +16,23 @@ export const onRequestGet = async (context: any) => {
     const text = await res.text()
     const index = JSON.parse(text)
     const { results } = await db
-      .prepare("SELECT id FROM admin_resources WHERE kind = 'pack' AND published = 0")
+      .prepare("SELECT id, published, meta FROM admin_resources WHERE kind = 'pack'")
       .all()
-    const hidden = new Set((results as { id: string }[]).map((r) => r.id))
-    if (!hidden.size) {
-      return new Response(text, { status: res.status, headers: res.headers })
+
+    const hidden = new Set<string>()
+    const community: string[] = []
+    for (const r of results as { id: string; published: number; meta: string }[]) {
+      if (!r.published) { hidden.add(r.id); continue }
+      // Published rows for ids the static index does not know are community
+      // packs — they join the catalogue at the end, in approval order.
+      if (!(index.packs ?? []).includes(r.id)) {
+        try {
+          if (JSON.parse(r.meta)?.community) community.push(r.id)
+        } catch { /* malformed meta: don't publish it */ }
+      }
     }
-    index.packs = (index.packs ?? []).filter((id: string) => !hidden.has(id))
+
+    index.packs = [...(index.packs ?? []).filter((id: string) => !hidden.has(id)), ...community]
     index.featured = (index.featured ?? []).filter((id: string) => !hidden.has(id))
     return new Response(JSON.stringify(index), {
       status: 200,

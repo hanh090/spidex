@@ -39,6 +39,35 @@
     "legend": "Khác biệt được tô đậm",
     "title": "So sánh"
   },
+  "contribute": {
+    "title": "Đóng góp gói dữ liệu",
+    "lede": "Spidex là danh mục mở — mọi loài, mọi khu vực. Tạo gói theo hướng dẫn, chọn thư mục tại đây, và gói sẽ hiện cho mọi người sau khi được duyệt.",
+    "signInTitle": "Đăng nhập để đăng",
+    "signInFix": "Bài gửi gắn với tài khoản của bạn để người duyệt có thể liên hệ.",
+    "pick": "Chọn thư mục gói…",
+    "submit": "Tải lên để duyệt",
+    "cancel": "Huỷ",
+    "notePlaceholder": "Ghi chú cho người duyệt (tuỳ chọn) — nguồn dữ liệu, phạm vi…",
+    "uploading": "Đang tải {{done}}/{{total}} tệp…",
+    "doneTitle": "Đã gửi để duyệt",
+    "doneFix": "{{packId}} đang trong hàng chờ duyệt. Xem trạng thái bên dưới.",
+    "another": "Gửi thêm gói khác",
+    "mine": "Bài gửi của bạn",
+    "withdraw": "Rút lại",
+    "missingFiles": "Thư mục cần có pack.json và species.ndjson ở gốc.",
+    "invalidManifest": "pack.json không hợp lệ.",
+    "invalidSpecies": "species.ndjson không hợp lệ.",
+    "sectionTitle": "Bạn có danh lục riêng?",
+    "sectionLede": "Danh mục mở — đăng gói cho bất kỳ loài, khu vực nào, và nó xuất hiện trong thư viện của mọi người.",
+    "cta": "Đăng gói",
+    "status": {
+      "uploading": "Đang tải",
+      "pending": "Chờ duyệt",
+      "published": "Đã đăng",
+      "rejected": "Bị từ chối",
+      "withdrawn": "Đã rút"
+    }
+  },
   "drawer": {
     "about": "Giới thiệu",
     "account": "Tài khoản",
@@ -130,13 +159,13 @@
   "onboarding": {
     "browseAll": "Xem tất cả danh lục",
     "choose": "Chọn danh lục đầu tiên",
-    "headline": "Chim và bướm Việt Nam, trong túi bạn — không cần sóng",
+    "headline": "Mọi loài, mọi khu vực — trong túi bạn, không cần sóng",
     "install": "Tải và khám phá",
     "installNamed": "Tải {{name}} và khám phá",
     "installNote": "Dữ liệu loài và hình ảnh được lưu trên máy để tra cứu hoàn toàn ngoại tuyến.",
     "installing": "Đang tải…",
     "lede": "Tải một danh lục về máy một lần. Toàn bộ loài, bản vẽ mẫu vật và khoá định danh sẽ nằm trong điện thoại — giữa rừng quốc gia, trên thuyền, hay 3 giờ sáng không vạch sóng nào.",
-    "statChecklists": "danh lục quốc gia",
+    "statChecklists": "gói loài",
     "statOffline": "vạch sóng cần",
     "statOfflineValue": "Không",
     "statSpecies": "loài"
@@ -153,7 +182,7 @@
     "figureSize": "dung lượng",
     "figureSpecies": "loài",
     "invalid": "Gói không hợp lệ: {{detail}}",
-    "lede": "Mỗi danh lục là một cuốn hướng dẫn vùng hoàn chỉnh lưu trên máy. Tải về khi cần và xoá đi khi chuyến đi kết thúc.",
+    "lede": "Mỗi gói là một cuốn hướng dẫn hoàn chỉnh — một vùng, một nhóm loài, một dự án — lưu trên máy. Tải về khi cần và xoá đi khi chuyến đi kết thúc.",
     "noHeadroom": "Không đủ dung lượng cho ảnh độ phân giải cao.",
     "noneListed": "Không liệt kê được danh lục nào. Hãy kết nối mạng một lần để xem các gói hiện có.",
     "onThisDevice": "Trên máy này",
@@ -262,7 +291,8 @@
     "section": {
       "overview": "Tổng quan",
       "resources": "Tài nguyên",
-      "users": "Người dùng"
+      "users": "Người dùng",
+      "submissions": "Duyệt bài"
     },
     "signInTitle": "Cần đăng nhập",
     "signInFix": "Bảng quản trị yêu cầu tài khoản quản trị viên.",
@@ -298,6 +328,21 @@
       "dataset": "Bộ dữ liệu",
       "audio": "Âm thanh",
       "note": "Ghi chú"
+    },
+    "community": "Cộng đồng",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "rejectConfirm": "Từ chối {{id}}? Các tệp đã tải lên sẽ bị xoá.",
+    "noSubmissions": "Không có bài chờ duyệt.",
+    "submissionsClosed": "Đã duyệt",
+    "submissionsListed_one": "{{n}} bài đang chờ duyệt",
+    "submissionsListed_other": "{{n}} bài đang chờ duyệt",
+    "submissionStatus": {
+      "uploading": "Đang tải",
+      "pending": "Chờ duyệt",
+      "published": "Đã đăng",
+      "rejected": "Bị từ chối",
+      "withdrawn": "Đã rút"
     }
   }
 }
