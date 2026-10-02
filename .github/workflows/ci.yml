@@ -5,6 +5,9 @@ on:
     branches: [master]
   pull_request:
 
+# No deploy job: pack photography is kept out of git, so a build from this
+# checkout would ship packs without images. Deploys run from a working tree
+# that has the media (see README, Deploy).
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,28 +15,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-
-  deploy:
-    name: Deploy to Cloudflare Pages
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=spidex
