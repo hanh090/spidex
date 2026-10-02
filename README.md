@@ -109,19 +109,25 @@ an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges
 
 ## Deploy
 
-CI (`.github/workflows/ci.yml`) typechecks, tests and builds every push and
-pull request. It does not deploy: pack photography (~1.1 GB) is kept out of git,
-so a build from a clean checkout has almost no images. Deploy to the
-`spidex-staging` Pages project from a working tree that has the pack media:
+Merges to `master` deploy to the `spidex-staging` Cloudflare Pages project via
+`.github/workflows/ci.yml` (secrets: `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`; the job is skipped while they are unset). Manual
+deploy: `npm run build && npm run deploy` (or `deploy:preview`).
+
+**Pack media is not in git.** Photos, plates and the Singapore pack (~1.1 GB)
+live in the `spidex-packs` R2 bucket under `bundled/<packId>/…` and are served
+by `functions/packs/[[path]].ts`; the build strips untracked pack files from
+the output so every deploy is the same size. After adding or changing media
+locally, upload it (resumable, skips files already sent):
 
 ```bash
-npm run build && npm run deploy          # production branch of spidex-staging
-npm run deploy:preview                   # preview branch
+CLOUDFLARE_ACCOUNT_ID=<account> npm run upload:media
 ```
 
-One-time D1 setup:
+One-time setup:
 
 ```bash
+wrangler r2 bucket create spidex-packs     # R2 enabled on the account first
 wrangler d1 create spidex-admin
 wrangler d1 execute spidex-admin --file=migrations/0001_admin.sql --remote
 ```

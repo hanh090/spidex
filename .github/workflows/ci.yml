@@ -5,9 +5,6 @@ on:
     branches: [master]
   pull_request:
 
-# No deploy job: pack photography is kept out of git, so a build from this
-# checkout would ship packs without images. Deploys run from a working tree
-# that has the media (see README, Deploy).
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,3 +18,32 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  # Pack media is not in git: it lives in the R2 bucket and is served by
+  # functions/packs/[[path]].ts, so a build from this checkout is complete.
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Check deploy credentials
+        id: creds
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set; skipping deploy"
+          fi
+      - if: steps.creds.outputs.ok == 'true'
+        uses: actions/checkout@v4
+      - if: steps.creds.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.creds.outputs.ok == 'true'
+        run: npm ci && npm run build && npm run deploy
