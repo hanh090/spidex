@@ -34,10 +34,12 @@ from pathlib import Path
 API = "https://xeno-canto.org/api/3/recordings"
 QUALITY_ORDER = ["A", "B", "C", "D", "E"]
 
-# Allowlisted CC licences only — the project deliberately keeps non-commercial
-# licences (the app's store listing is free), but anything outside the CC
-# family still does not ship.
-ALLOWED_LIC = re.compile(r"^https?://creativecommons\.org/(licenses|publicdomain)/", re.I)
+# Commercial-safe licences only — the app charges a fee, so NC (non-commercial)
+# and every non-CC licence are excluded. ND recordings ship because playback is
+# unmodified redistribution, which ND permits.
+ALLOWED_LIC = re.compile(
+    r"^https?://creativecommons\.org/(licenses/(by|by-sa|by-nd)/|publicdomain/)", re.I
+)
 
 
 def lic_code(url: str) -> str:

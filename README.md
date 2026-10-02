@@ -6,8 +6,9 @@
 
 **A field guide for the places with no signal.**
 
-The birds and butterflies of Vietnam and Southeast Asia — species accounts,
-identification keys, and voice recordings that live entirely on your phone.
+An open catalogue of species packs — any taxon, any region, authored by
+anyone — with species accounts, identification keys, and voice recordings
+that live entirely on your phone.
 
 [![CI](https://github.com/hanh090/spidex/actions/workflows/ci.yml/badge.svg)](https://github.com/hanh090/spidex/actions/workflows/ci.yml)
 [![Staging](https://img.shields.io/badge/staging-spidex--staging.pages.dev-b8232c)](https://spidex-staging.pages.dev)
@@ -35,8 +36,9 @@ identification key works with **zero connectivity**.
 
 ## What it does
 
-- **Explore** — a browsable specimen catalogue: Vietnam, Thailand, Malaysia;
-  birds and butterflies, with every plate credited and licensed
+- **Explore** — a browsable specimen catalogue with every plate credited and
+  licensed; the built-in packs cover Vietnam, Thailand and Malaysia, and the
+  catalogue is open to community packs for any species, any region
 - **Identify** — trait-based keys that narrow a sighting to a species, built
   for wet and gloved hands: oversized touch targets, sun-readable and
   red-shifted night themes
@@ -44,9 +46,11 @@ identification key works with **zero connectivity**.
   full recordist and licence attribution
 - **Sightings** — a personal field log with photos, GPS and a life list,
   stored locally; exportable to CSV/GeoJSON
-- **Packs** — regional species packs install to IndexedDB and stay usable
-  offline; the catalogue is served remotely so new packs ship without an app
-  release
+- **Packs** — species packs install to IndexedDB and stay usable offline; the
+  catalogue is served remotely so new packs ship without an app release
+- **Open platform** — any signed-in user can publish a pack from `/contribute`
+  (files stream to R2, an admin review flips it live); see
+  [docs/authoring-packs.md](docs/authoring-packs.md)
 - **Admin** — `/admin`, a D1-backed console for the pack catalogue, resources
   and users, gated by signed sessions and an admin allowlist
 - **i18n** — English · Tiếng Việt · Deutsch
@@ -98,21 +102,45 @@ library shows only what's installed. Removing a pack never removes your
 sightings.
 
 **Bird voices.** `scripts/fetch_bird_voices.py` pulls CC-licensed recordings
-from the xeno-canto API (non-commercial licences included — the app is free)
-into `data/voices/`, then `apply_voices_to_pack.py` merges `sounds[]` into a
-pack's `species.ndjson`. Audio streams at playback — packs stay small.
+from the xeno-canto API into `data/voices/`, keeping only commercial-safe
+licences (CC BY, BY-SA, BY-ND, CC0 — NC is excluded so that any pack, including
+an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges `sounds[]` into a pack's
+`species.ndjson`. Audio streams at playback — packs stay small.
 
 ## Deploy
 
-Merges to `master` deploy to Cloudflare Pages via `.github/workflows/ci.yml`
-(secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). One-time D1 setup:
+Merges to `master` deploy to the `spidex-staging` Cloudflare Pages project via
+`.github/workflows/ci.yml` (secrets: `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`; the job is skipped while they are unset). Manual
+deploy: `npm run build && npm run deploy` (or `deploy:preview`).
+
+**Pack media is not in git.** Photos, plates and the Singapore pack (~1.1 GB)
+live in the `spidex-packs` R2 bucket under `bundled/<packId>/…` and are served
+by `functions/packs/[[path]].ts`; the build strips untracked pack files from
+the output so every deploy is the same size. After adding or changing media
+locally, upload it (resumable, skips files already sent):
 
 ```bash
+CLOUDFLARE_ACCOUNT_ID=<account> npm run upload:media
+```
+
+One-time setup:
+
+```bash
+wrangler r2 bucket create spidex-packs     # R2 enabled on the account first
 wrangler d1 create spidex-admin
 wrangler d1 execute spidex-admin --file=migrations/0001_admin.sql --remote
 ```
 
-Manual deploy: `npm run deploy` / `npm run deploy:preview`.
+## License
+
+Spidex is free and open source under the
+[GNU Affero General Public License v3.0](LICENSE) or later. If you run a
+modified version as a network service, you must offer its source to its users.
+
+The licence covers the code. Pack content keeps its own licences: every
+photograph, plate and recording is credited with its Creative Commons licence
+(CC0, CC BY or CC BY-SA) inside the pack and in the app.
 
 ## Acknowledgements
 

@@ -70,11 +70,21 @@ describe('auth-api', () => {
     } as Response)
 
     const result = await signUpWithPassword('new@example.com', 'password123', 'John', 'Doe')
-    expect(result).toEqual(mockUser)
+    expect(result).toEqual({ user: mockUser, pendingVerification: false })
     expect(fetchMock).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ email: 'new@example.com', password: 'password123', firstName: 'John', lastName: 'Doe' }),
     }))
+  })
+
+  it('signUpWithPassword reports a pending verification without a session', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ pendingVerification: true, user: { id: 'u1', email: 'a@b.c' } }),
+    } as Response)
+
+    const result = await signUpWithPassword('a@b.c', 'pw')
+    expect(result.pendingVerification).toBe(true)
   })
 
   it('signOut calls /api/auth/logout', async () => {

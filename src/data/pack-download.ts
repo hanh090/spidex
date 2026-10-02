@@ -35,10 +35,34 @@ export async function fetchManifest(baseUrl: string): Promise<{ ok: true; manife
   try {
     const res = await fetch(`${baseUrl}/pack.json`, { cache: 'no-store' })
     if (!res.ok) return { ok: false, error: `pack.json ${res.status}` }
+    if (isHtml(res)) return { ok: false, error: 'pack.json not found' }
     const parsed = parseManifest(await res.json())
     return parsed.ok ? { ok: true, manifest: parsed.value } : { ok: false, issues: parsed.issues }
   } catch (e) {
     return { ok: false, error: (e as Error).message }
+  }
+}
+
+/**
+ * The SPA fallback answers unknown paths with 200 text/html, so `res.ok` alone
+ * would cache index.html as an image or parse it as a manifest.
+ */
+export function isHtml(res: Response): boolean {
+  return (res.headers.get('content-type') ?? '').toLowerCase().startsWith('text/html')
+}
+
+/** Only image/* (including svg+xml) and audio/* may enter the pack media cache. */
+export function isMediaResponse(res: Response): boolean {
+  const type = (res.headers.get('content-type') ?? '').toLowerCase()
+  return type.startsWith('image/') || type.startsWith('audio/')
+}
+
+/** True when a cached URL lives under /packs/<packId>/ (not merely contains it). */
+export function isPackKey(url: string, packId: string): boolean {
+  try {
+    return new URL(url).pathname.startsWith(`/packs/${packId}/`)
+  } catch {
+    return false
   }
 }
 
@@ -88,6 +112,7 @@ export async function downloadPack(opts: DownloadOptions): Promise<DownloadResul
   try {
     const res = await fetch(`${baseUrl}/species.ndjson`, { signal })
     if (!res.ok) return { ok: false, error: `species.ndjson ${res.status}` }
+    if (isHtml(res)) return { ok: false, error: 'species.ndjson not found' }
     ndjson = await res.text()
   } catch (e) {
     return { ok: false, error: (e as Error).message }
@@ -113,7 +138,7 @@ export async function downloadPack(opts: DownloadOptions): Promise<DownloadResul
   const cacheOne = async (url: string): Promise<void> => {
     try {
       const res = await fetch(url, { signal })
-      if (!res.ok) return
+      if (!res.ok || !isMediaResponse(res)) return
       const buf = await res.clone().arrayBuffer()
       await cache.put(url, res)
       // Count what was actually stored, not what was fetched: a swallowed
@@ -192,7 +217,7 @@ export async function packReferenceCount(packId: string): Promise<number> {
 export async function deletePack(packId: string): Promise<void> {
   const cache = await caches.open(PACK_IMAGE_CACHE)
   const keys = await cache.keys()
-  await Promise.all(keys.filter((k) => k.url.includes(`/${packId}/`)).map((k) => cache.delete(k)))
+  await Promise.all(keys.filter((k) => isPackKey(k.url, packId)).map((k) => cache.delete(k)))
   await db.transaction('rw', db.packs, db.species, db.favourites, async () => {
     await db.species.where('packId').equals(packId).delete()
     await db.favourites.where('packId').equals(packId).delete()

@@ -5,7 +5,7 @@
 # through to the app. Without this, a deep link to /library or /identify 404s —
 # the same class of bug as the /packs route collision found locally.
 #
-# /api/* is handled by Pages Functions and must NOT be swallowed by the
-# fallback, so it is excluded explicitly before the catch-all.
-/api/*  /api/:splat  200
+# /api/* and /packs/* are Pages Functions routes:
+# a Function runs before static serving, so the fallback never shadows them.
+# (A self-referential /api/* rule was ignored by Pages as an infinite loop.)
 /*      /index.html  200

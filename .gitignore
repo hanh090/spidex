@@ -72,3 +72,6 @@ plans/
 
 # Dev admin store (scratch state for the local /api/admin shim)
 data/admin-store.json
+
+# Dev pack submissions (local stand-in for the R2 bucket)
+data/submissions/

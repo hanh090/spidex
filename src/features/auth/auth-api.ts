@@ -33,7 +33,7 @@ export async function signUpWithPassword(
   password: string,
   firstName?: string,
   lastName?: string
-): Promise<User> {
+): Promise<{ user: User; pendingVerification: boolean }> {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -45,7 +45,9 @@ export async function signUpWithPassword(
     throw new Error(data.error || 'Failed to create account')
   }
 
-  return data.user
+  // The account exists but no session was issued, e.g. WorkOS wants the email
+  // verified first. The user must sign in once that is done.
+  return { user: data.user, pendingVerification: data.pendingVerification === true }
 }
 
 export async function getOAuthUrl(provider: 'GoogleOAuth' | 'MicrosoftOAuth' | 'authkit'): Promise<string> {

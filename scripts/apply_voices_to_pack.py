@@ -12,8 +12,15 @@ is idempotent and safe to re-run after a re-fetch.
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
+
+# Same commercial-safe allowlist as fetch_bird_voices.py — re-applying an old
+# voices file must strip NC sounds already stored in it.
+SAFE_LIC = re.compile(
+    r"^https?://creativecommons\.org/(licenses/(by|by-sa|by-nd)/|publicdomain/)", re.I
+)
 
 
 def main() -> int:
@@ -35,7 +42,8 @@ def main() -> int:
             out.append(line)
             continue
         rec = json.loads(line)
-        found = voices.get(rec.get("sciName", ""), [])
+        found = [s for s in voices.get(rec.get("sciName", ""), [])
+                 if SAFE_LIC.match(s.get("licenseUrl") or "")]
         if found:
             rec["sounds"] = found
             matched += 1

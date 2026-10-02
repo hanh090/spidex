@@ -11,7 +11,7 @@ import { claimGuestSightings } from './claim'
 
 interface AuthContextValue extends AuthState {
   signIn: (email: string, pass: string) => Promise<User>
-  signUp: (email: string, pass: string, first?: string, last?: string) => Promise<User>
+  signUp: (email: string, pass: string, first?: string, last?: string) => Promise<{ pendingVerification: boolean }>
   signOut: () => Promise<void>
   loginWithOAuth: (provider: 'GoogleOAuth' | 'MicrosoftOAuth' | 'authkit') => Promise<void>
   refreshUser: () => Promise<void>
@@ -49,13 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loggedIn
   }
 
-  const signUp = async (email: string, pass: string, first?: string, last?: string): Promise<User> => {
-    const created = await signUpWithPassword(email, pass, first, last)
+  const signUp = async (email: string, pass: string, first?: string, last?: string) => {
+    const { user: created, pendingVerification } = await signUpWithPassword(email, pass, first, last)
+    if (pendingVerification) return { pendingVerification }
     setUser(created)
     if (created.id) {
       await claimGuestSightings(created.id)
     }
-    return created
+    return { pendingVerification }
   }
 
   const signOut = async () => {

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import { PACK_IMAGE_CACHE, PACK_URL_PREFIX } from './src/data/cache-names'
+import { PACK_IMAGE_CACHE, isPackMediaRequest } from './src/data/cache-names'
 import { devAuthPlugin } from './server/auth/dev-auth-plugin'
 
 // vitest picks up dependency test files without an explicit include.
@@ -30,7 +30,8 @@ export default defineConfig({
             // Serves pack images from the SAME cache `pack-download` fills.
             // Without this route the download succeeds and the gallery is blank
             // offline — the cache is written but nothing reads it on fetch.
-            urlPattern: ({ url }) => url.pathname.startsWith(PACK_URL_PREFIX),
+            // Self-contained matcher (see cache-names.ts): it is serialised into sw.js.
+            urlPattern: isPackMediaRequest,
             handler: 'CacheFirst',
             options: {
               cacheName: PACK_IMAGE_CACHE,
@@ -49,7 +50,7 @@ export default defineConfig({
     }),
   ],
   test: {
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['{src,functions,server}/**/*.{test,spec}.{ts,tsx}'],
     environment: 'node',
     // Without this every Dexie path — save, quota recovery, pack delete,
     // integrity — is unexecuted by CI while the suite still reports green.

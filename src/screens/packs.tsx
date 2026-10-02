@@ -8,6 +8,7 @@
  * sightings are kept: they carry a species snapshot and stay readable.
  */
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { db, setActivePackId, getActivePackId, type StoredPack } from '../data/db'
 import { downloadPack, deletePack, fetchManifest, packReferenceCount, type Progress } from '../data/pack-download'
@@ -35,6 +36,7 @@ interface Listed {
 
 export function Packs() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [installed, setInstalled] = useState<StoredPack[]>([])
   const [listed, setListed] = useState<Listed[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -266,6 +268,19 @@ export function Packs() {
         {listed.length === 0 && (
           <p className="t-body" style={{ color: 'var(--ink-muted)' }}>{t('packs.noneListed')}</p>
         )}
+
+        {/* The catalogue is open: any signed-in author can publish a pack. */}
+        <section style={{ marginTop: 'var(--space-8)', borderTop: 'var(--hair) solid var(--line)', paddingTop: 'var(--space-4)' }}>
+          <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-2)' }}>
+            {t('contribute.sectionTitle')}
+          </h2>
+          <p className="t-body" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)', textWrap: 'pretty' }}>
+            {t('contribute.sectionLede')}
+          </p>
+          <Button variant="secondary" onClick={() => navigate('/contribute')}>
+            {t('contribute.cta')}
+          </Button>
+        </section>
       </div>
     </div>
   )

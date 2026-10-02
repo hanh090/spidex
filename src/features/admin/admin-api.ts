@@ -20,6 +20,8 @@ export interface AdminPack {
   sizeBytes?: { thumb: number; full: number }
   featured?: boolean
   published?: boolean
+  /** Author-uploaded pack served from R2, not the deploy bundle. */
+  community?: boolean
   /** Listed in the index but its manifest could not be read. */
   missing?: boolean
 }
@@ -103,4 +105,25 @@ export function setPackPublished(packId: string, published: boolean): Promise<{ 
 
 export function fetchAdminUsers(): Promise<{ users: AdminUser[]; error?: string }> {
   return call('/api/admin/users')
+}
+
+export interface AdminSubmission extends AdminResource {
+  meta: Record<string, unknown> & {
+    packId?: string
+    status?: string
+    note?: string
+    submitter?: { userId: string; email: string }
+    issues?: { path: string; message: string }[]
+    receivedFiles?: number
+    fileCount?: number
+    summary?: { name?: { en?: string }; speciesCount?: number }
+  }
+}
+
+export function fetchAdminSubmissions(): Promise<{ submissions: AdminSubmission[] }> {
+  return call('/api/admin/submissions')
+}
+
+export function reviewSubmission(id: string, action: 'approve' | 'reject'): Promise<{ ok: true; packId?: string }> {
+  return call(`/api/admin/submissions/${encodeURIComponent(id)}/${action}`, { method: 'POST' })
 }

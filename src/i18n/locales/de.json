@@ -31,13 +31,43 @@
     "registerTitle": "Spidex-Konto erstellen",
     "signIn": "Anmelden",
     "signInTitle": "Bei Spidex anmelden",
-    "submitting": "Bitte warten…"
+    "submitting": "Bitte warten…",
+    "verifyEmail": "Konto erstellt. Bestätige deine E-Mail-Adresse und melde dich dann an."
   },
   "compare": {
     "empty": "Zwei Arten auswählen",
     "emptyFix": "Öffne eine Art und nutze „Häufig verwechselt mit“.",
     "legend": "Unterschiede hervorgehoben",
     "title": "Vergleich"
+  },
+  "contribute": {
+    "title": "Paket beisteuern",
+    "lede": "Spidex ist ein offener Katalog — jede Art, jede Region. Erstellen Sie ein Paket nach der Anleitung, wählen Sie hier den Ordner, und es geht nach der Prüfung für alle live.",
+    "signInTitle": "Zum Veröffentlichen anmelden",
+    "signInFix": "Einreichungen sind mit Ihrem Konto verknüpft, damit Prüfer Sie erreichen.",
+    "pick": "Paketordner wählen…",
+    "submit": "Zur Prüfung hochladen",
+    "cancel": "Abbrechen",
+    "notePlaceholder": "Notiz für Prüfer (optional) — Quellen, Abdeckung, Wissenswertes",
+    "uploading": "{{done}} von {{total}} Dateien werden hochgeladen…",
+    "doneTitle": "Zur Prüfung eingereicht",
+    "doneFix": "{{packId}} ist in der Prüf-Warteschlange. Der Status steht unten.",
+    "another": "Weiteres Paket einreichen",
+    "mine": "Ihre Einreichungen",
+    "withdraw": "Zurückziehen",
+    "missingFiles": "Der Ordner braucht pack.json und species.ndjson im Wurzelverzeichnis.",
+    "invalidManifest": "pack.json ist ungültig.",
+    "invalidSpecies": "species.ndjson ist ungültig.",
+    "sectionTitle": "Eine eigene Checkliste?",
+    "sectionLede": "Der Katalog ist offen — veröffentlichen Sie ein Paket für jede Art, jede Region, und es landet in jeder Bibliothek.",
+    "cta": "Paket veröffentlichen",
+    "status": {
+      "uploading": "Lädt hoch",
+      "pending": "In Prüfung",
+      "published": "Veröffentlicht",
+      "rejected": "Abgelehnt",
+      "withdrawn": "Zurückgezogen"
+    }
   },
   "drawer": {
     "about": "Über",
@@ -135,13 +165,13 @@
   "onboarding": {
     "browseAll": "Alle Checklisten ansehen",
     "choose": "Erste Checkliste wählen",
-    "headline": "Die Vögel und Schmetterlinge Vietnams — in der Tasche, ohne Empfang",
+    "headline": "Jede Art, jede Region — in der Tasche, ohne Empfang",
     "install": "Herunterladen und erkunden",
     "installNamed": "{{name}} herunterladen und erkunden",
     "installNote": "Arten und Tafeln werden auf diesem Gerät gespeichert, damit der Führer vollständig offline arbeitet.",
     "installing": "Wird geladen…",
     "lede": "Eine Checkliste einmal herunterladen. Alle Arten, Tafeln und Bestimmungsschlüssel liegen dann auf dem Telefon — tief im Nationalpark, auf dem Boot, um 3 Uhr nachts ohne Netz.",
-    "statChecklists": "nationale Checklisten",
+    "statChecklists": "Artenpakete",
     "statOffline": "Balken nötig",
     "statOfflineValue": "Null",
     "statSpecies": "Arten"
@@ -158,7 +188,7 @@
     "figureSize": "Download",
     "figureSpecies": "Arten",
     "invalid": "Dieses Paket ist ungültig: {{detail}}",
-    "lede": "Jede Checkliste ist ein vollständiger Regionalführer auf Ihrem Telefon. Laden Sie herunter, was Sie brauchen, und entfernen Sie es nach der Reise.",
+    "lede": "Jedes Paket ist ein vollständiger Feldführer — eine Region, ein Taxon, ein Projekt — auf Ihrem Telefon. Laden Sie herunter, was Sie brauchen, und entfernen Sie es nach der Reise.",
     "noHeadroom": "Zu wenig Speicher für die volle Auflösung.",
     "noneListed": "Es konnten keine Checklisten geladen werden. Verbinden Sie sich einmal, um zu sehen, was verfügbar ist.",
     "onThisDevice": "Auf diesem Gerät",
@@ -271,7 +301,8 @@
     "section": {
       "overview": "Übersicht",
       "resources": "Ressourcen",
-      "users": "Nutzer"
+      "users": "Nutzer",
+      "submissions": "Prüfung"
     },
     "signInTitle": "Anmeldung erforderlich",
     "signInFix": "Die Konsole erfordert ein Team-Konto.",
@@ -306,7 +337,23 @@
       "checklist": "Checkliste",
       "dataset": "Datensatz",
       "audio": "Audio",
-      "note": "Notiz"
+      "note": "Notiz",
+      "submission": "Einreichung"
+    },
+    "community": "Community",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "rejectConfirm": "{{id}} ablehnen? Die hochgeladenen Dateien werden gelöscht.",
+    "noSubmissions": "Nichts wartet auf Prüfung.",
+    "submissionsClosed": "Geprüft",
+    "submissionsListed_one": "{{n}} Einreichung wartet auf Prüfung",
+    "submissionsListed_other": "{{n}} Einreichungen warten auf Prüfung",
+    "submissionStatus": {
+      "uploading": "Lädt hoch",
+      "pending": "Wartet auf Prüfung",
+      "published": "Veröffentlicht",
+      "rejected": "Abgelehnt",
+      "withdrawn": "Zurückgezogen"
     }
   }
 }

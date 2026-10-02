@@ -23,9 +23,9 @@ export const CATALOGUE = [
 /**
  * Offered on first run, before the user has reached the library.
  *
- * Two only. A first-run screen that lists seven packs is a decision, and the
- * user has no basis to make it yet — these are the two national checklists
- * with photographic plates. Everything else stays one tap away in the library.
+ * Two only. A first-run screen that lists every pack is a decision, and the
+ * user has no basis to make it yet — these are the flagship checklists with
+ * photographic plates. Everything else stays one tap away in the library.
  */
 export const FEATURED = ['bird-vn', 'butterfly-vn'] as const
 

@@ -2,15 +2,21 @@
   "name": "spidex",
   "private": true,
   "version": "0.1.0",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hanh090/spidex.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prune-pack-media.mjs",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.functions.json --noEmit",
     "test": "vitest run",
-    "deploy": "wrangler pages deploy dist --project-name=spidex",
-    "deploy:preview": "wrangler pages deploy dist --project-name=spidex --branch=preview"
+    "deploy": "wrangler pages deploy dist --project-name=spidex-staging --branch=main",
+    "deploy:preview": "wrangler pages deploy dist --project-name=spidex-staging --branch=staging",
+    "upload:media": "node scripts/upload-pack-media.mjs"
   },
   "dependencies": {
     "@workos-inc/node": "^10.13.0",

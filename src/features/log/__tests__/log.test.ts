@@ -12,6 +12,7 @@ import { buildSighting, deleteSighting, groupByDay, listNeedsId, resolveSpecies,
 import { buildLifeList } from '../life-list'
 import { generalize, toCsv, toGeoJson } from '../export'
 import { assessClock, noteWallClock, tzOffsetMinutes } from '../clock'
+import { formatDate } from '../../../i18n/format'
 import { checkIntegrity, recordUserDataCounts } from '../../../data/integrity'
 
 function species(over: Partial<StoredSpecies> = {}): StoredSpecies {
@@ -150,6 +151,17 @@ describe('groupByDay', () => {
     expect(groups[0]!.key).toBe('2026-09-07')
     // The heading instant is offset-corrected, so formatting cannot shift it.
     expect(new Date(groups[0]!.at).toISOString().slice(0, 10)).toBe('2026-09-07')
+  })
+
+  it('renders the day heading as the sighting\'s own date in any reader timezone', () => {
+    // 21:10 local (UTC+7) on the 2nd is 14:10Z; the offset-shifted instant is
+    // 04:10Z on the 3rd, so only a UTC render keeps the heading on the 2nd.
+    const at = Date.parse('2026-10-02T14:10:00Z')
+    const row = { ...buildSighting({ count: 1, notes: '', at, photos: [] }, 'i', 'trusted', 'a'), tzOffsetMinutes: 420 }
+    const g = groupByDay([row])[0]!
+    expect(g.key).toBe('2026-10-02')
+    expect(formatDate(g.at, 'UTC')).toMatch(/02/)
+    expect(formatDate(g.at, 'UTC')).not.toMatch(/03/)
   })
 
   it('splits records that fall on different local days', () => {
