@@ -14,8 +14,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit && tsc -p tsconfig.functions.json --noEmit",
     "test": "vitest run",
-    "deploy": "wrangler pages deploy dist --project-name=spidex-staging --branch=main",
-    "deploy:preview": "wrangler pages deploy dist --project-name=spidex-staging --branch=staging",
+    "deploy": "wrangler pages deploy dist --project-name=spidex-app --branch=main",
+    "deploy:preview": "wrangler pages deploy dist --project-name=spidex-app --branch=staging",
     "upload:media": "node scripts/upload-pack-media.mjs"
   },
   "dependencies": {

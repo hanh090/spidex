@@ -11,10 +11,10 @@ anyone — with species accounts, identification keys, and voice recordings
 that live entirely on your phone.
 
 [![CI](https://github.com/hanh090/spidex/actions/workflows/ci.yml/badge.svg)](https://github.com/hanh090/spidex/actions/workflows/ci.yml)
-[![Staging](https://img.shields.io/badge/staging-spidex--staging.pages.dev-b8232c)](https://spidex-staging.pages.dev)
-[![PWA](https://img.shields.io/badge/PWA-offline--first-5b8a3c)](https://spidex-staging.pages.dev)
+[![Live](https://img.shields.io/badge/live-spidex--app.pages.dev-b8232c)](https://spidex-app.pages.dev)
+[![PWA](https://img.shields.io/badge/PWA-offline--first-5b8a3c)](https://spidex-app.pages.dev)
 
-**[Open the staging app →](https://spidex-staging.pages.dev)**
+**[Open the app →](https://spidex-app.pages.dev)**
 
 </div>
 
@@ -109,7 +109,7 @@ an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges
 
 ## Deploy
 
-Merges to `master` deploy to the `spidex-staging` Cloudflare Pages project via
+Merges to `master` deploy to the `spidex-app` Cloudflare Pages project via
 `.github/workflows/ci.yml` (secrets: `CLOUDFLARE_API_TOKEN`,
 `CLOUDFLARE_ACCOUNT_ID`; the job is skipped while they are unset). Manual
 deploy: `npm run build && npm run deploy` (or `deploy:preview`).
