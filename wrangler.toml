@@ -12,14 +12,14 @@ binding = "DB"
 database_name = "spidex-admin"
 database_id = "16a8f84a-3868-4274-afdb-0947ede9c618"
 
-# Community pack storage. R2 must be enabled on the account once (dashboard),
-# then create the bucket and uncomment the binding:
+# Pack storage: bundled pack media under bundled/<packId>/<path>
+# (scripts/upload-pack-media.mjs) and community packs. Created once with:
 #   wrangler r2 bucket create spidex-packs
 # Key layout: submissions/<submissionId>/<path> (staging, never served).
 # Approving a pack writes a D1 row (kind='pack', meta.community=true,
 # meta.prefix=<that staging prefix>) and /packs/* serves through it, so
 # approval is a row write — no mass copy. Packs approved before staging
 # existed have no meta.prefix and serve from packs/<packId>/.
-# [[r2_buckets]]
-# binding = "PACKS"
-# bucket_name = "spidex-packs"
+[[r2_buckets]]
+binding = "PACKS"
+bucket_name = "spidex-packs"
