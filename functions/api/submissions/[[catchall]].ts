@@ -6,15 +6,16 @@
  *   PUT  /api/submissions/:id/files  upload one file per request (?path=)
  *   POST /api/submissions/:id/complete  finish → server re-validates → pending
  *   GET  /api/submissions/mine       the caller's own submissions
- *   DELETE /api/submissions/:id      withdraw while not yet published
+ *   DELETE /api/submissions/:id      withdraw while uploading/pending/rejected
  *
- * Files stream straight into the PACKS bucket at packs/<packId>/<path>. The
- * bucket is never public on its own — a D1 `kind='pack'` publish flag is the
- * gate the catalogue merge and the /packs/* asset route both consult.
+ * Files stream into the PACKS bucket at submissions/<submissionId>/<path>, a
+ * staging area nothing serves. Approval (admin API) points a D1 `kind='pack'`
+ * row at that prefix; withdraw only ever deletes this submission's own prefix.
  */
 import { readSession } from '../../lib/session'
 import {
-  PACK_ID_RE, sanitizePath, checkManifest, checkSpeciesNdjson,
+  isValidPackId, sanitizePath, checkManifest, checkSpeciesNdjson, deletePrefix, isRealAsset,
+  submissionPrefix,
   MAX_FILE_BYTES, MAX_TOTAL_BYTES, MAX_FILES, MAX_PENDING_PER_USER,
   type SubmissionMeta,
 } from '../../lib/submissions'
@@ -24,7 +25,7 @@ interface Env {
   WORKOS_API_KEY?: string
   ADMIN_EMAILS?: string
   DB?: any
-  PACKS?: { put: (key: string, body: any, opts?: any) => Promise<any>; get: (key: string) => Promise<any>; delete: (key: string) => Promise<any>; list: (opts?: any) => Promise<any> }
+  PACKS?: { put: (key: string, body: any, opts?: any) => Promise<any>; get: (key: string) => Promise<any>; delete: (key: any) => Promise<any>; list: (opts?: any) => Promise<any> }
   ASSETS?: { fetch: (input: Request | string) => Promise<Response> }
 }
 
@@ -37,7 +38,6 @@ interface Row { id: string; kind: string; title: string; meta: string; published
 const meta = (r: Row): SubmissionMeta => {
   try { return JSON.parse(r.meta) as SubmissionMeta } catch { return { packId: '', submitter: { userId: '', email: '' }, status: 'uploading', fileCount: 0, totalBytes: 0, receivedFiles: 0, receivedBytes: 0 } }
 }
-const packPrefix = (m: SubmissionMeta) => `packs/${m.packId}`
 
 async function getSubmission(env: Env, id: string): Promise<{ row: Row; meta: SubmissionMeta } | null> {
   const row = (await env.DB.prepare('SELECT * FROM admin_resources WHERE id = ? AND kind = ?')
@@ -45,10 +45,7 @@ async function getSubmission(env: Env, id: string): Promise<{ row: Row; meta: Su
   return row ? { row, meta: meta(row) } : null
 }
 
-async function putMeta(env: Env, row: Row, m: SubmissionMeta) {
-  await env.DB.prepare('UPDATE admin_resources SET meta = ?, updated_at = ? WHERE id = ?')
-    .bind(JSON.stringify(m), Date.now(), row.id).run()
-}
+const changed = (res: any) => (res?.meta?.changes ?? 0) > 0
 
 export const onRequest = async (context: any) => {
   const { request, env } = context as { request: Request; env: Env }
@@ -63,12 +60,12 @@ export const onRequest = async (context: any) => {
     if (method === 'GET' && pathname === '/api/submissions/mine') {
       if (!env.DB) return json({ submissions: [] })
       const { results } = await env.DB.prepare(
-        "SELECT * FROM admin_resources WHERE kind = 'submission' ORDER BY updated_at DESC",
-      ).all()
-      const mine = (results as Row[])
-        .map((r) => ({ id: r.id, meta: meta(r), updatedAt: r.updated_at }))
-        .filter((s) => s.meta.submitter.userId === session.userId)
-        .map((s) => ({ id: s.id, packId: s.meta.packId, status: s.meta.status, issues: s.meta.issues ?? [], summary: s.meta.summary ?? null, updatedAt: s.updatedAt }))
+        "SELECT * FROM admin_resources WHERE kind = 'submission' AND json_extract(meta, '$.submitter.userId') = ? ORDER BY updated_at DESC",
+      ).bind(session.userId).all()
+      const mine = (results as Row[]).map((r) => {
+        const m = meta(r)
+        return { id: r.id, packId: m.packId, status: m.status, issues: m.issues ?? [], summary: m.summary ?? null, updatedAt: r.updated_at }
+      })
       return json({ submissions: mine })
     }
 
@@ -80,36 +77,29 @@ export const onRequest = async (context: any) => {
       const fileCount = Number(body.fileCount)
       const totalBytes = Number(body.totalBytes)
 
-      if (!PACK_ID_RE.test(packId)) return json({ error: 'packId must be lowercase letters, digits and dashes' }, 400)
+      if (!isValidPackId(packId)) return json({ error: 'packId must be lowercase letters, digits and dashes, and not a reserved name' }, 400)
       if (!Number.isInteger(fileCount) || fileCount < 2 || fileCount > MAX_FILES)
         return json({ error: `fileCount must be between 2 and ${MAX_FILES}` }, 400)
       if (!Number.isFinite(totalBytes) || totalBytes <= 0 || totalBytes > MAX_TOTAL_BYTES)
         return json({ error: `totalBytes must be between 1 and ${MAX_TOTAL_BYTES}` }, 400)
 
-      // Id must be free: not a shipped pack, not a published community pack,
-      // not already claimed by another live submission.
+      // Id must be free: not a shipped pack, and not any existing pack row
+      // (published or unpublished) unless the caller is that pack's author —
+      // resubmission is the update path.
       if (env.ASSETS) {
         const taken = await env.ASSETS.fetch(new Request(`${url.origin}/packs/${packId}/pack.json`))
-        if (taken.ok) return json({ error: 'That pack id already exists' }, 409)
+        if (isRealAsset(taken)) return json({ error: 'That pack id already exists' }, 409)
       }
       const existing = await env.DB.prepare(
-        "SELECT meta FROM admin_resources WHERE kind = 'pack' AND id = ? AND published = 1",
+        "SELECT meta FROM admin_resources WHERE kind = 'pack' AND id = ?",
       ).bind(packId).first()
       if (existing) {
-        // Resubmission is the update path: allowed only for the pack's own
-        // author — new files overwrite the same prefix, approval republishes.
         let owned = false
-        try { owned = (JSON.parse((existing as any).meta)?.submittedBy?.userId) === session.userId } catch { /* no */ }
+        try {
+          const em = JSON.parse((existing as any).meta)
+          owned = !!em?.community && em?.submittedBy?.userId === session.userId
+        } catch { /* not owned */ }
         if (!owned) return json({ error: 'That pack id already exists' }, 409)
-      }
-      const claimed = await env.DB.prepare(
-        "SELECT id, meta FROM admin_resources WHERE kind = 'submission'",
-      ).all()
-      for (const r of (claimed.results ?? []) as Row[]) {
-        const m = meta(r)
-        if (m.packId === packId && ['uploading', 'pending'].includes(m.status)) {
-          return json({ error: 'That pack id is already being submitted' }, 409)
-        }
       }
       const open = await env.DB.prepare(
         "SELECT COUNT(*) AS n FROM admin_resources WHERE kind = 'submission' AND json_extract(meta, '$.submitter.userId') = ? AND json_extract(meta, '$.status') IN ('uploading','pending')",
@@ -124,9 +114,17 @@ export const onRequest = async (context: any) => {
         submitter: { userId: session.userId, email: session.email },
         status: 'uploading', fileCount, totalBytes, receivedFiles: 0, receivedBytes: 0,
       }
-      await env.DB.prepare(
-        'INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at) VALUES (?, ?, ?, ?, 0, 0, ?)',
-      ).bind(id, 'submission', packId, JSON.stringify(m), Date.now()).run()
+      // Claim and insert in one statement so two concurrent claims of the same
+      // id cannot both succeed.
+      const claim = await env.DB.prepare(
+        `INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at)
+         SELECT ?, 'submission', ?, ?, 0, 0, ?
+         WHERE NOT EXISTS (
+           SELECT 1 FROM admin_resources
+           WHERE kind = 'submission' AND json_extract(meta, '$.packId') = ?
+             AND json_extract(meta, '$.status') IN ('uploading','pending'))`,
+      ).bind(id, packId, JSON.stringify(m), Date.now(), packId).run()
+      if (!changed(claim)) return json({ error: 'That pack id is already being submitted' }, 409)
       return json({ ok: true, id }, 201)
     }
 
@@ -142,15 +140,34 @@ export const onRequest = async (context: any) => {
       if (!path) return json({ error: 'Unsupported path' }, 400)
       const len = Number(request.headers.get('Content-Length') ?? 0)
       if (!len || len > MAX_FILE_BYTES) return json({ error: 'File too large' }, 413)
-      if (found.meta.receivedFiles >= found.meta.fileCount) return json({ error: 'File count exceeded' }, 400)
-      if (found.meta.receivedBytes + len > found.meta.totalBytes * 1.05) return json({ error: 'Byte budget exceeded' }, 413)
       if (!request.body) return json({ error: 'Empty body' }, 400)
 
-      await env.PACKS.put(`${packPrefix(found.meta)}/${path}`, request.body)
-      found.meta.receivedFiles += 1
-      found.meta.receivedBytes += len
-      await putMeta(env, found.row, found.meta)
-      return json({ ok: true, received: found.meta.receivedFiles })
+      // Reserve the slot atomically before writing: the guards live in the
+      // WHERE clause, so parallel uploads cannot all pass on a stale counter.
+      const reserve = await env.DB.prepare(
+        `UPDATE admin_resources SET updated_at = ?, meta = json_set(meta,
+           '$.receivedFiles', json_extract(meta, '$.receivedFiles') + 1,
+           '$.receivedBytes', json_extract(meta, '$.receivedBytes') + ?)
+         WHERE id = ? AND kind = 'submission'
+           AND json_extract(meta, '$.status') = 'uploading'
+           AND json_extract(meta, '$.receivedFiles') < json_extract(meta, '$.fileCount')
+           AND json_extract(meta, '$.receivedBytes') + ? <= json_extract(meta, '$.totalBytes') * 1.05`,
+      ).bind(Date.now(), len, found.row.id, len).run()
+      if (!changed(reserve)) return json({ error: 'File count or byte budget exceeded' }, 413)
+
+      try {
+        await env.PACKS.put(`${submissionPrefix(found.row.id)}/${path}`, request.body)
+      } catch (err) {
+        // Give the slot back so a retry of the same file does not double count.
+        await env.DB.prepare(
+          `UPDATE admin_resources SET meta = json_set(meta,
+             '$.receivedFiles', json_extract(meta, '$.receivedFiles') - 1,
+             '$.receivedBytes', json_extract(meta, '$.receivedBytes') - ?)
+           WHERE id = ?`,
+        ).bind(len, found.row.id).run().catch(() => undefined)
+        throw err
+      }
+      return json({ ok: true, received: found.meta.receivedFiles + 1 })
     }
 
     const completeMatch = pathname.match(/^\/api\/submissions\/([^/]+)\/complete$/)
@@ -161,8 +178,9 @@ export const onRequest = async (context: any) => {
       if (found.meta.submitter.userId !== session.userId) return json({ error: 'Not your submission' }, 403)
       if (found.meta.status !== 'uploading') return json({ error: `Submission is ${found.meta.status}` }, 409)
 
-      const prefix = packPrefix(found.meta)
+      const prefix = submissionPrefix(found.row.id)
       const issues: { path: string; message: string }[] = []
+      let summary: SubmissionMeta['summary'] | undefined
 
       const manifestObj = await env.PACKS.get(`${prefix}/pack.json`)
       let manifest: any = null
@@ -187,16 +205,20 @@ export const onRequest = async (context: any) => {
           issues.push({ path: 'species.ndjson', message: `${check.count} records, manifest declares ${manifest.speciesCount}` })
         }
         if (manifest) {
-          found.meta.summary = {
+          summary = {
             name: manifest.name, region: manifest.region, taxonGroup: manifest.taxonGroup,
             version: manifest.version, speciesCount: manifest.speciesCount, sizeBytes: manifest.sizeBytes,
           }
         }
       }
 
-      found.meta.issues = issues
-      found.meta.status = issues.length ? 'uploading' : 'pending'
-      await putMeta(env, found.row, found.meta)
+      // Targeted json_set (not a whole-meta overwrite) so counters written by
+      // in-flight uploads are never clobbered.
+      await env.DB.prepare(
+        `UPDATE admin_resources SET updated_at = ?, meta = json_set(meta,
+           '$.issues', json(?), '$.summary', json(?), '$.status', ?)
+         WHERE id = ? AND json_extract(meta, '$.status') = 'uploading'`,
+      ).bind(Date.now(), JSON.stringify(issues), JSON.stringify(summary ?? null), issues.length ? 'uploading' : 'pending', found.row.id).run()
       return issues.length
         ? json({ ok: false, issues }, 422)
         : json({ ok: true, status: 'pending' })
@@ -204,24 +226,33 @@ export const onRequest = async (context: any) => {
 
     const delMatch = pathname.match(/^\/api\/submissions\/([^/]+)$/)
     if (delMatch && method === 'DELETE') {
+      if (!env.DB) return json({ error: 'Submissions are not configured' }, 503)
       const found = await getSubmission(env, decodeURIComponent(delMatch[1]!))
       if (!found) return json({ error: 'Not found' }, 404)
       const mine = found.meta.submitter.userId === session.userId
-      const admin = (env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()).includes(session.email.toLowerCase())
+      const admin = (env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean).includes(session.email.toLowerCase())
       if (!mine && !admin) return json({ error: 'Not your submission' }, 403)
-      if (found.meta.status === 'published') return json({ error: 'Already published — unpublish via the admin console' }, 409)
 
-      if (env.PACKS) {
-        const listed = await env.PACKS.list({ prefix: `${packPrefix(found.meta)}/` })
-        for (const o of (listed as any).objects ?? []) await env.PACKS.delete(o.key)
-      }
-      found.meta.status = 'withdrawn'
-      await putMeta(env, found.row, found.meta)
+      // Flip the status first and only from a withdrawable state: if approval
+      // wins the race the update matches nothing and nothing is deleted. A
+      // second DELETE on an already-withdrawn row re-runs the (idempotent)
+      // cleanup of the same staging prefix.
+      const flip = await env.DB.prepare(
+        `UPDATE admin_resources SET updated_at = ?, meta = json_set(meta, '$.status', 'withdrawn')
+         WHERE id = ? AND kind = 'submission'
+           AND json_extract(meta, '$.status') IN ('uploading','pending','rejected','withdrawn')`,
+      ).bind(Date.now(), found.row.id).run()
+      if (!changed(flip)) return json({ error: `Submission is ${found.meta.status} — unpublish via the admin console` }, 409)
+
+      // Only this submission's staging prefix; a published pack's files live
+      // under a different prefix and are never reachable from here.
+      if (env.PACKS) await deletePrefix(env.PACKS, submissionPrefix(found.row.id))
       return json({ ok: true })
     }
 
     return json({ error: 'Not found' }, 404)
-  } catch (err: any) {
-    return json({ error: err.message || 'Submission error' }, 500)
+  } catch (err) {
+    console.error('submissions error', err)
+    return json({ error: 'Submission error' }, 500)
   }
 }

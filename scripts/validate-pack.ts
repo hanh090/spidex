@@ -9,6 +9,7 @@
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { parseManifest, parseSpeciesNdjson } from '../src/data/pack-manifest'
+import { sanitizePath } from '../functions/lib/submissions'
 
 const dir = process.argv[2]
 if (!dir || !existsSync(join(dir, 'pack.json'))) {
@@ -48,17 +49,23 @@ if (!parsed.ok) {
 }
 
 // Referenced files exist on disk — a broken image path is a download-time gap.
+// They must also pass the uploader's path allowlist (same function the server
+// enforces): a file outside it is silently dropped at upload, leaving the
+// published pack with a missing image.
 let missing = 0
+const checkRef = (rel: string, owner?: string) => {
+  const tag = owner ? ` (${owner})` : ''
+  if (!existsSync(join(dir, rel))) { console.error(`  missing file: ${rel}${tag}`); missing++ }
+  if (!sanitizePath(rel)) { console.error(`  not uploadable (path/type not allowed): ${rel}${tag}`); missing++ }
+}
 for (const sp of parsed.value) {
   for (const im of sp.images) {
-    for (const rel of [im.thumbUrl, im.fullUrl].filter(Boolean) as string[]) {
-      if (!existsSync(join(dir, rel))) { console.error(`  missing file: ${rel} (${sp.id})`); missing++ }
-    }
+    for (const rel of [im.thumbUrl, im.fullUrl].filter(Boolean) as string[]) checkRef(rel, sp.id)
   }
 }
 for (const trait of manifest.traitSchema.traits) {
   for (const opt of trait.options) {
-    if (opt.img && !existsSync(join(dir, opt.img))) { console.error(`  missing file: ${opt.img}`); missing++ }
+    if (opt.img) checkRef(opt.img)
   }
 }
 

@@ -29,7 +29,11 @@ export function SignInModal({ open, onClose }: Props) {
 
     try {
       if (isRegister) {
-        await signUp(email, password, firstName, lastName)
+        const { pendingVerification } = await signUp(email, password, firstName, lastName)
+        if (pendingVerification) {
+          setError(t('auth.verifyEmail'))
+          return
+        }
       } else {
         await signIn(email, password)
       }

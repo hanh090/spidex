@@ -5,10 +5,14 @@
  * Storage model: a signed-in author declares a pack (`POST /api/submissions`)
  * then uploads its files one request each (`PUT .../files?path=`) — individual
  * pack files are small enough that no multipart machinery is needed. Objects
- * land at `packs/<packId>/<path>` in the PACKS bucket immediately; nothing is
- * public until an admin flips the publish flag, because both the catalogue
- * merge (packs/index.json) and the asset route (packs/[[path]]) check the D1
- * `kind='pack'` row first. Approving is a flag flip, not a copy.
+ * land at `submissions/<submissionId>/<path>` in the PACKS bucket — a staging
+ * area that is never served. Approval writes a `kind='pack'` D1 row whose
+ * meta.prefix points at that staging prefix, and both the catalogue merge
+ * (packs/index.json) and the asset route (packs/[[path]]) serve through that
+ * row. Withdraw/reject only ever delete the submission's own staging prefix,
+ * so a live pack can neither be overwritten nor wiped by a later submission.
+ * Community packs approved before staging existed carry no meta.prefix and
+ * keep serving from `packs/<packId>/`.
  *
  * Submission bookkeeping reuses admin_resources rows with kind='submission'
  * — no extra migration.
@@ -18,13 +22,37 @@
 export const PACK_ID_RE = /^[a-z0-9][a-z0-9-]{0,62}$/
 
 /**
- * What may be uploaded into a pack: the two data files, images, audio,
- * fonts, and nothing else — no html/js/svg can be served from a pack path,
- * which is what makes a published pack safe to serve same-origin.
+ * Ids that would collide with a static top-level path or a cache-key segment
+ * (pack-download matches on `/<id>/`), so no pack may claim them.
+ */
+export const RESERVED_PACK_IDS: ReadonlySet<string> = new Set([
+  'img', 'audio', 'fonts', 'packs', 'icons', 'assets', 'submissions', 'index',
+])
+
+export function isValidPackId(id: string): boolean {
+  return PACK_ID_RE.test(id) && !RESERVED_PACK_IDS.has(id)
+}
+
+/** R2 staging prefix for one submission (trailing slash excluded). */
+export const submissionPrefix = (submissionId: string) => `submissions/${submissionId}`
+
+/**
+ * A static-assets hit counts only when it is a real file. Pages answers a
+ * missing path with the SPA fallback (200 text/html), which must read as a miss.
+ */
+export function isRealAsset(res: Response): boolean {
+  return res.ok && !(res.headers.get('Content-Type') ?? '').toLowerCase().startsWith('text/html')
+}
+
+/**
+ * What may be uploaded into a pack: the two data files, images (SVG included —
+ * bundled packs use SVG plates), audio and fonts, and nothing else. No
+ * html/js can be served from a pack path, and every response from the bucket
+ * carries CSP `script-src 'none'`, which keeps uploaded SVG inert same-origin.
  */
 const ALLOWED_TOP = /^(pack\.json|species\.ndjson|img\/|audio\/|fonts\/)/
 
-/** Image extensions serve a real image type; everything else is octet-stream. */
+/** Known extensions serve their real type; anything else is octet-stream. */
 export const CONTENT_TYPES: Record<string, string> = {
   '.json': 'application/json',
   '.ndjson': 'application/x-ndjson',
@@ -71,6 +99,30 @@ export interface SubmissionMeta {
   reviewedAt?: number
 }
 
+/**
+ * Delete every object under `prefix/` (paginated: R2 lists at most 1000 per
+ * call, a pack may hold MAX_FILES). Guarded so a malformed prefix can never
+ * widen into the bucket root.
+ */
+export async function deletePrefix(
+  bucket: { list: (o?: any) => Promise<any>; delete: (k: any) => Promise<any> },
+  prefix: string,
+): Promise<number> {
+  if (!/^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(prefix)) throw new Error(`refusing to delete prefix "${prefix}"`)
+  let deleted = 0
+  let cursor: string | undefined
+  do {
+    const page: any = await bucket.list({ prefix: `${prefix}/`, cursor })
+    const keys: string[] = (page.objects ?? []).map((o: { key: string }) => o.key)
+    if (keys.length) {
+      await bucket.delete(keys)
+      deleted += keys.length
+    }
+    cursor = page.truncated ? page.cursor : undefined
+  } while (cursor)
+  return deleted
+}
+
 export function sanitizePath(raw: string): string | null {
   const p = raw.trim().replace(/^\/+/, '')
   if (!p || p.length > 220) return null
@@ -87,6 +139,46 @@ export function contentType(path: string): string {
   return CONTENT_TYPES[ext] ?? 'application/octet-stream'
 }
 
+export interface CommunityPackRow {
+  published: boolean
+  meta: {
+    community?: boolean
+    /** R2 prefix serving this pack; absent on packs approved before staging. */
+    prefix?: string
+    submittedBy?: { userId?: string; email?: string }
+    [k: string]: unknown
+  }
+}
+
+/** Where a community pack's files live in R2. */
+export function servingPrefix(packId: string, meta: CommunityPackRow['meta']): string {
+  return typeof meta.prefix === 'string' && meta.prefix ? meta.prefix : `packs/${packId}`
+}
+
+export interface CatalogueRow { id: string; published: boolean; community: boolean }
+
+/**
+ * Apply publish flags to the static catalogue index: unpublished ids are
+ * hidden everywhere; published community rows unknown to the static index join
+ * at the end (only when the bucket that serves them exists).
+ */
+export function mergeCatalogue(
+  index: { packs?: string[]; featured?: string[]; [k: string]: unknown },
+  rows: CatalogueRow[],
+  includeCommunity: boolean,
+) {
+  const base = index.packs ?? []
+  const hidden = new Set(rows.filter((r) => !r.published).map((r) => r.id))
+  const community = includeCommunity
+    ? rows.filter((r) => r.published && r.community && !base.includes(r.id)).map((r) => r.id)
+    : []
+  return {
+    ...index,
+    packs: [...base.filter((id) => !hidden.has(id)), ...community],
+    featured: (index.featured ?? []).filter((id) => !hidden.has(id)),
+  }
+}
+
 /**
  * Read the D1 row for a pack id. Community packs carry meta.community; the
  * published flag on the row is the single gate both the catalogue merge and
@@ -95,13 +187,13 @@ export function contentType(path: string): string {
 export async function communityPackRow(
   db: any,
   packId: string,
-): Promise<{ published: boolean; meta: { community?: boolean } } | null> {
+): Promise<CommunityPackRow | null> {
   const row = await db
     .prepare("SELECT published, meta FROM admin_resources WHERE id = ? AND kind = 'pack'")
     .bind(packId)
     .first()
   if (!row) return null
-  let meta: { community?: boolean } = {}
+  let meta: CommunityPackRow['meta'] = {}
   try { meta = JSON.parse((row as any).meta) } catch { /* keep {} */ }
   return { published: !!(row as any).published, meta }
 }

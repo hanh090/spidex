@@ -88,16 +88,24 @@ npx vite-node scripts/validate-pack.ts path/to/my-pack
 ```
 
 This runs the exact schema the app enforces — manifest, every species record,
-required aspects, and that every referenced file exists.
+required aspects, that every referenced file exists, and that each one is a
+file type and location the uploader accepts (see *Allowed files* below) — a
+file outside that list is dropped at upload and would leave a missing image.
 
 ## Publish
 
 1. Sign in → Library → **Publish a pack** (or `/contribute`).
 2. Pick the pack folder. The app validates it before anything uploads.
 3. Upload, add a note for reviewers, submit. Files go to object storage and
-   are **not public** while in review.
+   are **not public** while in review, and are kept apart from any live pack.
 4. An admin approves → the pack appears in every user's catalogue and is
-   downloadable like any bundled pack. Rejections delete the upload.
+   downloadable like any bundled pack. Rejections and withdrawals delete only
+   that submission's upload; a published pack is never touched.
+
+Pack ids are lowercase letters, digits and dashes, and may not be a reserved
+name (`img`, `audio`, `fonts`, `packs`, `icons`, `assets`, `submissions`,
+`index`). An id that already exists (shipped, or published/unpublished by
+another author) is refused; its own author may resubmit it as an update.
 
 Limits: ≤ 8,000 files, ≤ 600 MB total, ≤ 3 open submissions per account.
 Allowed files: `pack.json`, `species.ndjson`, and media under `img/`,

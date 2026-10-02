@@ -37,6 +37,7 @@ export interface AuthSessionUser {
   firstName?: string | null
   lastName?: string | null
   profilePictureUrl?: string | null
+  emailVerified?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -65,6 +66,7 @@ export async function authenticateWithPassword(email: string, password: string):
       firstName: res.user.firstName,
       lastName: res.user.lastName,
       profilePictureUrl: res.user.profilePictureUrl,
+      emailVerified: res.user.emailVerified,
       createdAt: res.user.createdAt,
       updatedAt: res.user.updatedAt,
     },
@@ -90,6 +92,7 @@ export async function createUser(email: string, password: string, firstName?: st
     firstName: user.firstName,
     lastName: user.lastName,
     profilePictureUrl: user.profilePictureUrl,
+    emailVerified: user.emailVerified,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }
@@ -122,6 +125,7 @@ export async function authenticateWithCode(code: string): Promise<AuthResponse> 
       firstName: res.user.firstName,
       lastName: res.user.lastName,
       profilePictureUrl: res.user.profilePictureUrl,
+      emailVerified: res.user.emailVerified,
       createdAt: res.user.createdAt,
       updatedAt: res.user.updatedAt,
     },
@@ -142,6 +146,7 @@ export async function getUser(userId: string): Promise<AuthSessionUser | null> {
       firstName: user.firstName,
       lastName: user.lastName,
       profilePictureUrl: user.profilePictureUrl,
+      emailVerified: user.emailVerified,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }
