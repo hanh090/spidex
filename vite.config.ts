@@ -3,13 +3,17 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { PACK_IMAGE_CACHE, isPackMediaRequest } from './src/data/cache-names'
 import { devAuthPlugin } from './server/auth/dev-auth-plugin'
+import { trackedPublicPlugin } from './server/vite/tracked-public-plugin'
 
 // vitest picks up dependency test files without an explicit include.
 
 export default defineConfig({
+  // public/ is copied by trackedPublicPlugin: untracked pack media stays out.
+  build: { copyPublicDir: false },
   plugins: [
     react(),
     devAuthPlugin(),
+    trackedPublicPlugin(),
     VitePWA({
       // 'prompt', never 'autoUpdate': an update must never swap content out from
       // under someone mid-session in the field.

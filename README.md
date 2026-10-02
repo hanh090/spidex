@@ -116,8 +116,8 @@ deploy: `npm run build && npm run deploy` (or `deploy:preview`).
 
 **Pack media is not in git.** Photos, plates and the Singapore pack (~1.1 GB)
 live in the `spidex-packs` R2 bucket under `bundled/<packId>/…` and are served
-by `functions/packs/[[path]].ts`; the build strips untracked pack files from
-the output so every deploy is the same size. After adding or changing media
+by `functions/packs/[[path]].ts`; only git-tracked public files are copied into
+the output, so every deploy is the same size. After adding or changing media
 locally, upload it (resumable, skips files already sent):
 
 ```bash

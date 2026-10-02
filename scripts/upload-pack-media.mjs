@@ -11,7 +11,7 @@
 // Resumable: uploaded files are recorded (path, size, mtime) in
 // .wrangler/pack-media-uploaded.json and skipped on the next run.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
@@ -82,7 +82,12 @@ const files = execFileSync('git', ['ls-files', '--others', '--ignored', '--exclu
   .split('\n')
   .filter((p) => p && !p.includes('.bak-') && typeOf(p))
 
-const state = existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')) : {}
+let state = {}
+try {
+  state = JSON.parse(readFileSync(statePath, 'utf8'))
+} catch {
+  // Missing or torn: re-uploading a file only overwrites it with itself.
+}
 const stamp = (p) => {
   const s = statSync(p)
   return `${s.size}:${s.mtimeMs}`
@@ -95,7 +100,9 @@ let failed = 0
 let lastSave = Date.now()
 const save = () => {
   mkdirSync('.wrangler', { recursive: true })
-  writeFileSync(statePath, JSON.stringify(state))
+  // Write-then-rename, so a killed run never leaves a torn state file.
+  writeFileSync(`${statePath}.tmp`, JSON.stringify(state))
+  renameSync(`${statePath}.tmp`, statePath)
 }
 
 async function worker() {
