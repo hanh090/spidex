@@ -103,21 +103,38 @@ sightings.
 
 **Bird voices.** `scripts/fetch_bird_voices.py` pulls CC-licensed recordings
 from the xeno-canto API into `data/voices/`, keeping only commercial-safe
-licences (CC BY, BY-SA, BY-ND, CC0 — NC is excluded because the app charges a
-fee), then `apply_voices_to_pack.py` merges `sounds[]` into a pack's
+licences (CC BY, BY-SA, BY-ND, CC0 — NC is excluded so that any pack, including
+an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges `sounds[]` into a pack's
 `species.ndjson`. Audio streams at playback — packs stay small.
 
 ## Deploy
 
-Merges to `master` deploy to Cloudflare Pages via `.github/workflows/ci.yml`
-(secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). One-time D1 setup:
+CI (`.github/workflows/ci.yml`) typechecks, tests and builds every push and
+pull request. It does not deploy: pack photography (~1.1 GB) is kept out of git,
+so a build from a clean checkout has almost no images. Deploy to the
+`spidex-staging` Pages project from a working tree that has the pack media:
+
+```bash
+npm run build && npm run deploy          # production branch of spidex-staging
+npm run deploy:preview                   # preview branch
+```
+
+One-time D1 setup:
 
 ```bash
 wrangler d1 create spidex-admin
 wrangler d1 execute spidex-admin --file=migrations/0001_admin.sql --remote
 ```
 
-Manual deploy: `npm run deploy` / `npm run deploy:preview`.
+## License
+
+Spidex is free and open source under the
+[GNU Affero General Public License v3.0](LICENSE) or later. If you run a
+modified version as a network service, you must offer its source to its users.
+
+The licence covers the code. Pack content keeps its own licences: every
+photograph, plate and recording is credited with its Creative Commons licence
+(CC0, CC BY or CC BY-SA) inside the pack and in the app.
 
 ## Acknowledgements
 
