@@ -65,7 +65,14 @@ export function Contribute() {
       setPhase({ step: 'error', message: t('contribute.missingFiles') })
       return
     }
-    const m = parseManifest(JSON.parse(await manifestFile.file.text()))
+    let manifestJson: unknown
+    try {
+      manifestJson = JSON.parse(await manifestFile.file.text())
+    } catch {
+      setPhase({ step: 'error', message: t('contribute.invalidManifest') })
+      return
+    }
+    const m = parseManifest(manifestJson)
     if (!m.ok) { setPhase({ step: 'error', message: t('contribute.invalidManifest'), issues: m.issues }); return }
     const sp = parseSpeciesNdjson(await ndjsonFile.file.text(), m.value.traitSchema)
     if (!sp.ok) { setPhase({ step: 'error', message: t('contribute.invalidSpecies'), issues: sp.issues }); return }

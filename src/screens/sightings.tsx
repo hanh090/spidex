@@ -134,7 +134,7 @@ export function Sightings() {
                       display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
                       padding: 'var(--space-4) 0 var(--space-2)',
                     }}>
-                      <span className="t-heading">{formatDate(g.at)}</span>
+                      <span className="t-heading">{formatDate(g.at, 'UTC')}</span>
                       <Meta>{t('sightings.records', { count: g.items.length })}</Meta>
                     </div>
                     {g.items.map((s) => (

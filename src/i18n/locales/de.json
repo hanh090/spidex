@@ -31,7 +31,8 @@
     "registerTitle": "Spidex-Konto erstellen",
     "signIn": "Anmelden",
     "signInTitle": "Bei Spidex anmelden",
-    "submitting": "Bitte warten…"
+    "submitting": "Bitte warten…",
+    "verifyEmail": "Konto erstellt. Bestätige deine E-Mail-Adresse und melde dich dann an."
   },
   "compare": {
     "empty": "Zwei Arten auswählen",
@@ -336,7 +337,8 @@
       "checklist": "Checkliste",
       "dataset": "Datensatz",
       "audio": "Audio",
-      "note": "Notiz"
+      "note": "Notiz",
+      "submission": "Einreichung"
     },
     "community": "Community",
     "approve": "Genehmigen",

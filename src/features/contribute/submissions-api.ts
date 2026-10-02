@@ -72,12 +72,21 @@ export async function uploadPackFiles(
 ): Promise<void> {
   let done = 0
   let cursor = 0
+  let failure: unknown = null
   const POOL = 4
   await Promise.all(Array.from({ length: Math.min(POOL, files.length) }, async () => {
-    while (cursor < files.length) {
+    // Stop pulling work as soon as any worker fails: continuing would upload
+    // the rest of a batch the caller is about to report as failed.
+    while (cursor < files.length && failure === null) {
       const { path, file } = files[cursor++]!
-      await uploadSubmissionFile(submissionId, path, file)
+      try {
+        await uploadSubmissionFile(submissionId, path, file)
+      } catch (e) {
+        failure ??= e
+        return
+      }
       onProgress?.(++done, files.length)
     }
   }))
+  if (failure !== null) throw failure
 }

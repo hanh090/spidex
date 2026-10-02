@@ -31,7 +31,8 @@
     "registerTitle": "Tạo tài khoản Spidex",
     "signIn": "Đăng nhập",
     "signInTitle": "Đăng nhập Spidex",
-    "submitting": "Vui lòng đợi…"
+    "submitting": "Vui lòng đợi…",
+    "verifyEmail": "Đã tạo tài khoản. Hãy kiểm tra email để xác minh, sau đó đăng nhập."
   },
   "compare": {
     "empty": "Chọn hai loài",
@@ -327,7 +328,8 @@
       "checklist": "Danh sách loài",
       "dataset": "Bộ dữ liệu",
       "audio": "Âm thanh",
-      "note": "Ghi chú"
+      "note": "Ghi chú",
+      "submission": "Bài gửi"
     },
     "community": "Cộng đồng",
     "approve": "Duyệt",

@@ -31,7 +31,8 @@
     "registerTitle": "Create a Spidex account",
     "signIn": "Sign in",
     "signInTitle": "Sign in to Spidex",
-    "submitting": "Please wait…"
+    "submitting": "Please wait…",
+    "verifyEmail": "Account created. Check your email to verify it, then sign in."
   },
   "compare": {
     "empty": "Pick two species",
@@ -336,7 +337,8 @@
       "checklist": "Checklist",
       "dataset": "Dataset",
       "audio": "Audio",
-      "note": "Note"
+      "note": "Note",
+      "submission": "Submission"
     },
     "community": "Community",
     "approve": "Approve",

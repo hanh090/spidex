@@ -6,8 +6,13 @@ import i18n from './index'
 
 const locale = () => i18n.language || 'en'
 
-export const formatDate = (d: Date | number) =>
-  new Intl.DateTimeFormat(locale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d)
+/**
+ * `timeZone: 'UTC'` is for instants that were already shifted by a stored
+ * offset (see groupByDay): formatting those in the reader's zone would apply
+ * the offset a second time and push evening records onto the next day.
+ */
+export const formatDate = (d: Date | number, timeZone?: string) =>
+  new Intl.DateTimeFormat(locale(), { day: '2-digit', month: 'short', year: 'numeric', timeZone }).format(d)
 
 export const formatTime = (d: Date | number) =>
   new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' }).format(d)
