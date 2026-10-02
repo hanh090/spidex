@@ -75,3 +75,6 @@ data/admin-store.json
 
 # Dev pack submissions (local stand-in for the R2 bucket)
 data/submissions/
+
+# Vite dependency cache
+.vite/
