@@ -99,6 +99,8 @@ def pick(recs: list[dict], per_species: int, prefer: str) -> list[dict]:
             "source": "xeno-canto",
             "sourceUrl": f"https://xeno-canto.org/{r.get('id')}",
         })
+        # The pack schema types optional fields as absent, never null.
+        out[-1] = {k: v for k, v in out[-1].items() if v is not None}
         if len(out) >= per_species:
             break
     return out
