@@ -10,7 +10,7 @@ async function call(method: string, path: string, env: object, opts: { body?: ob
   const token = await signSession({ userId: opts.user ?? 'u1', email: `${opts.user ?? 'u1'}@x.co`, emailVerified: true }, SECRET)
   const body = typeof opts.body === 'string' ? opts.body : opts.body ? JSON.stringify(opts.body) : undefined
   return onRequest({
-    request: new Request(`https://x.test${path}`, { method, body, headers: { Cookie: `spidex_session=${token}`, ...(body ? { 'Content-Length': String(body.length) } : {}) } }),
+    request: new Request(`https://x.test${path}`, { method, body, headers: { Origin: 'https://x.test', Cookie: `spidex_session=${token}`, ...(body ? { 'Content-Length': String(body.length) } : {}) } }),
     env: { ...baseEnv, ...env },
   })
 }

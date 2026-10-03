@@ -13,6 +13,8 @@
  * row at that prefix; withdraw only ever deletes this submission's own prefix.
  */
 import { isAdmin, readSession } from '../../lib/session'
+import { rejectCrossOrigin } from '../../lib/origin'
+import { badRequest, parseBody, submissionCreateSchema } from '../../lib/validate'
 import {
   isValidPackId, sanitizePath, checkManifest, checkSpeciesNdjson, deletePrefix, isRealAsset,
   submissionPrefix,
@@ -53,6 +55,9 @@ export const onRequest = async (context: any) => {
   const pathname = url.pathname
   const method = request.method
 
+  const crossOrigin = rejectCrossOrigin(request)
+  if (crossOrigin) return crossOrigin
+
   const session = await readSession(request, env as unknown as Record<string, unknown>)
   if (!session) return json({ error: 'Sign in required' }, 401)
 
@@ -71,17 +76,15 @@ export const onRequest = async (context: any) => {
 
     if (method === 'POST' && pathname === '/api/submissions') {
       if (!env.DB || !env.PACKS) return json({ error: 'Submissions are not configured on this deployment' }, 503)
-      const body: any = await request.json().catch(() => ({}))
-      const packId = String(body.packId ?? '').trim()
-      const note = String(body.note ?? '').slice(0, 500)
-      const fileCount = Number(body.fileCount)
-      const totalBytes = Number(body.totalBytes)
+      const parsed = await parseBody(request, submissionCreateSchema)
+      if (!parsed.ok) return parsed.response
+      const { packId, note, fileCount, totalBytes } = parsed.data
 
-      if (!isValidPackId(packId)) return json({ error: 'packId must be lowercase letters, digits and dashes, and not a reserved name' }, 400)
+      if (!isValidPackId(packId)) return badRequest('packId must be lowercase letters, digits and dashes, and not a reserved name')
       if (!Number.isInteger(fileCount) || fileCount < 2 || fileCount > MAX_FILES)
-        return json({ error: `fileCount must be between 2 and ${MAX_FILES}` }, 400)
+        return badRequest(`fileCount must be between 2 and ${MAX_FILES}`)
       if (!Number.isFinite(totalBytes) || totalBytes <= 0 || totalBytes > MAX_TOTAL_BYTES)
-        return json({ error: `totalBytes must be between 1 and ${MAX_TOTAL_BYTES}` }, 400)
+        return badRequest(`totalBytes must be between 1 and ${MAX_TOTAL_BYTES}`)
 
       // Id must be free: not a shipped pack, and not any existing pack row
       // (published or unpublished) unless the caller is that pack's author —

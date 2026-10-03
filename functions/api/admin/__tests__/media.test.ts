@@ -40,7 +40,7 @@ async function call(
   method: string, path: string, env: Record<string, unknown>,
   init: { body?: BodyInit; type?: string; email?: string; verified?: boolean; anon?: boolean } = {},
 ) {
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = { Origin: 'https://x.test' }
   if (init.type) headers['Content-Type'] = init.type
   if (!init.anon) {
     headers.Cookie = `spidex_session=${await signSession(
