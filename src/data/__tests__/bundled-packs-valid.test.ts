@@ -6,6 +6,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
+import { isNdLicense } from '../../../functions/lib/license'
 import { parseManifest, parseSpeciesNdjson } from '../pack-manifest'
 
 const root = `${process.cwd()}/public/packs`
@@ -21,7 +22,7 @@ describe('bundled packs validate', () => {
       const s = parseSpeciesNdjson(readFileSync(`${root}/${id}/species.ndjson`, 'utf8'), m.value.traitSchema)
       expect(s.ok ? 0 : s.issues.length, s.ok ? '' : JSON.stringify(s.issues.slice(0, 5))).toBe(0)
       // Plates are redrawn from their sources: a NoDerivatives licence forbids that.
-      const nd = s.ok ? s.value.flatMap((sp) => sp.images).filter((im) => /(^|-)ND(-|$)/i.test(im.license)) : []
+      const nd = s.ok ? s.value.flatMap((sp) => sp.images).filter((im) => isNdLicense(im.license)) : []
       expect(nd.map((im) => im.id)).toEqual([])
     })
   }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  deletePrefix, isRealAsset, isValidPackId, mergeCatalogue, sanitizePath, servingPrefix,
+  checkSpeciesNdjson, deletePrefix, isRealAsset, isValidPackId, mergeCatalogue, sanitizePath, servingPrefix,
 } from '../submissions'
 import { fakeR2, htmlFallback } from './fakes'
 
@@ -66,5 +66,15 @@ describe('deletePrefix', () => {
   it('refuses a prefix that could widen to the bucket root', async () => {
     await expect(deletePrefix(fakeR2(), 'packs')).rejects.toThrow()
     await expect(deletePrefix(fakeR2(), '')).rejects.toThrow()
+  })
+})
+
+describe('checkSpeciesNdjson ND licences', () => {
+  const line = (license: string) => JSON.stringify({ id: 's', sciName: 'X y', images: [{ credit: 'c', license }] })
+  it.each(['CC BY-ND 4.0', 'CC BY-NC-ND 4.0', 'CC-BY-ND-4.0', 'no derivatives'])('refuses %s', (license) => {
+    expect(checkSpeciesNdjson(line(license)).issues.join()).toMatch(/NoDerivatives/)
+  })
+  it.each(['CC BY 4.0', 'CC BY-NC 4.0', 'CC BY-SA 4.0', 'CC0'])('accepts %s', (license) => {
+    expect(checkSpeciesNdjson(line(license)).issues).toEqual([])
   })
 })
