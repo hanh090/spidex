@@ -34,6 +34,7 @@ says what was chosen, why, and how to change it.
 | 27 | Sync conflicts | A delete beats a stale edit from another device; a sighting only comes back by an explicit "Keep mine", and photos are never dropped while their sighting is unresolved | Never lose a field note silently, never resurrect without asking | — |
 | 28 | Media files | Media is immutable: replacing an image writes a new content-hashed filename, so phones fetch only changed images on a pack update; bundled media must be renamed when its bytes change (`upload:media` refuses otherwise) | A version bump must not re-download a whole pack on the Free plan | `--force` overwrites, but phones that cached the old bytes keep them |
 | 29 | Merging | `master` requires the CI `build` check (admins included) | A PR was merged red once | Settings → Branches |
+| 30 | Dev pack media | `npm run dev` fetches bundled pack media missing from the checkout from the live site (`SPIDEX_MEDIA_ORIGIN`, default https://spidex-app.pages.dev); the two fixture packs ship in git and work offline | A fresh clone must be able to install a real pack without bucket credentials | Each full-pack install in dev sends ~1–2k requests through the production Function, counted toward the Free plan's 100k/day (see 16, 26); set `SPIDEX_MEDIA_ORIGIN=off` to stop it, or point it at a public R2 domain once one exists |
 
 ## Code review
 
