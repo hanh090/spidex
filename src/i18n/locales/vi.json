@@ -439,7 +439,6 @@
     "favSeen": "Đã gặp",
     "favNotSeen": "Chưa gặp",
     "favLastSeen": "Gặp gần nhất {{date}}",
-    "favRemove": "Bỏ {{name}} khỏi mục yêu thích",
-    "favRemoveShort": "Bỏ"
+    "favRemove": "Bỏ {{name}} khỏi mục yêu thích"
   }
 }

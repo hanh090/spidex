@@ -450,7 +450,6 @@
     "favSeen": "Gesehen",
     "favNotSeen": "Noch nicht gesehen",
     "favLastSeen": "Zuletzt gesehen am {{date}}",
-    "favRemove": "{{name}} aus den Favoriten entfernen",
-    "favRemoveShort": "Entfernen"
+    "favRemove": "{{name}} aus den Favoriten entfernen"
   }
 }
