@@ -22,6 +22,14 @@ says what was chosen, why, and how to change it.
 | 15 | Preview deploys | `deploy:preview` removed | Preview deployments share the production D1 and R2 bindings, so approving a pack on preview would publish it to production | Add `[env.preview]` bindings with their own D1/R2 before bringing previews back |
 | 16 | Media cost | Bundled media is served by a Function from R2 behind the edge cache; the service worker keeps downloaded media on the device | No custom domain yet for a public R2 bucket | On the Workers Free plan (100k requests/day) roughly 50–100 full pack downloads a day is the ceiling; move media to an R2 custom domain or Workers Paid if traffic grows |
 | 17 | Pack links | Sound `sourceUrl`/`licenseUrl` must be http(s), in the app schema, the submission check and at render | Community packs are author data rendered as links | — |
+| 18 | Master plan | The 2026-09-07 master plan (`plans/260907-1034-spidex-offline-field-guide/`, local) is the scope reference; gaps were audited against it | It was the last agreed scope | Re-audit after each phase lands |
+| 19 | Backend | Pages Functions + D1 + R2 instead of the plan's Go/Node + Postgres; routes under `/api/*` instead of `/v1/*`; one R2 bucket with prefixes (`bundled/`, `overrides/`, `submissions/`, `user-photos/`) instead of three buckets | One free-tier platform, already in production | Split buckets if access policies diverge |
+| 20 | Admin image edits | Media edits to bundled packs live in R2 `overrides/<id>/` with pack version +1; a deploy that ships a pack.json version at or above the override supersedes it | Edits work without a code deploy, and a later content release is never shadowed by an old edit | Delete `overrides/<id>/` to drop an edit early |
+| 21 | Sync | Foreground only (sign-in, back online, app focus, "Sync now"); conflicts never overwrite, the user picks a side | iOS has no background sync; losing a field note is worse than asking | — |
+| 22 | Credits | Ledger is live and metered (10,000 welcome credits, 5 per synced photo) but `CREDITS_ENFORCED` is off, so nothing is ever blocked | Collect real usage before choosing a revenue model (#20) | Set `CREDITS_ENFORCED=1` on the Pages project to start charging |
+| 23 | Navigation | Three tabs (Explore, Identify, Sightings) plus a drawer, instead of the plan's four tabs with "More" | Matches the field-native redesign already shipped | — |
+| 24 | Content process | The plan's expert review, 10-species pilot and image-bitrate bake-off are not done; packs ship from the iNaturalist/xeno-canto pipeline with licence filtering | These need a human expert; code cannot replace them | Engage an expert before marketing species accuracy |
+| 25 | Account linking | No "link another sign-in method" UI; WorkOS matches accounts by verified email | Rare need at launch | Add when users ask |
 
 ## Code review
 
