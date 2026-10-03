@@ -122,7 +122,7 @@ export function Explore() {
             <button
               onClick={() => setQuery('')}
               aria-label={t('explore.clearSearch')}
-              style={{ minHeight: 0, color: 'var(--ink-muted)', flex: 'none' }}
+              style={{ minWidth: 'var(--tap-min)', color: 'var(--ink-muted)', flex: 'none' }}
             >
               ✕
             </button>

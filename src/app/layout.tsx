@@ -93,7 +93,7 @@ export function Layout() {
             onClick={() => setDrawerOpen(true)}
             aria-label={t('nav.menu')}
             style={{
-              width: 44, height: 44, minHeight: 44, flex: 'none',
+              width: 'var(--tap-min)', height: 'var(--tap-min)', flex: 'none',
               display: 'grid', placeItems: 'center',
               background: 'var(--paper)', border: 'var(--hair) solid var(--ink-muted)',
               color: 'var(--ink)',
@@ -105,7 +105,7 @@ export function Layout() {
           <button
             onClick={() => setDrawerOpen(true)}
             style={{
-              flex: 1, minWidth: 0, textAlign: 'left', minHeight: 0,
+              flex: 1, minWidth: 0, textAlign: 'left',
               background: 'none', color: 'var(--ink)',
             }}
           >
