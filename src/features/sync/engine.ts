@@ -18,7 +18,8 @@ import { db, getMeta, setMeta, type Photo, type Sighting, type SyncState } from 
 import {
   SyncHttpError, createSyncApi, type FetchLike, type PullPage, type PulledPhotoMeta, type PushRecord, type PushResult, type SyncApi,
 } from './sync-api'
-import { getConflict, saveConflict, sightingFromServer } from './conflict'
+import { lowerUserDataCounts } from '../../data/integrity'
+import { clearRestore, getConflict, needsRestore, saveConflict, sightingFromServer } from './conflict'
 
 export type BadgeState = 'queued' | 'synced' | 'conflict' | 'failed'
 
@@ -34,7 +35,11 @@ export function badgeFor(state: SyncState): BadgeState {
 }
 
 const PENDING: ReadonlySet<SyncState> = new Set(['local', 'queued', 'uploading', 'failed', 'needs_credits'])
-const PUSH_BATCH = 50
+/**
+ * Records per push request. The server refuses more than its MAX_BATCH (12):
+ * each record costs up to 3 D1 queries and the Free plan allows 50 per request.
+ */
+export const PUSH_BATCH = 12
 
 export interface SyncReport {
   ok: boolean
@@ -116,11 +121,11 @@ const setPhotoState = (id: string, from: SyncState, to: SyncState) =>
     if (p.syncState === from) p.syncState = to
   })
 
-function toRecord(s: Sighting): PushRecord {
+function toRecord(s: Sighting, restore: boolean): PushRecord {
   // Identity, ownership and sync bookkeeping are not payload: the server
   // derives the owner from the session and the version travels beside it.
   const { id, userId: _userId, syncState: _syncState, clientVersion, ...payload } = s
-  return { id, clientVersion, payload: payload as Record<string, unknown> }
+  return { id, clientVersion, payload: payload as Record<string, unknown>, ...(restore ? { restore: true } : {}) }
 }
 
 /** HTTP 401 means the session ended; any other thrown value is treated as a network failure. */
@@ -131,8 +136,10 @@ function classify(e: unknown): 'auth' | 'http' | 'network' {
 
 /* ---- push --------------------------------------------------------------- */
 
-async function pushDeletes(api: SyncApi): Promise<void> {
-  const items = await db.syncQueue.filter((q) => q.op === 'delete' && q.kind === 'sighting').toArray()
+async function pushDeletes(api: SyncApi, userId: string): Promise<void> {
+  // Only the active account's own deletes: the server resolves "whose" from the
+  // session, so another account's delete would be answered 404 and then dropped.
+  const items = await db.syncQueue.filter((q) => q.op === 'delete' && q.kind === 'sighting' && q.userId === userId).toArray()
   for (const item of items) {
     try {
       await api.deleteSighting(item.refId)
@@ -153,6 +160,7 @@ async function applyPushResult(sent: Sighting, r: PushResult | undefined, report
   }
   if (r.result === 'applied') {
     report.pushed++
+    await clearRestore(sent.id)
     // An edit made while the request was in flight keeps the record queued.
     await db.sightings.where('id').equals(sent.id).modify((s) => {
       s.syncState = s.clientVersion === sent.clientVersion ? 'synced' : 'local'
@@ -161,6 +169,7 @@ async function applyPushResult(sent: Sighting, r: PushResult | undefined, report
   }
   // stale: the server holds a newer or different copy. Keep local, park the server copy.
   report.stale++
+  await clearRestore(sent.id)
   await db.transaction('rw', db.sightings, db.meta, async () => {
     await saveConflict(sent.id, {
       clientVersion: r.clientVersion ?? 0,
@@ -180,7 +189,9 @@ async function pushSightings(api: SyncApi, userId: string, report: SyncReport): 
 
     let results: PushResult[]
     try {
-      results = await api.pushSightings(chunk.map(toRecord))
+      const records: PushRecord[] = []
+      for (const s of chunk) records.push(toRecord(s, await needsRestore(s.id)))
+      results = await api.pushSightings(records)
     } catch (e) {
       for (const s of chunk) await setSightingState(s.id, s.clientVersion, 'failed')
       if (classify(e) === 'auth') throw new AuthExpired()
@@ -243,6 +254,10 @@ async function pushPhotos(api: SyncApi, userId: string, report: SyncReport): Pro
 
 /* ---- pull --------------------------------------------------------------- */
 
+/** A live local photo of this sighting that the server has not confirmed. */
+const hasUnsyncedPhotos = async (sightingId: string): Promise<boolean> =>
+  (await db.photos.where('sightingId').equals(sightingId).filter((p) => !p.deletedAt && p.syncState !== 'synced').count()) > 0
+
 async function applyPulled(userId: string, rec: PullPage['sightings'][number], pendingDeletes: Set<string>, report: SyncReport): Promise<void> {
   const local = await db.sightings.get(rec.id)
   const copy = { clientVersion: rec.clientVersion, payload: rec.payload, deletedAt: rec.deletedAt }
@@ -257,11 +272,19 @@ async function applyPulled(userId: string, rec: PullPage['sightings'][number], p
   if (local.userId && local.userId !== userId) return
 
   if (local.syncState === 'synced') {
-    if (rec.deletedAt !== null) {
+    if (rec.deletedAt !== null && (await hasUnsyncedPhotos(rec.id))) {
+      // Photos that never reached the server would be thrown away with it:
+      // surface the delete as a conflict and let the user decide.
+      await db.transaction('rw', db.sightings, db.meta, async () => {
+        await saveConflict(rec.id, copy)
+        await setSightingState(rec.id, local.clientVersion, 'conflict')
+      })
+    } else if (rec.deletedAt !== null) {
       await db.transaction('rw', db.sightings, db.photos, async () => {
         await db.photos.where('sightingId').equals(rec.id).modify({ deletedAt: rec.deletedAt ?? Date.now(), syncState: 'synced' })
         await db.sightings.delete(rec.id)
       })
+      await lowerUserDataCounts({ sightings: 1 })
       report.pulled++
     } else if (rec.clientVersion > local.clientVersion && rec.payload) {
       await db.sightings.put(sightingFromServer(rec.id, userId, copy, local))
@@ -284,7 +307,7 @@ async function applyPulled(userId: string, rec: PullPage['sightings'][number], p
 async function pull(api: SyncApi, userId: string, report: SyncReport): Promise<void> {
   let since = await getMeta<number>(cursorKey(userId), 0)
   const pendingDeletes = new Set(
-    (await db.syncQueue.filter((q) => q.op === 'delete').toArray()).map((q) => q.refId),
+    (await db.syncQueue.filter((q) => q.op === 'delete' && q.userId === userId).toArray()).map((q) => q.refId),
   )
   for (;;) {
     const page = await api.pullSightings(since)
@@ -324,6 +347,11 @@ async function downloadPhoto(api: SyncApi, meta: PulledPhotoMeta, userId: string
   }
 }
 
+async function guardsPhotos(sightingId: string): Promise<boolean> {
+  const parent = await db.sightings.get(sightingId)
+  return parent?.syncState === 'conflict' || (await hasUnsyncedPhotos(sightingId))
+}
+
 async function pullPhotos(api: SyncApi, userId: string, report: SyncReport): Promise<void> {
   let since = await getMeta<number>(photoCursorKey(userId), 0)
   for (;;) {
@@ -332,8 +360,13 @@ async function pullPhotos(api: SyncApi, userId: string, report: SyncReport): Pro
     for (const m of page.photos) {
       const local = await db.photos.get(m.id)
       if (m.deletedAt !== null) {
-        // Unsynced local state (a pending edit) is never discarded by a pull.
-        if (local && local.syncState === 'synced') await db.photos.delete(m.id)
+        // Unsynced local state (a pending edit) is never discarded by a pull, and
+        // neither are the photos of a sighting in conflict or with photos still
+        // waiting to upload: the user may still choose to keep that sighting.
+        if (local && local.syncState === 'synced' && !(await guardsPhotos(m.sightingId))) {
+          await db.photos.delete(m.id)
+          await lowerUserDataCounts({ photos: 1 })
+        }
       } else if (!local) {
         wanted.push(m)
       }
@@ -378,7 +411,7 @@ async function run(userId: string, opts: SyncOptions): Promise<SyncReport> {
   }
   const api = createSyncApi(opts.fetchFn)
   try {
-    await pushDeletes(api)
+    await pushDeletes(api, userId)
     await pushSightings(api, userId, report)
     await pushPhotos(api, userId, report)
     await pull(api, userId, report)

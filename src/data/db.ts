@@ -131,6 +131,9 @@ export interface QueueItem {
   id: string
   kind: 'sighting' | 'photo'
   refId: string
+  /** Account that queued it. Only that account's sync run may send it, so a
+   *  delete made by A on a shared device is never replayed under B's session. */
+  userId?: string
   /** Absent = upload/upsert (found by scanning syncState); 'delete' = tombstone to send. */
   op?: 'delete'
   attempts: number

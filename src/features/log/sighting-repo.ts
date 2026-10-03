@@ -212,7 +212,7 @@ export async function deleteSighting(id: string): Promise<void> {
     // sync engine can send it (the engine treats "never existed" as done).
     const existing = await db.sightings.get(id)
     if (existing?.userId) {
-      await db.syncQueue.put({ id: `delete:${id}`, kind: 'sighting', refId: id, op: 'delete', attempts: 0, queuedAt: Date.now() })
+      await db.syncQueue.put({ id: `delete:${id}`, kind: 'sighting', refId: id, op: 'delete', userId: existing.userId, attempts: 0, queuedAt: Date.now() })
     }
     await db.sightings.delete(id)
   })
