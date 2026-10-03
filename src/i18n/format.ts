@@ -14,8 +14,15 @@ const locale = () => i18n.language || 'en'
 export const formatDate = (d: Date | number, timeZone?: string) =>
   new Intl.DateTimeFormat(locale(), { day: '2-digit', month: 'short', year: 'numeric', timeZone }).format(d)
 
-export const formatTime = (d: Date | number) =>
-  new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' }).format(d)
+/**
+ * With `tzOffsetMinutes` (a sighting's stored offset) the wall-clock time at the
+ * place of observation is shown, whatever zone the reader is in now.
+ */
+export const formatTime = (d: Date | number, tzOffsetMinutes?: number) =>
+  tzOffsetMinutes === undefined
+    ? new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' }).format(d)
+    : new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+        .format(new Date(d).getTime() + tzOffsetMinutes * 60_000)
 
 export const formatNumber = (n: number) => new Intl.NumberFormat(locale()).format(n)
 

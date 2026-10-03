@@ -158,7 +158,7 @@
     "online": "Online"
   },
   "notFound": {
-    "fix": "Der Link ist womöglich veraltet. Alles im Führer ist über die drei Tabs unten erreichbar.",
+    "fix": "Der Link ist womöglich veraltet. Alles im Führer ist über „Entdecken“ erreichbar.",
     "home": "Zu Entdecken",
     "title": "Diese Seite gibt es nicht"
   },
@@ -270,6 +270,8 @@
     "play": "Abspielen",
     "pause": "Pause",
     "seek": "Spulen",
+    "soundError": "Diese Aufnahme konnte nicht geladen werden.",
+    "soundRetry": "Erneut versuchen",
     "viewPlate": "Tafel von {{name}} im Vollbild ansehen"
   },
   "storage": {

@@ -25,7 +25,10 @@ interface Env {
   ASSETS?: { fetch: (input: Request | string) => Promise<Response> }
 }
 
-const JSON_HEADERS = { 'Content-Type': 'application/json' }
+/** How long a superseded pack version stays in R2 so in-flight downloads finish. */
+const SUPERSEDED_GRACE_MS = 24 * 60 * 60 * 1000
+
+const JSON_HEADERS ={ 'Content-Type': 'application/json' }
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: JSON_HEADERS })
 
@@ -195,6 +198,19 @@ export const onRequest = async (context: any) => {
         if (!claim.meta?.changes) return json({ error: 'Submission is no longer pending' }, 409)
 
         const prefix = submissionPrefix(subId)
+        // Superseded versions are not deleted at once: clients mid-download
+        // still read them. The pack row remembers each old prefix with a
+        // timestamp; entries older than the grace period are swept on the
+        // pack's next approval.
+        const oldPrefix = prevMeta ? (typeof prevMeta.prefix === 'string' && prevMeta.prefix ? prevMeta.prefix : `packs/${sm.packId}`) : null
+        const carried: { prefix: string; at: number }[] = Array.isArray(prevMeta?.supersededPrefixes)
+          ? prevMeta.supersededPrefixes.filter((e: any) => typeof e?.prefix === 'string' && Number.isFinite(e?.at))
+          : []
+        const due = carried.filter((e) => reviewedAt - e.at >= SUPERSEDED_GRACE_MS && e.prefix !== prefix)
+        const supersededPrefixes = carried.filter((e) => !due.includes(e) && e.prefix !== prefix)
+        if (oldPrefix && oldPrefix !== prefix && !supersededPrefixes.some((e) => e.prefix === oldPrefix)) {
+          supersededPrefixes.push({ prefix: oldPrefix, at: reviewedAt })
+        }
         try {
           await env.DB.prepare(
             `INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at)
@@ -202,7 +218,7 @@ export const onRequest = async (context: any) => {
              ON CONFLICT(id) DO UPDATE SET published = 1, meta = excluded.meta, updated_at = excluded.updated_at`,
           ).bind(
             sm.packId, sm.packId,
-            JSON.stringify({ community: true, submissionId: subId, prefix, submittedBy: sm.submitter, summary: sm.summary ?? {} }),
+            JSON.stringify({ community: true, submissionId: subId, prefix, submittedBy: sm.submitter, summary: sm.summary ?? {}, supersededPrefixes }),
             reviewedAt,
           ).run()
         } catch (err) {
@@ -213,10 +229,8 @@ export const onRequest = async (context: any) => {
           throw err
         }
 
-        // The previous version's files are unreachable now; reclaim them.
-        const oldPrefix = prevMeta ? (typeof prevMeta.prefix === 'string' && prevMeta.prefix ? prevMeta.prefix : `packs/${sm.packId}`) : null
-        if (oldPrefix && oldPrefix !== prefix) {
-          await deletePrefix(env.PACKS, oldPrefix).catch((e: unknown) => console.error('old prefix cleanup failed', e))
+        for (const e of due) {
+          await deletePrefix(env.PACKS, e.prefix).catch((err: unknown) => console.error('old prefix cleanup failed', err))
         }
         await audit(env, session, 'submission.approve', `${subId}:${sm.packId}`)
         return json({ ok: true, packId: sm.packId })

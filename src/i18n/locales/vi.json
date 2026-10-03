@@ -153,7 +153,7 @@
     "online": "Trực tuyến"
   },
   "notFound": {
-    "fix": "Liên kết có thể đã cũ. Mọi mục trong sách hướng dẫn đều truy cập được từ ba thẻ bên dưới.",
+    "fix": "Liên kết có thể đã cũ. Mọi mục trong sách hướng dẫn đều truy cập được từ mục Khám phá.",
     "home": "Về Khám phá",
     "title": "Trang này không tồn tại"
   },
@@ -261,6 +261,8 @@
     "play": "Phát",
     "pause": "Tạm dừng",
     "seek": "Tua",
+    "soundError": "Không tải được bản ghi này.",
+    "soundRetry": "Thử lại",
     "viewPlate": "Xem toàn màn hình bản mẫu {{name}}"
   },
   "storage": {
