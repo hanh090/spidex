@@ -38,5 +38,6 @@ A full review of the rollout changes is in
 issues; the P2s were fixed (link scheme, withdraw admin check) or recorded
 above (15, 16). Known P3s left for later: a failed contribute upload needs a
 manual withdraw before retrying; approving a new community pack version
-deletes the old files at once; media changed under an unchanged filename is
-not refetched by clients that cached it.
+deletes the old files at once. Media is immutable: clients refetch only URLs
+they do not hold, so changed bytes must ship under a new filename (admin
+replaces do this automatically; `upload:media` refuses to overwrite).
