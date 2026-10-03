@@ -91,6 +91,69 @@ describe('downloadPack content-type handling', () => {
   })
 })
 
+describe('pack update refetches media under unchanged filenames', () => {
+  beforeEach(async () => {
+    await Promise.all([db.packs.clear(), db.species.clear(), db.meta.clear()])
+    const cache = await caches.open(PACK_IMAGE_CACHE)
+    for (const k of await cache.keys()) await cache.delete(k)
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  /**
+   * Mimics the service worker's CacheFirst route: a request is answered from
+   * the pack cache when an entry exists, otherwise from the "network".
+   */
+  const stubSwFetch = (version: number, body: string, failMedia = false) => {
+    const manifest = JSON.stringify({ ...JSON.parse(manifestText), version })
+    const calls: { url: string; init?: RequestInit }[] = []
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      calls.push({ url, init })
+      if (url.endsWith('/pack.json')) return new Response(manifest, { headers: { 'content-type': 'application/json' } })
+      if (url.endsWith('/species.ndjson')) return new Response(ndjsonText, { headers: { 'content-type': 'application/x-ndjson' } })
+      const hit = await (await caches.open(PACK_IMAGE_CACHE)).match(url)
+      if (hit) return hit
+      if (failMedia) throw new Error('offline')
+      return new Response(body, { headers: { 'content-type': 'image/svg+xml' } })
+    }))
+    return calls
+  }
+  const base = 'https://spidex.test/packs/bird-min'
+  const install = () => downloadPack({ baseUrl: base, acknowledgedNoPersist: true })
+  const bodies = async () => {
+    const cache = await caches.open(PACK_IMAGE_CACHE)
+    return Promise.all((await cache.keys()).map(async (k) => (await cache.match(k))!.text()))
+  }
+
+  it('replaces cached media when the pack version changes', async () => {
+    stubSwFetch(1, 'old')
+    expect((await install()).ok).toBe(true)
+    expect(new Set(await bodies())).toEqual(new Set(['old']))
+
+    const calls = stubSwFetch(2, 'new')
+    expect((await install()).ok).toBe(true)
+    expect(new Set(await bodies())).toEqual(new Set(['new']))
+    expect(calls.filter((c) => !/\.(json|ndjson)$/.test(c.url)).every((c) => c.init?.cache === 'reload')).toBe(true)
+  })
+
+  it('keeps the old copy when the refetch fails', async () => {
+    stubSwFetch(1, 'old')
+    await install()
+    stubSwFetch(2, 'new', true)
+    expect((await install()).ok).toBe(true)
+    expect(new Set(await bodies())).toEqual(new Set(['old']))
+  })
+
+  it('does not bypass the cache for a same-version reinstall', async () => {
+    stubSwFetch(1, 'old')
+    await install()
+    const calls = stubSwFetch(1, 'new')
+    await install()
+    expect(new Set(await bodies())).toEqual(new Set(['old']))
+    expect(calls.some((c) => c.init?.cache === 'reload')).toBe(false)
+  })
+})
+
 describe('listed pack whose files are missing', () => {
   afterEach(() => vi.unstubAllGlobals())
   it('fetchManifest reports failure (never throws) when the SPA shell answers pack.json', async () => {

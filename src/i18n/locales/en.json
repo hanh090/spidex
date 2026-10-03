@@ -158,7 +158,7 @@
     "online": "Online"
   },
   "notFound": {
-    "fix": "The link may be out of date. Everything in the guide is reachable from the three tabs below.",
+    "fix": "The link may be out of date. Everything in the guide is reachable from Explore.",
     "home": "Go to Explore",
     "title": "This page does not exist"
   },
@@ -270,6 +270,8 @@
     "play": "Play",
     "pause": "Pause",
     "seek": "Seek",
+    "soundError": "This recording could not be loaded.",
+    "soundRetry": "Retry",
     "viewPlate": "View the {{name}} plate full screen"
   },
   "storage": {

@@ -12,7 +12,7 @@ import { buildSighting, deleteSighting, groupByDay, listNeedsId, resolveSpecies,
 import { buildLifeList } from '../life-list'
 import { generalize, toCsv, toGeoJson } from '../export'
 import { assessClock, noteWallClock, tzOffsetMinutes } from '../clock'
-import { formatDate } from '../../../i18n/format'
+import { formatDate, formatTime } from '../../../i18n/format'
 import { checkIntegrity, recordUserDataCounts } from '../../../data/integrity'
 
 function species(over: Partial<StoredSpecies> = {}): StoredSpecies {
@@ -162,6 +162,13 @@ describe('groupByDay', () => {
     expect(g.key).toBe('2026-10-02')
     expect(formatDate(g.at, 'UTC')).toMatch(/02/)
     expect(formatDate(g.at, 'UTC')).not.toMatch(/03/)
+  })
+
+  it("renders the time on the sighting's own clock, not the reader's", () => {
+    const at = Date.parse('2026-10-02T14:10:00Z')
+    expect(formatTime(at, 420)).toMatch(/^(21|0?9):10/)
+    expect(formatTime(at, -300)).toMatch(/^(0?9):10 AM|^09:10$/)
+    expect(formatTime(at, 0)).toMatch(/^(14|0?2):10/)
   })
 
   it('splits records that fall on different local days', () => {
