@@ -127,7 +127,7 @@ export async function readSession(request: Request, env: Record<string, unknown>
 }
 
 /** Admin gate: signed-in, email verified, AND on the ADMIN_EMAILS allowlist (comma-separated). */
-export function isAdmin(payload: SessionPayload | null, env: Record<string, unknown>): boolean {
+export function isAdmin(payload: SessionPayload | null, env: { ADMIN_EMAILS?: unknown }): boolean {
   if (!payload?.email || payload.emailVerified !== true) return false
   const raw = env.ADMIN_EMAILS
   if (typeof raw !== 'string' || !raw.trim()) return false

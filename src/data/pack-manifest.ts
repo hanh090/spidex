@@ -116,6 +116,9 @@ export type SpeciesImage = z.infer<typeof zSpeciesImage>
  * pack size by an order of magnitude, and the licence check that matters is
  * the one run when the voice pack is compiled, not at playback).
  */
+// Pack data is author-supplied: a link must never be javascript: or data:.
+const zHttpUrl = z.string().regex(/^https?:\/\//i, 'must be an http(s) URL')
+
 export const zSpeciesSound = z.object({
   id: z.string().min(1),
   url: z.string().min(1),
@@ -127,9 +130,9 @@ export const zSpeciesSound = z.object({
   /** Origin archive, e.g. 'xeno-canto' — lets the UI link back to source. */
   source: z.string().optional(),
   /** Link to the recording's page in the source archive. */
-  sourceUrl: z.string().optional(),
+  sourceUrl: zHttpUrl.optional(),
   /** Canonical licence URL — CC compliance wants the licence linked, not just named. */
-  licenseUrl: z.string().optional(),
+  licenseUrl: zHttpUrl.optional(),
 })
 export type SpeciesSound = z.infer<typeof zSpeciesSound>
 

@@ -15,6 +15,9 @@ import { useTranslation } from 'react-i18next'
 import type { SpeciesSound } from '../../data/pack-manifest'
 import { useOnline } from '../../lib/net'
 
+// Pack links are author data: render only http(s), never javascript:/data:.
+const isHttpUrl = (u?: string): u is string => !!u && /^https?:\/\//i.test(u)
+
 function fmt(sec?: number): string {
   if (!sec || !Number.isFinite(sec)) return ''
   const m = Math.floor(sec / 60)
@@ -118,11 +121,11 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
           {(sound.type || sound.durationSec) && ' · '}
           {/* The recordist links to the recording page; the licence links to
               its canonical text — CC attribution asks for both. */}
-          {sound.sourceUrl
+          {isHttpUrl(sound.sourceUrl)
             ? <a href={sound.sourceUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{sound.credit}</a>
             : sound.credit}
           {' · '}
-          {sound.licenseUrl
+          {isHttpUrl(sound.licenseUrl)
             ? <a href={sound.licenseUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{sound.license}</a>
             : sound.license}
         </div>

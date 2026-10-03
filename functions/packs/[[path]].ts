@@ -40,7 +40,16 @@ export const onRequestGet = async (context: any) => {
 
   const [, packId, file] = m
   if ((await bundledPackIds(env, context.request.url)).has(packId!)) {
-    return fromBucket(env.PACKS, `bundled/${packId}/${file}`, file!, miss)
+    // Bundled media is public and only changes with an upload, so the edge
+    // cache absorbs repeat requests before they reach the bucket. Where the
+    // Cache API is unavailable this degrades to a straight bucket read.
+    const cache = META_FILES.test(file!) ? undefined : (globalThis as any).caches?.default
+    const key = new Request(context.request.url)
+    const hit = await cache?.match(key).catch(() => undefined)
+    if (hit) return hit
+    const served = await fromBucket(env.PACKS, `bundled/${packId}/${file}`, file!, miss)
+    if (cache && served.status === 200) context.waitUntil?.(cache.put(key, served.clone()).catch(() => {}))
+    return served
   }
 
   if (!env.DB) return miss()
@@ -72,4 +81,10 @@ async function fromBucket(bucket: any, key: string, file: string, miss: () => Re
   headers.set('Cache-Control', META_FILES.test(file) ? 'no-store' : 'public, max-age=86400')
   if (obj.etag) headers.set('ETag', obj.etag)
   return new Response(obj.body, { status: 200, headers })
+}
+
+/** HEAD gets the GET answer without a body (the SPA fallback otherwise answers 200 html). */
+export const onRequestHead = async (context: any) => {
+  const res = await onRequestGet(context)
+  return new Response(null, { status: res.status, headers: res.headers })
 }
