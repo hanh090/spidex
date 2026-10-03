@@ -20,6 +20,9 @@ describe('bundled packs validate', () => {
       if (!m.ok) return
       const s = parseSpeciesNdjson(readFileSync(`${root}/${id}/species.ndjson`, 'utf8'), m.value.traitSchema)
       expect(s.ok ? 0 : s.issues.length, s.ok ? '' : JSON.stringify(s.issues.slice(0, 5))).toBe(0)
+      // Plates are redrawn from their sources: a NoDerivatives licence forbids that.
+      const nd = s.ok ? s.value.flatMap((sp) => sp.images).filter((im) => /(^|-)ND(-|$)/i.test(im.license)) : []
+      expect(nd.map((im) => im.id)).toEqual([])
     })
   }
 })
