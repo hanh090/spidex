@@ -1,14 +1,12 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import type { User, AuthState } from './types'
 import {
-  fetchSession,
   signInWithPassword,
   signUpWithPassword,
   getOAuthUrl,
-  signOut as apiSignOut,
 } from './auth-api'
-import { setActiveUserId } from './scope'
-import { beginUserSession, endUserSession } from './session-transitions'
+import { flushPendingLogout, markLogoutPending } from './pending-logout'
+import { beginUserSession, endUserSession, refreshSession } from './session-transitions'
 
 interface AuthContextValue extends AuthState {
   signIn: (email: string, pass: string) => Promise<User>
@@ -26,19 +24,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const session = await fetchSession()
-      // Offline or server down: keep whatever view we have rather than guess.
-      if (!session.known) return
-      if (session.user?.id) {
-        // Claims offline guest sightings and scopes local data to this user
-        // before the UI renders as them.
-        await beginUserSession(session.user.id)
-      } else {
-        // Authoritatively signed out (e.g. session expired): stop showing the
-        // previous account's records. The install identity is left alone.
-        await setActiveUserId(null)
-      }
-      setUser(session.user)
+      // Claims offline guest sightings and scopes local data to the user before
+      // the UI renders as them; a signed-out answer stops showing the previous
+      // account's records. Offline or server down: keep the current view.
+      const user = await refreshSession()
+      if (user === undefined) return
+      setUser(user)
     } finally {
       setLoading(false)
     }
@@ -46,6 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void refreshUser()
+    // An owed server-side logout is delivered as soon as the device is online
+    // again, before anything asks the server who is signed in.
+    const onOnline = () => void refreshUser()
+    window.addEventListener('online', onOnline)
+    return () => window.removeEventListener('online', onOnline)
   }, [refreshUser])
 
   const signIn = async (email: string, pass: string): Promise<User> => {
@@ -64,9 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    await apiSignOut()
+    // Fail closed on the device first: the person is signed out locally even
+    // with no signal, and the server-side logout is owed until it succeeds.
+    await markLogoutPending()
     await endUserSession()
     setUser(null)
+    await flushPendingLogout()
   }
 
   const loginWithOAuth = async (provider: 'GoogleOAuth' | 'MicrosoftOAuth' | 'authkit') => {

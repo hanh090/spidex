@@ -12,6 +12,13 @@ export interface Limit {
   /** Stable key, e.g. `password:ip:1.2.3.4`. */
   key: string
   max: number
+  /**
+   * Count only attempts reported through `recordFailure`. A request is refused
+   * once `max` failures are on record, but a successful sign-in never adds to
+   * it, so a third party cannot lock a known email out by merely sending
+   * requests (they would have to guess wrong, and the IP bucket still bounds that).
+   */
+  failuresOnly?: boolean
 }
 
 export const WINDOW_SECONDS = 15 * 60
@@ -35,7 +42,13 @@ export async function checkRateLimit(
   try {
     let denied = false
     let opened = false
-    for (const { key, max } of limits) {
+    for (const { key, max, failuresOnly } of limits) {
+      if (failuresOnly) {
+        const seen = await db.prepare('SELECT count FROM rate_limits WHERE key = ? AND window = ?')
+          .bind(key, windowSec).first<{ count: number }>()
+        if ((seen?.count ?? 0) >= max) denied = true
+        continue
+      }
       const row = await db
         .prepare(
           'INSERT INTO rate_limits (key, window, count) VALUES (?, ?, 1) ' +
@@ -58,11 +71,34 @@ export async function checkRateLimit(
   }
 }
 
-/** Limits for one credential endpoint: per normalised email and per client IP. */
+/** Records a failed attempt against the `failuresOnly` limits. Never throws: the throttle must not break auth. */
+export async function recordFailure(
+  db: D1Like | undefined | null,
+  limits: Limit[],
+  nowMs: number = Date.now(),
+): Promise<void> {
+  if (!db) return
+  const windowSec = Math.floor(nowMs / 1000 / WINDOW_SECONDS) * WINDOW_SECONDS
+  try {
+    for (const { key, failuresOnly } of limits) {
+      if (!failuresOnly) continue
+      await db
+        .prepare('INSERT INTO rate_limits (key, window, count) VALUES (?, ?, 1) ON CONFLICT(key, window) DO UPDATE SET count = count + 1')
+        .bind(key, windowSec)
+        .run()
+    }
+  } catch (err) {
+    console.error('rate limit failure not recorded', err)
+  }
+}
+
+/**
+ * Limits for one credential endpoint: per normalised email and per client IP. */
 export async function credentialLimits(action: 'password' | 'register', request: Request, email: string): Promise<Limit[]> {
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown'
   return [
-    { key: `${action}:email:${await sha256Hex(email.trim().toLowerCase())}`, max: EMAIL_MAX },
+    // Password login counts only failures against an email; the IP bucket counts every attempt.
+    { key: `${action}:email:${await sha256Hex(email.trim().toLowerCase())}`, max: EMAIL_MAX, failuresOnly: action === 'password' },
     { key: `${action}:ip:${ip}`, max: IP_MAX },
   ]
 }

@@ -1,4 +1,8 @@
+import { setMeta } from '../../data/db'
 import type { User } from './types'
+
+/** A fresh session replaces whatever cookie was owed a logout. */
+const supersedePendingLogout = () => setMeta('auth.pendingLogout', false)
 
 /**
  * `known: false` means the server could not be asked (offline, outage) — the
@@ -37,6 +41,7 @@ export async function signInWithPassword(email: string, password: string): Promi
     throw new Error(data.error || 'Failed to sign in')
   }
 
+  await supersedePendingLogout()
   return data.user
 }
 
@@ -59,6 +64,7 @@ export async function signUpWithPassword(
 
   // The account exists but no session was issued, e.g. WorkOS wants the email
   // verified first. The user must sign in once that is done.
+  if (data.pendingVerification !== true) await supersedePendingLogout()
   return { user: data.user, pendingVerification: data.pendingVerification === true }
 }
 
@@ -83,13 +89,16 @@ export async function exchangeOAuthCode(code: string): Promise<User> {
     throw new Error(data.error || 'Failed to complete OAuth')
   }
 
+  await supersedePendingLogout()
   return data.user
 }
 
-export async function signOut(): Promise<void> {
+/** `true` only when the server confirmed the session cookie was cleared. */
+export async function signOut(): Promise<boolean> {
   try {
-    await fetch('/api/auth/logout', { method: 'POST' })
+    const res = await fetch('/api/auth/logout', { method: 'POST' })
+    return res.ok
   } catch {
-    // Ignore network error on logout
+    return false
   }
 }

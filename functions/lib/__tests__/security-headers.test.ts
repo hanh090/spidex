@@ -27,7 +27,10 @@ describe('public/_headers', () => {
     expect(directive('frame-ancestors')).toBe("frame-ancestors 'none'")
     expect(directive('base-uri')).toBe("base-uri 'self'")
     expect(directive('object-src')).toBe("object-src 'none'")
-    expect(directive('connect-src')).toBe("connect-src 'self'")
+    // The service worker fetches Google Fonts, so connect-src allows exactly those origins and nothing else.
+    expect(directive('connect-src')).toBe(
+      "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com",
+    )
   })
 
   it('allows the origins the app uses: Google Fonts, https images and audio, blob previews', () => {

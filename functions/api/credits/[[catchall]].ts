@@ -39,7 +39,7 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   let before: HistoryCursor | undefined
   if (beforeAt !== null || beforeId !== null) {
     const at = Number(beforeAt)
-    if (!Number.isFinite(at) || !beforeId) return json({ error: 'beforeAt and beforeId must be given together' }, 400)
+    if (!Number.isSafeInteger(at) || at < 0 || !beforeId || beforeId.length > 64) return json({ error: 'beforeAt (integer) and beforeId must be given together' }, 400)
     before = { createdAt: at, id: beforeId }
   }
 

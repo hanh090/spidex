@@ -5,6 +5,8 @@
 import { rotateInstallId } from '../../data/db'
 import { claimGuestSightings } from './claim'
 import { getActiveUserId, setActiveUserId } from './scope'
+import { lookupSession } from './pending-logout'
+import type { User } from './types'
 
 /**
  * Make `userId` the active person: records they own become visible, and
@@ -27,4 +29,22 @@ export async function endUserSession(): Promise<void> {
   if (departing) await claimGuestSightings(departing)
   await setActiveUserId(null)
   await rotateInstallId()
+}
+
+/**
+ * Ask the server who is signed in and bring the local scope in line. Returns
+ * `undefined` when the server could not be asked (keep the current view), else
+ * the signed-in user or null. An owed logout is delivered first, and while it
+ * cannot be delivered nobody is treated as signed in, so the departed account's
+ * cookie neither restores that user nor claims the next person's guest records.
+ */
+export async function refreshSession(): Promise<User | null | undefined> {
+  const session = await lookupSession()
+  if (!session.known) return undefined
+  if (session.user?.id) {
+    await beginUserSession(session.user.id)
+  } else {
+    await setActiveUserId(null)
+  }
+  return session.user
 }

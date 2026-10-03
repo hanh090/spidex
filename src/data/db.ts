@@ -42,7 +42,11 @@ export interface StoredSpecies extends SpeciesRecord {
 export const speciesUid = (packId: string, speciesId: string): string => `${packId}:${speciesId}`
 
 export interface Favourite {
-  id: string        // `${packId}:${speciesId}`
+  /** `${packId}:${speciesId}` for an unowned (guest) row, `${userId}|${packId}:${speciesId}` once an account owns it,
+   *  so two accounts on one device can each favourite the same species. See favourites-repo. */
+  id: string
+  /** Owner once an account has claimed it; unset = guest-owned. Not indexed. */
+  userId?: string
   packId: string
   speciesId: string
   addedAt: number
@@ -131,6 +135,9 @@ export interface QueueItem {
   id: string
   kind: 'sighting' | 'photo'
   refId: string
+  /** Account that queued it. Only that account's sync run may send it, so a
+   *  delete made by A on a shared device is never replayed under B's session. */
+  userId?: string
   /** Absent = upload/upsert (found by scanning syncState); 'delete' = tombstone to send. */
   op?: 'delete'
   attempts: number
