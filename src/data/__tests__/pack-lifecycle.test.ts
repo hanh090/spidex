@@ -143,6 +143,20 @@ describe('taxonomic id remap', () => {
     expect(row!.clientVersion).toBe(2)
   })
 
+  it('queues an already synced sighting for upload so the server learns the new id, but leaves conflicts parked', async () => {
+    await db.packs.put(pack('pack-a', 1))
+    const old = species('pack-a', 'sp-old')
+    await db.species.bulkPut([old, species('pack-a', 'sp-new', { packVersion: 2 })])
+    const synced = (await saveSighting({ species: old, count: 1, notes: '', photos: [] })).id
+    const parked = (await saveSighting({ species: old, count: 1, notes: '', photos: [] })).id
+    await db.sightings.update(synced, { syncState: 'synced' })
+    await db.sightings.update(parked, { syncState: 'conflict' })
+
+    await applyIdRemap('pack-a', manifest('pack-a', 2, [{ from: 'sp-old', to: 'sp-new' }]))
+    expect((await db.sightings.get(synced))!.syncState).toBe('local')
+    expect((await db.sightings.get(parked))!.syncState).toBe('conflict')
+  })
+
   it('leaves unmapped sightings alone', async () => {
     await db.packs.put(pack('pack-a', 1))
     const sp = species('pack-a', 'sp-keep')

@@ -82,6 +82,10 @@ export async function applyIdRemap(packId: string, manifest: PackManifest): Prom
         ? { sciName: next.sciName, commonName: resolve(next.commonNames), sensitivity: next.sensitivity }
         : s.speciesSnapshot,
       clientVersion: s.clientVersion + 1,
+      // A remapped record that was already synced is a local edit the server has
+      // not seen: queue it again, or the server keeps the old speciesId. A
+      // record parked in conflict stays there for the user to resolve.
+      syncState: s.syncState === 'conflict' ? s.syncState : 'local',
       updatedAt: Date.now(),
     })
     changed++
