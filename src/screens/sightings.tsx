@@ -120,7 +120,7 @@ export function Sightings() {
                       }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="t-body">{s.notes || t('sightings.noNotes')}</div>
-                          <Meta>{formatTime(s.at)}</Meta>
+                          <Meta>{formatTime(s.at, s.tzOffsetMinutes)}</Meta>
                         </div>
                         <IconChevron />
                       </Link>
@@ -148,7 +148,7 @@ export function Sightings() {
                           <div className="t-sci">{s.speciesSnapshot?.sciName}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                          <Meta>{formatTime(s.at)}</Meta>
+                          <Meta>{formatTime(s.at, s.tzOffsetMinutes)}</Meta>
                           {s.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
                         </div>
                       </Link>
