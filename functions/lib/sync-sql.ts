@@ -65,6 +65,11 @@ export const Q = {
      VALUES (?, ?, ?, ?, ?, ?, ?, ${NEXT_SEQ}, ?)
      ON CONFLICT(id) DO NOTHING`,
 
+  /** args: [userId, since, limit] */
+  pullPhotos:
+    `SELECT id, sighting_id, width, height, bytes, created_at, server_seq, deleted_at FROM photos
+     WHERE user_id = ? AND server_seq > ? ORDER BY server_seq ASC, id ASC LIMIT ?`,
+
   /** args: [now, userId(seq), id, userId] */
   tombstonePhoto:
     `UPDATE photos SET deleted_at = ?, server_seq = ${NEXT_SEQ}

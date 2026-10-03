@@ -238,7 +238,7 @@ describe('photos', () => {
     await db.photos.put(photoFor(s.id))
     const fetchFn = routedFetch(store, A)
     await syncNow(A, { fetchFn })
-    expect(fetchFn.calls.some((c) => c.path.startsWith('/api/sync/photos'))).toBe(false)
+    expect(fetchFn.calls.some((c) => c.method !== 'GET' && c.path.startsWith('/api/sync/photos'))).toBe(false)
   })
 
   it('sends a tombstone for a photo deleted locally', async () => {
@@ -334,5 +334,90 @@ describe('failure handling', () => {
     expect(await db.sightings.get(s.id)).toMatchObject({ clientVersion: 2, syncState: 'local' })
     const counts = await getSyncCounts(A)
     expect(counts.sightings.queued).toBe(1)
+  })
+})
+
+describe('photo pull on a second device', () => {
+  const photoGets = (f: { calls: { method: string; path: string }[] }) =>
+    f.calls.filter((c) => c.method === 'GET' && c.path.startsWith('/api/sync/photos/'))
+  const photoPosts = (f: { calls: { method: string; path: string }[] }) =>
+    f.calls.filter((c) => c.method === 'POST' && c.path.startsWith('/api/sync/photos'))
+
+  /** Device 1 pushes a sighting + photo; local data is then wiped to act as a fresh device 2. */
+  async function seedAndWipe() {
+    const s = sighting()
+    const p = photoFor(s.id)
+    await db.sightings.put(s)
+    await db.photos.put(p)
+    await syncNow(A, { fetchFn: routedFetch(store, A) })
+    await Promise.all([db.sightings.clear(), db.photos.clear(), db.syncQueue.clear(), db.meta.clear()])
+    return { s, p }
+  }
+
+  it('pulls metadata, downloads the blob once as a derivative-only synced row, never re-pushes', async () => {
+    const { s, p } = await seedAndWipe()
+    const fetchFn = routedFetch(store, A)
+    const report = await syncNow(A, { fetchFn })
+    expect(report.photosPulled).toBe(1)
+    const row = (await db.photos.get(p.id))!
+    expect(row).toMatchObject({ sightingId: s.id, syncState: 'synced', pulled: true, width: 10, height: 10 })
+    expect(row.original).toBeUndefined()
+    expect(new Uint8Array(await new Response(row.derived).arrayBuffer())).toEqual(new Uint8Array([0xff, 0xd8, 0xff, 2]))
+
+    const again = routedFetch(store, A)
+    const second = await syncNow(A, { fetchFn: again })
+    expect(second.photosPulled).toBe(0)
+    expect(photoGets(fetchFn)).toHaveLength(1)
+    expect(photoGets(again)).toHaveLength(0)
+    expect(photoPosts(fetchFn)).toHaveLength(0)
+    expect(photoPosts(again)).toHaveLength(0)
+  })
+
+  it('applies a remote tombstone by deleting the local synced photo', async () => {
+    const { p } = await seedAndWipe()
+    await syncNow(A, { fetchFn: routedFetch(store, A) })
+    expect(await db.photos.get(p.id)).toBeDefined()
+    // Another device deletes it server-side.
+    await routedFetch(store, A)(`/api/sync/photos/${p.id}`, { method: 'DELETE' })
+    await syncNow(A, { fetchFn: routedFetch(store, A) })
+    expect(await db.photos.get(p.id)).toBeUndefined()
+  })
+
+  it('never overwrites or discards an unsynced local photo', async () => {
+    const { p } = await seedAndWipe()
+    await syncNow(A, { fetchFn: routedFetch(store, A) })
+    const mine = new Blob([new Uint8Array([0xff, 0xd8, 0xff, 9])], { type: 'image/jpeg' })
+    await db.photos.update(p.id, { syncState: 'failed', derived: mine })
+    const dropCursor = () => db.meta.toCollection().filter((m) => m.key.startsWith('sync.photoCursor')).delete()
+    // Pushes are refused, so the photo stays unsynced while the pull runs.
+    const refusePush = (f: ReturnType<typeof routedFetch>) => vi.fn(async (input: string, init?: RequestInit) =>
+      init?.method && init.method !== 'GET' ? new Response('{"error":"boom"}', { status: 500 }) : f(input, init))
+
+    await dropCursor()
+    const fetchFn = routedFetch(store, A)
+    await syncNow(A, { fetchFn: refusePush(fetchFn) })
+    expect(photoGets(fetchFn)).toHaveLength(0)
+    const kept = new Uint8Array(await new Response((await db.photos.get(p.id))!.derived).arrayBuffer())
+    expect(kept[3]).toBe(9)
+
+    await routedFetch(store, A)(`/api/sync/photos/${p.id}`, { method: 'DELETE' })
+    await dropCursor()
+    await syncNow(A, { fetchFn: refusePush(routedFetch(store, A)) })
+    expect(await db.photos.get(p.id)).toBeDefined()
+  })
+
+  it('retries a failed download without losing the photo', async () => {
+    const { p } = await seedAndWipe()
+    const base = routedFetch(store, A)
+    const flaky = vi.fn(async (input: string, init?: RequestInit) => {
+      if (input.startsWith(`/api/sync/photos/${p.id}`)) throw new TypeError('offline')
+      return base(input, init)
+    })
+    const failed = await syncNow(A, { fetchFn: flaky })
+    expect(failed.ok).toBe(false)
+    expect(await db.photos.get(p.id)).toBeUndefined()
+
+    const ok = await syncNow(A, { fetchFn: routedFetch(store, A) })
+    expect(ok.photosPulled).toBe(1)
   })
 })

@@ -118,6 +118,14 @@ export function createMemoryStore(initial?: MemoryState, onChange?: () => void) 
         }
         return { changes: 1 }
       }
+      case Q.pullPhotos: {
+        const [uid, since, limit] = a as [string, number, number]
+        const rows = Object.values(state.photos)
+          .filter((r) => r.user_id === uid && r.server_seq > since)
+          .sort((x, y) => x.server_seq - y.server_seq || (x.id < y.id ? -1 : 1))
+          .slice(0, limit)
+        return { rows, changes: 0 }
+      }
       case Q.tombstonePhoto: {
         const [now, seqUid, id, uid] = a as [number, string, string, string]
         const p = state.photos[id]

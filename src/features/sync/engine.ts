@@ -16,7 +16,7 @@
  */
 import { db, getMeta, setMeta, type Photo, type Sighting, type SyncState } from '../../data/db'
 import {
-  SyncHttpError, createSyncApi, type FetchLike, type PullPage, type PushRecord, type PushResult, type SyncApi,
+  SyncHttpError, createSyncApi, type FetchLike, type PullPage, type PulledPhotoMeta, type PushRecord, type PushResult, type SyncApi,
 } from './sync-api'
 import { getConflict, saveConflict, sightingFromServer } from './conflict'
 
@@ -48,13 +48,15 @@ export interface SyncReport {
   rejected: number
   photosUploaded: number
   photosDeleted: number
+  /** Photos downloaded from the account onto this device. */
+  photosPulled: number
   needsCredits: number
   pulled: number
   conflicts: number
 }
 
 const emptyReport = (): SyncReport => ({
-  ok: true, pushed: 0, stale: 0, rejected: 0, photosUploaded: 0, photosDeleted: 0, needsCredits: 0, pulled: 0, conflicts: 0,
+  ok: true, pushed: 0, stale: 0, rejected: 0, photosUploaded: 0, photosDeleted: 0, photosPulled: 0, needsCredits: 0, pulled: 0, conflicts: 0,
 })
 
 /* ---- change notification ------------------------------------------------ */
@@ -75,6 +77,8 @@ export const isSyncing = (): boolean => running
 const lastSyncKey = 'sync.lastSyncAt'
 const lastErrorKey = 'sync.lastError'
 const cursorKey = (userId: string) => `sync.cursor.${userId}`
+const photoCursorKey = (userId: string) => `sync.photoCursor.${userId}`
+const PHOTO_DOWNLOAD_CONCURRENCY = 3
 
 export const getLastSyncAt = () => getMeta<number | null>(lastSyncKey, null)
 export const getLastError = () => getMeta<string | null>(lastErrorKey, null)
@@ -294,6 +298,73 @@ async function pull(api: SyncApi, userId: string, report: SyncReport): Promise<v
   }
 }
 
+/**
+ * Photo pull. Metadata pages are applied first (tombstones remove local rows),
+ * then missing blobs are downloaded with a small concurrency cap. The cursor
+ * only advances past a page once all its downloads have finished or are
+ * known-gone, so a dropped connection retries instead of losing photos.
+ * Pulled photos are stored as `synced` derivative-only rows: they are never
+ * queued for upload, and an existing local row is never overwritten.
+ */
+async function downloadPhoto(api: SyncApi, meta: PulledPhotoMeta, userId: string, report: SyncReport): Promise<void> {
+  const blob = await api.downloadPhoto(meta.id)
+  if (!blob) return // deleted or missing server-side since the metadata page
+  const stored = await db.transaction('rw', db.photos, db.sightings, async () => {
+    const parent = await db.sightings.get(meta.sightingId)
+    if (!parent || parent.userId !== userId || (await db.photos.get(meta.id))) return false
+    await db.photos.add({
+      id: meta.id, sightingId: meta.sightingId, derived: blob, width: meta.width, height: meta.height,
+      takenAt: meta.createdAt, syncState: 'synced', pulled: true,
+    })
+    return true
+  })
+  if (stored) {
+    report.photosPulled++
+    notifySyncChange()
+  }
+}
+
+async function pullPhotos(api: SyncApi, userId: string, report: SyncReport): Promise<void> {
+  let since = await getMeta<number>(photoCursorKey(userId), 0)
+  for (;;) {
+    const page = await api.pullPhotos(since)
+    const wanted: PulledPhotoMeta[] = []
+    for (const m of page.photos) {
+      const local = await db.photos.get(m.id)
+      if (m.deletedAt !== null) {
+        // Unsynced local state (a pending edit) is never discarded by a pull.
+        if (local && local.syncState === 'synced') await db.photos.delete(m.id)
+      } else if (!local) {
+        wanted.push(m)
+      }
+    }
+    // Pool of workers draining a shared queue; the first failure stops the rest.
+    const queue = [...wanted]
+    let failure: unknown = null
+    const worker = async () => {
+      for (let m = queue.shift(); m && !failure; m = queue.shift()) {
+        try {
+          await downloadPhoto(api, m, userId, report)
+        } catch (e) {
+          if (classify(e) === 'auth') failure = new AuthExpired()
+          // A refused (4xx) photo can never succeed on retry; skip it rather than stall the cursor.
+          else if (e instanceof SyncHttpError && e.status < 500) report.error = e.message
+          else failure = e
+        }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(PHOTO_DOWNLOAD_CONCURRENCY, wanted.length) }, worker))
+    if (failure) throw failure
+
+    if (page.cursor > since) {
+      since = page.cursor
+      await setMeta(photoCursorKey(userId), since)
+    }
+    notifySyncChange()
+    if (!page.hasMore) break
+  }
+}
+
 /* ---- orchestration ------------------------------------------------------ */
 
 export interface SyncOptions {
@@ -311,6 +382,7 @@ async function run(userId: string, opts: SyncOptions): Promise<SyncReport> {
     await pushSightings(api, userId, report)
     await pushPhotos(api, userId, report)
     await pull(api, userId, report)
+    await pullPhotos(api, userId, report)
   } catch (e) {
     if (e instanceof AuthExpired) return { ...report, ok: false, authExpired: true, error: 'auth' }
     report.ok = false
