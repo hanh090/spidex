@@ -144,6 +144,13 @@ function handleCommunityPackFile(req: any, res: any, next: () => void): void {
       fs.createReadStream(fp).pipe(res)
       return
     }
+    // Bundled media is not in git (it lives in the bucket), so a fresh clone
+    // has none: fetch it from the deployed site instead of answering with the
+    // SPA's index.html, which the pack downloader rightly refuses.
+    if (!edited && !/^(pack\.json|species\.ndjson)$/.test(rel) && !fs.existsSync(path.join(PACKS_DIR, packId!, rel))) {
+      void proxyBundledMedia(packId!, rel, res, next)
+      return
+    }
   }
   if (fs.existsSync(path.join(PACKS_DIR, packId!, rel))) return next()
   const row = readAdminStore().find((r) => r.kind === 'pack' && r.id === packId && r.published && (r.meta as any)?.community)
@@ -154,6 +161,27 @@ function handleCommunityPackFile(req: any, res: any, next: () => void): void {
   res.setHeader('Content-Security-Policy', "script-src 'none'")
   res.setHeader('Cache-Control', /^(pack\.json|species\.ndjson)$/.test(rel) ? 'no-store' : 'public, max-age=86400')
   fs.createReadStream(fp).pipe(res)
+}
+
+/**
+ * Where `npm run dev` fetches bundled pack media missing from the checkout.
+ * SPIDEX_MEDIA_ORIGIN overrides it; set it to `off` to work fully offline.
+ */
+const MEDIA_ORIGIN = (process.env.SPIDEX_MEDIA_ORIGIN ?? 'https://spidex-app.pages.dev').replace(/\/+$/, '')
+
+async function proxyBundledMedia(packId: string, rel: string, res: any, next: () => void): Promise<void> {
+  if (MEDIA_ORIGIN === 'off') return next()
+  try {
+    const upstream = await fetch(`${MEDIA_ORIGIN}/packs/${encodeURIComponent(packId)}/${rel.split('/').map(encodeURIComponent).join('/')}`)
+    const type = upstream.headers.get('content-type') ?? ''
+    if (!upstream.ok || !/^(image|audio)\//.test(type)) return next()
+    res.setHeader('Content-Type', type)
+    res.setHeader('Content-Security-Policy', "script-src 'none'")
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+    res.end(Buffer.from(await upstream.arrayBuffer()))
+  } catch {
+    next()
+  }
 }
 
 function devOverrideIsLive(packId: string): boolean {

@@ -21,6 +21,10 @@ public/museum_specimens/
 public/packs/*/img/*
 !public/packs/*/img/*archetype*.svg
 !public/packs/*/img/*placeholder*.svg
+# The two fixture packs are tiny (~190 KB) and ship whole, so a fresh clone can
+# install a pack in `npm run dev` with no access to the media bucket.
+!public/packs/bird-min/img/*
+!public/packs/butterfly-min/img/*
 public/packs/*/species.ndjson.bak-*
 
 # Scratch artefacts
