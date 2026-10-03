@@ -16,6 +16,8 @@ import { download, toCsv, toGeoJson } from '../features/log/export'
 import { Button, EmptyState, Meta, Badge } from '../ui/primitives'
 import { IconPlus, IconChevron } from '../ui/icons'
 import { formatDate, formatTime, formatNumber } from '../i18n/format'
+import { SyncBadge } from '../features/sync/sync-badge'
+import { onSyncChange } from '../features/sync/engine'
 
 type Tab = 'log' | 'life'
 
@@ -51,7 +53,11 @@ export function Sightings() {
     await refresh()
   }
 
-  useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => {
+    void refresh()
+    // Badges follow the sync engine live.
+    return onSyncChange(() => void refresh())
+  }, [refresh])
 
   const needsId = all.filter((s) => !s.speciesId)
   const identified = all.filter((s) => s.speciesId)
@@ -121,6 +127,7 @@ export function Sightings() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="t-body">{s.notes || t('sightings.noNotes')}</div>
                           <Meta>{formatTime(s.at)}</Meta>
+                          <SyncBadge sighting={s} />
                         </div>
                         <IconChevron />
                       </Link>
@@ -150,6 +157,7 @@ export function Sightings() {
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                           <Meta>{formatTime(s.at)}</Meta>
                           {s.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
+                          <SyncBadge sighting={s} />
                         </div>
                       </Link>
                     ))}

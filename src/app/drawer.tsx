@@ -141,6 +141,12 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
                 onClick={() => void signOut()}
               />
             )}
+            {!isGuest && (
+              <>
+                <Row label={t('sync.title')} onClick={() => { onClose(); navigate('/sync') }} />
+                <Row label={t('credits.title')} onClick={() => { onClose(); navigate('/credits') }} />
+              </>
+            )}
             {isAdmin && (
               <Row label={t('drawer.admin', 'Admin console')} onClick={() => { onClose(); navigate('/admin') }} />
             )}

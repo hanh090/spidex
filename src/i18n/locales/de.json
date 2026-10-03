@@ -355,5 +355,62 @@
       "rejected": "Abgelehnt",
       "withdrawn": "Zurückgezogen"
     }
+  },
+  "sync": {
+    "title": "Sync-Status",
+    "foregroundOnly": "Die Synchronisierung läuft nur, solange Spidex geöffnet ist: beim Anmelden, wenn die Verbindung zurückkehrt, wenn du zur App zurückkehrst oder auf Jetzt synchronisieren tippst. Im Hintergrund wird nichts synchronisiert.",
+    "lastSync": "Letzte Synchronisierung",
+    "never": "Noch nicht synchronisiert",
+    "syncNow": "Jetzt synchronisieren",
+    "syncing": "Synchronisiere…",
+    "counts": "Einträge nach Sync-Status",
+    "state": {
+      "queued": "Wartend",
+      "synced": "Synchronisiert",
+      "conflict": "Konflikt",
+      "failed": "Fehlgeschlagen"
+    },
+    "countSightings_one": "{{n}} Beobachtung",
+    "countSightings_other": "{{n}} Beobachtungen",
+    "countPhotos_one": "{{n}} Foto",
+    "countPhotos_other": "{{n}} Fotos",
+    "conflictsTitle": "Konflikte",
+    "noConflicts": "Keine Konflikte.",
+    "conflictsLede": "Diese Beobachtungen wurden hier und anderswo geändert. Nichts wird überschrieben, bevor du dich entscheidest.",
+    "needsId": "Bestimmung offen",
+    "mine": "Auf diesem Gerät",
+    "server": "Auf dem Server",
+    "serverDeleted": "Auf einem anderen Gerät gelöscht",
+    "keepMine": "Meine behalten",
+    "keepServer": "Server behalten",
+    "signInTitle": "Zum Synchronisieren anmelden",
+    "signInFix": "Die Synchronisierung sichert deine Beobachtungen in deinem Konto. Gäste behalten alles auf diesem Gerät.",
+    "offline": "Du bist offline. Die Synchronisierung läuft, sobald wieder eine Verbindung besteht.",
+    "authExpired": "Deine Sitzung ist abgelaufen. Melde dich erneut an, um zu synchronisieren.",
+    "failed": "Die Synchronisierung konnte nicht abgeschlossen werden. Deine Einträge sind auf diesem Gerät sicher; versuche es erneut.",
+    "lastFailed": "Die letzte Synchronisierung wurde nicht abgeschlossen. Deine Einträge sind auf diesem Gerät sicher.",
+    "needsCredits": "Einige Fotos warten auf Guthaben und wurden nicht hochgeladen."
+  },
+  "credits": {
+    "title": "Guthaben",
+    "notCharged": "Noch keine Abrechnung. Guthaben wird nur erfasst, damit wir die tatsächlichen Kosten kennenlernen; es wird nichts abgezogen oder gesperrt.",
+    "enforced": "Guthaben wird abgerechnet. Die Foto-Sicherung stoppt, wenn das Guthaben aufgebraucht ist; deine lokalen Daten werden nie gelöscht.",
+    "balance": "Kontostand",
+    "loading": "Lädt…",
+    "unavailable": "Nicht verfügbar",
+    "offlineCached": "Offline — zuletzt bekannter Kontostand",
+    "history": "Verlauf",
+    "noHistory": "Noch keine Aktivität.",
+    "historyOffline": "Der Verlauf benötigt eine Verbindung.",
+    "more": "Mehr anzeigen",
+    "signInTitle": "Anmelden, um Guthaben zu sehen",
+    "signInFix": "Guthaben gehört zu deinem Konto. Gäste haben keines.",
+    "reason": {
+      "signup_grant": "Willkommensguthaben",
+      "photo_sync": "Foto-Sicherung",
+      "ai_id": "KI-Bestimmung",
+      "adjustment": "Korrektur",
+      "founder_grant": "Gründer-Gutschrift"
+    }
   }
 }

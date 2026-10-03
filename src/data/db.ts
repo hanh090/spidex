@@ -125,6 +125,8 @@ export interface QueueItem {
   id: string
   kind: 'sighting' | 'photo'
   refId: string
+  /** Absent = upload/upsert (found by scanning syncState); 'delete' = tombstone to send. */
+  op?: 'delete'
   attempts: number
   lastError?: string
   queuedAt: number

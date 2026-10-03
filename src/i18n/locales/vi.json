@@ -346,5 +346,60 @@
       "rejected": "Bị từ chối",
       "withdrawn": "Đã rút"
     }
+  },
+  "sync": {
+    "title": "Trạng thái đồng bộ",
+    "foregroundOnly": "Đồng bộ chỉ chạy khi Spidex đang mở: khi bạn đăng nhập, có mạng trở lại, quay lại ứng dụng hoặc nhấn Đồng bộ ngay. Không có gì được đồng bộ ngầm.",
+    "lastSync": "Lần đồng bộ gần nhất",
+    "never": "Chưa đồng bộ",
+    "syncNow": "Đồng bộ ngay",
+    "syncing": "Đang đồng bộ…",
+    "counts": "Bản ghi theo trạng thái đồng bộ",
+    "state": {
+      "queued": "Đang chờ",
+      "synced": "Đã đồng bộ",
+      "conflict": "Xung đột",
+      "failed": "Thất bại"
+    },
+    "countSightings_other": "{{n}} lần quan sát",
+    "countPhotos_other": "{{n}} ảnh",
+    "conflictsTitle": "Xung đột",
+    "noConflicts": "Không có xung đột.",
+    "conflictsLede": "Những lần quan sát này đã được sửa ở đây và ở nơi khác. Không có gì bị ghi đè cho đến khi bạn chọn.",
+    "needsId": "Cần định danh",
+    "mine": "Trên thiết bị này",
+    "server": "Trên máy chủ",
+    "serverDeleted": "Đã bị xóa trên thiết bị khác",
+    "keepMine": "Giữ bản của tôi",
+    "keepServer": "Giữ bản máy chủ",
+    "signInTitle": "Đăng nhập để đồng bộ",
+    "signInFix": "Đồng bộ sao lưu các lần quan sát vào tài khoản của bạn. Khách giữ mọi thứ trên thiết bị này.",
+    "offline": "Bạn đang ngoại tuyến. Đồng bộ sẽ chạy khi có mạng trở lại.",
+    "authExpired": "Phiên đăng nhập đã hết. Hãy đăng nhập lại để đồng bộ.",
+    "failed": "Không thể hoàn tất đồng bộ. Dữ liệu của bạn vẫn an toàn trên thiết bị này; hãy thử lại.",
+    "lastFailed": "Lần đồng bộ gần nhất chưa hoàn tất. Dữ liệu của bạn vẫn an toàn trên thiết bị này.",
+    "needsCredits": "Một số ảnh đang chờ tín dụng và chưa được tải lên."
+  },
+  "credits": {
+    "title": "Tín dụng",
+    "notCharged": "Chưa tính phí. Tín dụng chỉ được ghi lại để chúng tôi hiểu chi phí thực tế; không có gì bị trừ hay bị chặn.",
+    "enforced": "Tín dụng đang được tính phí. Sao lưu ảnh sẽ dừng khi hết số dư; dữ liệu trên thiết bị của bạn không bao giờ bị xóa.",
+    "balance": "Số dư",
+    "loading": "Đang tải…",
+    "unavailable": "Không khả dụng",
+    "offlineCached": "Ngoại tuyến — số dư đã biết gần nhất",
+    "history": "Lịch sử",
+    "noHistory": "Chưa có hoạt động nào.",
+    "historyOffline": "Lịch sử cần có kết nối mạng.",
+    "more": "Xem thêm",
+    "signInTitle": "Đăng nhập để xem tín dụng",
+    "signInFix": "Tín dụng thuộc về tài khoản của bạn. Khách không có tín dụng.",
+    "reason": {
+      "signup_grant": "Tín dụng chào mừng",
+      "photo_sync": "Sao lưu ảnh",
+      "ai_id": "Định danh bằng AI",
+      "adjustment": "Điều chỉnh",
+      "founder_grant": "Tặng của người sáng lập"
+    }
   }
 }
