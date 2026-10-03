@@ -14,7 +14,13 @@ import { z } from 'zod'
 import { changes, type D1Like, type R2Like } from './d1'
 import { Q } from './sync-sql'
 
-export const MAX_BATCH = 50
+/**
+ * Records per push request. Each record costs up to 3 D1 queries (a 2-statement
+ * batch plus one read-back) and the signup-grant check up to 3 more; Cloudflare
+ * Free allows 50 per invocation, counting every batched statement.
+ * 3 * 12 + 3 = 39 leaves headroom. The client chunks pushes to the same size.
+ */
+export const MAX_BATCH = 12
 export const MAX_PAYLOAD_BYTES = 16 * 1024
 export const PULL_DEFAULT = 100
 export const PULL_MAX = 200
@@ -49,6 +55,8 @@ const recordSchema = z.object({
   id: z.string().uuid(),
   clientVersion: z.number().int().min(1).max(2_147_483_647),
   payload: payloadSchema,
+  /** Set only by an explicit "keep mine" on a server-side delete: bring the tombstoned record back. */
+  restore: z.boolean().optional(),
 })
 
 export type SightingPayload = z.infer<typeof payloadSchema>
@@ -75,7 +83,7 @@ export async function upsertSighting(db: D1Like, userId: string, raw: unknown, n
   const idGuess = typeof (raw as { id?: unknown } | null)?.id === 'string' ? (raw as { id: string }).id : ''
   const parsed = recordSchema.safeParse(raw)
   if (!parsed.success) return { id: idGuess, result: 'rejected', reason: 'invalid_record' }
-  const { id, clientVersion, payload } = parsed.data
+  const { id, clientVersion, payload, restore } = parsed.data
 
   if (payload.at < MIN_PLAUSIBLE_MS || payload.at > now + MAX_FUTURE_SKEW_MS ||
       payload.updatedAt < MIN_PLAUSIBLE_MS || payload.updatedAt > now + MAX_FUTURE_SKEW_MS) {
@@ -86,7 +94,7 @@ export async function upsertSighting(db: D1Like, userId: string, raw: unknown, n
 
   const results = await db.batch([
     db.prepare(Q.bumpSeq).bind(userId),
-    db.prepare(Q.upsertSighting).bind(id, userId, body, clientVersion, userId, now),
+    db.prepare(Q.upsertSighting).bind(id, userId, body, clientVersion, userId, now, restore ? 1 : 0),
   ])
   const row = await db.prepare(Q.getSighting).bind(id).first<SightingRow>()
   if (!row || row.user_id !== userId) return { id, result: 'rejected', reason: 'not_owner' }
@@ -130,14 +138,18 @@ export async function pullSightings(
  * `false` means it does not exist for this user.
  */
 export async function tombstoneSighting(db: D1Like, r2: R2Like | undefined, userId: string, id: string, now: number): Promise<boolean> {
-  const { results: keys } = await db.prepare(Q.liveKeysOfSighting).bind(id, userId).all<{ r2_key: string }>()
   const out = await db.batch([
     db.prepare(Q.bumpSeq).bind(userId),
     db.prepare(Q.tombstoneSighting).bind(now, now, userId, id, userId),
     db.prepare(Q.tombstonePhotosOfSighting).bind(now, userId, id, userId),
   ])
   if (changes(out[1]) > 0) {
-    if (r2 && keys.length) await r2.delete(keys.map((k) => k.r2_key)).catch(() => undefined)
+    // Keys are read after the batch: the sighting is already tombstoned, so no
+    // photo can be inserted for it any more and none is missed (no orphan objects).
+    if (r2) {
+      const { results: keys } = await db.prepare(Q.keysTombstonedAt).bind(id, userId, now).all<{ r2_key: string }>()
+      if (keys.length) await r2.delete(keys.map((k) => k.r2_key)).catch(() => undefined)
+    }
     return true
   }
   const row = await db.prepare(Q.getSighting).bind(id).first<SightingRow>()

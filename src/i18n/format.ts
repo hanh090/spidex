@@ -15,6 +15,14 @@ export const formatDate = (d: Date | number, timeZone?: string) =>
   new Intl.DateTimeFormat(locale(), { day: '2-digit', month: 'short', year: 'numeric', timeZone }).format(d)
 
 /**
+ * The calendar date of an observation at the place it was made: the stored
+ * offset is applied once and the result formatted in UTC. Every screen that
+ * shows a sighting's date uses this, so one record never shows two dates.
+ */
+export const formatObservedDate = (at: number, tzOffsetMinutes: number) =>
+  formatDate(at + tzOffsetMinutes * 60_000, 'UTC')
+
+/**
  * With `tzOffsetMinutes` (a sighting's stored offset) the wall-clock time at the
  * place of observation is shown, whatever zone the reader is in now.
  */

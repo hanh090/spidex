@@ -10,7 +10,7 @@ import { resolve } from '../data/localized'
 import { Badge, EmptyState, Meta } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { IconCheck, IconChevron, IconClose } from '../ui/icons'
-import { formatDate } from '../i18n/format'
+import { formatObservedDate } from '../i18n/format'
 
 function nameOf(v: FavouriteView): { common: string; sci: string } {
   const sci = v.species?.sciName ?? v.sciName ?? v.favourite.speciesId
@@ -60,7 +60,7 @@ export function Favourites() {
                         {v.seen
                           ? <Badge tone="ok"><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><IconCheck size={13} />{t('fieldLog.favSeen')}</span></Badge>
                           : <Badge>{t('fieldLog.favNotSeen')}</Badge>}
-                        {v.lastSeen != null && <Meta>{t('fieldLog.favLastSeen', { date: formatDate(v.lastSeen) })}</Meta>}
+                        {v.lastSeen != null && <Meta>{t('fieldLog.favLastSeen', { date: formatObservedDate(v.lastSeen, v.lastSeenOffset ?? 0) })}</Meta>}
                       </div>
                     </div>
                     <IconChevron />

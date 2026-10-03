@@ -17,6 +17,7 @@
  * Submission bookkeeping reuses admin_resources rows with kind='submission'
  * — no extra migration.
  */
+import { isNdLicense } from './license'
 
 /** Slug rules match what the author tooling generates: lowercase, dashes. */
 export const PACK_ID_RE = /^[a-z0-9][a-z0-9-]{0,62}$/
@@ -220,8 +221,6 @@ export function checkManifest(raw: unknown, expectedId: string): string[] {
   return issues
 }
 
-const ND_LICENSE = /(^|-)ND(-|$)/i
-
 /** Per-record check on species.ndjson: JSON shape plus attribution presence. */
 export function checkSpeciesNdjson(text: string): { issues: string[]; count: number } {
   const issues: string[] = []
@@ -237,7 +236,7 @@ export function checkSpeciesNdjson(text: string): { issues: string[]; count: num
         issues.push(`line ${i + 1}: no images`)
       } else if (sp.images.some((im: any) => !im.credit || !im.license)) {
         issues.push(`line ${i + 1}: image without credit/license`)
-      } else if (sp.images.some((im: any) => ND_LICENSE.test(String(im.license)))) {
+      } else if (sp.images.some((im: any) => isNdLicense(String(im.license)))) {
         // Plates are redrawn from their sources, which a NoDerivatives licence forbids.
         issues.push(`line ${i + 1}: NoDerivatives image licence is not allowed`)
       }

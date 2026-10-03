@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { compareVersions, fetchMinClientVersion, isBelowMinimum, isUpdateRequired } from '../client-version'
-import { applyUpdate, checkUpdateRequired, getUpdateState, markWaiting, registerUpdater, resetUpdateState } from '../update-store'
+import { applyUpdate, checkUpdateRequired, getUpdateState, markWaiting, registerUpdater, resetUpdateState, showRequiredBanner } from '../update-store'
 
 const reply = (body: unknown, ok = true) => (async () => ({ ok, json: async () => body })) as unknown as typeof fetch
 
@@ -41,6 +41,8 @@ describe('update store', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('raises the required flag and keeps it through a later failed check', async () => {
+    vi.stubGlobal('navigator', { serviceWorker: undefined })
+    markWaiting()
     await checkUpdateRequired(reply({ minClientVersion: '999.0.0' }))
     expect(getUpdateState().required).toBe(true)
     await checkUpdateRequired((async () => { throw new TypeError('offline') }) as unknown as typeof fetch)
@@ -55,7 +57,7 @@ describe('update store', () => {
     expect(activate).toHaveBeenCalledWith(true)
   })
 
-  it('falls back to a reload when no new worker appears', async () => {
+  it('does not reload when no new worker appears: a reload would not clear anything', async () => {
     vi.useFakeTimers()
     const reload = vi.fn()
     vi.stubGlobal('window', { location: { reload } })
@@ -63,7 +65,28 @@ describe('update store', () => {
     const done = applyUpdate()
     await vi.runAllTimersAsync()
     await done
-    expect(reload).toHaveBeenCalled()
+    expect(reload).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('hides the required banner when the minimum is above anything deployed (no worker ever waits)', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('navigator', { serviceWorker: { getRegistration: async () => ({ update: async () => {} }) } })
+    const done = checkUpdateRequired(reply({ minClientVersion: '999.0.0' }))
+    await vi.runAllTimersAsync()
+    await done
+    expect(getUpdateState().required).toBe(true)
+    expect(showRequiredBanner()).toBe(false)
+    vi.useRealTimers()
+  })
+
+  it('shows the required banner once the newer worker is waiting', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('navigator', { serviceWorker: { getRegistration: async () => ({ update: async () => { markWaiting() } }) } })
+    const done = checkUpdateRequired(reply({ minClientVersion: '999.0.0' }))
+    await vi.runAllTimersAsync()
+    await done
+    expect(showRequiredBanner()).toBe(true)
     vi.useRealTimers()
   })
 })

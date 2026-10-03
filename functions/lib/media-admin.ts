@@ -18,6 +18,7 @@
  * or http(s) only.
  */
 import { contentType, sanitizePath } from './submissions'
+import { isNcLicense, isNdLicense } from './license'
 
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 export const PAGE_SIZE = 40
@@ -59,9 +60,7 @@ const fail = (status: number, error: string, extra: object = {}): MediaResult =>
 
 /* ---- licence flags ----------------------------------------------------------- */
 
-/** "CC-BY-ND", "CC BY-ND 4.0", "no derivatives" — token match, so "BY-NDX" does not count. */
-export const isNdLicense = (l: string) => /(^|[\s_-])ND($|[\s_.-])/i.test(l) || /no\s*-?deriv/i.test(l)
-export const isNcLicense = (l: string) => /(^|[\s_-])NC($|[\s_.-])/i.test(l) || /non\s*-?commercial/i.test(l)
+export { isNdLicense, isNcLicense }
 /** A family archetype stand-in rather than a photo plate of the species. */
 export const isArchetypeImage = (im: { thumbUrl?: string; fullUrl?: string }) =>
   /archetype/i.test(im.thumbUrl ?? '') || /archetype/i.test(im.fullUrl ?? '')

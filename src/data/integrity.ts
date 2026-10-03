@@ -37,6 +37,19 @@ export async function recordUserDataCounts(): Promise<void> {
   await setMeta(COUNTS_KEY, counts)
 }
 
+/**
+ * Rows that sync itself removed (a delete made on another device) are not
+ * eviction: lower the mark by exactly what was removed so the next launch does
+ * not report them as lost, while an unexplained drop still does.
+ */
+export async function lowerUserDataCounts(removed: Partial<Counts>): Promise<void> {
+  const mark = await getMeta<Counts>(COUNTS_KEY, { sightings: 0, photos: 0 })
+  await setMeta(COUNTS_KEY, {
+    sightings: Math.max(0, mark.sightings - (removed.sightings ?? 0)),
+    photos: Math.max(0, mark.photos - (removed.photos ?? 0)),
+  })
+}
+
 export async function checkIntegrity(sampleSize = 8): Promise<IntegrityReport> {
   const packs = await db.packs.toArray()
   const cache = await caches.open(PACK_IMAGE_CACHE).catch(() => null)

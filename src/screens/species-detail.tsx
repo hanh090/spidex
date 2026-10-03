@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { db } from '../data/db'
+import { isFavourite, setFavourite } from '../features/log/favourites-repo'
 import { useSpecies, useActivePack } from '../features/guide/use-pack'
 import { Plate } from '../features/guide/species-grid'
 import { SoundList } from '../features/guide/sound-player'
@@ -263,15 +263,15 @@ function FavouriteToggle({ packId, speciesId }: { packId: string; speciesId: str
   useEffect(() => {
     let cancelled = false
     setOn(null)
-    void db.favourites.get(key).then((r) => { if (!cancelled) setOn(!!r) })
+    void isFavourite(packId, speciesId).then((r) => { if (!cancelled) setOn(r) })
     return () => { cancelled = true }
-  }, [key])
+  }, [key, packId, speciesId])
 
   return (
     <button
       onClick={async () => {
-        if (on) { await db.favourites.delete(key); setOn(false) }
-        else { await db.favourites.put({ id: key, packId, speciesId, addedAt: Date.now() }); setOn(true) }
+        await setFavourite(packId, speciesId, !on)
+        setOn(!on)
       }}
       aria-pressed={!!on}
       aria-label={t('species.favourite')}

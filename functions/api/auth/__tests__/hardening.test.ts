@@ -98,18 +98,24 @@ describe('validation', () => {
 })
 
 describe('throttling', () => {
+  /** Honours the three statements the limiter issues: counting upsert, read-only SELECT, failure upsert. */
   function counterDb() {
     const counts = new Map<string, number>()
+    const bump = (args: unknown[]) => {
+      const k = `${args[0]}|${args[1]}`
+      counts.set(k, (counts.get(k) ?? 0) + 1)
+      return counts.get(k)!
+    }
     return {
-      prepare: () => {
+      counts,
+      prepare: (sql: string) => {
         const make = (args: unknown[]): any => ({
           bind: (...a: unknown[]) => make(a),
           first: async () => {
-            const k = `${args[0]}|${args[1]}`
-            counts.set(k, (counts.get(k) ?? 0) + 1)
-            return { count: counts.get(k) }
+            if (sql.startsWith('SELECT count')) return { count: counts.get(`${args[0]}|${args[1]}`) ?? 0 }
+            return { count: bump(args) }
           },
-          run: async () => ({ meta: { changes: 0 } }),
+          run: async () => { if (sql.startsWith('INSERT INTO rate_limits')) bump(args); return { meta: { changes: 0 } } },
           all: async () => ({ results: [] }),
         })
         return make([])
@@ -128,6 +134,22 @@ describe('throttling', () => {
     expect(res.status).toBe(429)
     expect(Number(res.headers.get('Retry-After'))).toBeGreaterThan(0)
     expect(um.authenticateWithPassword).toHaveBeenCalledTimes(10)
+  })
+
+  it('successful sign-ins never count toward the per-email lockout', async () => {
+    um.authenticateWithPassword.mockResolvedValue({ user: { id: 'u1', email: 'a@x.co' } })
+    const db = counterDb()
+    for (let i = 0; i < 12; i++) expect((await login(db, `10.1.0.${i}`)).status).toBe(200)
+    // A real user can still sign in after many requests naming their address.
+    um.authenticateWithPassword.mockRejectedValue(new Error('bad'))
+    expect((await login(db, '10.1.1.1')).status).toBe(401)
+  })
+
+  it('the IP bucket counts successful attempts too', async () => {
+    um.authenticateWithPassword.mockResolvedValue({ user: { id: 'u1', email: 'a@x.co' } })
+    const db = counterDb()
+    for (let i = 0; i < 30; i++) expect((await login(db, '7.7.7.7', `u${i}@x.co`)).status).toBe(200)
+    expect((await login(db, '7.7.7.7', 'next@x.co')).status).toBe(429)
   })
 
   it('429s after 30 attempts from one IP across emails', async () => {
@@ -156,5 +178,14 @@ describe('throttling', () => {
     um.authenticateWithPassword.mockResolvedValue({ user: { id: 'u1', email: 'a@x.co' } })
     const broken = { prepare: () => { throw new Error('no such table: rate_limits') }, batch: async () => [] }
     expect((await login(broken)).status).toBe(200)
+  })
+})
+
+describe('oauth start', () => {
+  const get = (path: string) => onRequest({ request: new Request(`https://x.test${path}`), env } as never)
+  it('rejects an unknown provider and a foreign redirect with 400, not 500', async () => {
+    expect((await get('/api/auth/oauth/Nope')).status).toBe(400)
+    expect((await get('/api/auth/oauth/GoogleOAuth?redirectUri=https%3A%2F%2Fevil.test%2Fcb')).status).toBe(400)
+    expect((await get('/api/auth/oauth/GoogleOAuth?redirectUri=not%20a%20url')).status).toBe(400)
   })
 })

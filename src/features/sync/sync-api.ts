@@ -17,6 +17,8 @@ export interface PushRecord {
   id: string
   clientVersion: number
   payload: Record<string, unknown>
+  /** Only on "keep mine" after a server-side delete: bring the tombstoned record back. */
+  restore?: true
 }
 
 export interface PushResult {

@@ -16,6 +16,7 @@ export async function startTrip(name: string, locationLabel: string): Promise<Tr
 }
 
 export async function endTrip(id: string): Promise<void> {
+  if (!(await getTrip(id))) return
   await db.trips.update(id, { endedAt: Date.now() })
 }
 
@@ -55,7 +56,7 @@ export type TripPatch = Partial<Pick<Trip, 'name' | 'locationLabel' | 'startedAt
 
 /** Rejects an end before the start rather than saving a trip with a negative window. */
 export async function updateTrip(id: string, patch: TripPatch): Promise<void> {
-  const current = await db.trips.get(id)
+  const current = await getTrip(id)
   if (!current) return
   const startedAt = patch.startedAt ?? current.startedAt
   const endedAt = 'endedAt' in patch ? patch.endedAt : current.endedAt
@@ -65,13 +66,17 @@ export async function updateTrip(id: string, patch: TripPatch): Promise<void> {
 
 /**
  * Re-open an ended trip. Only one trip is active at a time (new sightings
- * attach to it), so any other open trip is closed first.
+ * attach to it), so any other open trip of this person is closed first.
+ * Other accounts' trips on a shared device are neither read nor changed.
  */
 export async function resumeTrip(id: string): Promise<void> {
-  await db.transaction('rw', db.trips, async () => {
+  const active = await getActiveUserId()
+  await db.transaction('rw', db.trips, db.meta, async () => {
+    const target = await db.trips.get(id)
+    if (!target || !isVisibleTo(target, active)) return
     const now = Date.now()
     for (const tr of await db.trips.toArray()) {
-      if (tr.id !== id && !tr.endedAt) await db.trips.update(tr.id, { endedAt: now })
+      if (tr.id !== id && !tr.endedAt && isVisibleTo(tr, active)) await db.trips.update(tr.id, { endedAt: now })
     }
     await db.trips.update(id, { endedAt: undefined })
   })
