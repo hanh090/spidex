@@ -29,6 +29,12 @@ export function fakeD1(handler: Handler) {
   const log: { sql: string; args: unknown[] }[] = []
   return {
     log,
+    /** Runs each statement in order, like D1's batch. */
+    async batch(stmts: { run(): Promise<unknown> }[]) {
+      const out: unknown[] = []
+      for (const s of stmts) out.push(await s.run())
+      return out
+    },
     prepare(sql: string) {
       const make = (args: unknown[]) => ({
         bind: (...a: unknown[]) => make(a),
@@ -43,3 +49,9 @@ export function fakeD1(handler: Handler) {
 
 export const htmlFallback = () =>
   new Response('<!doctype html>', { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } })
+
+/**
+ * Stateful D1 + R2 for the sync and credits endpoints: real semantics for the
+ * tenant predicate, client_version guard, seq cursor and ledger idempotency.
+ */
+export { createMemoryStore as fakeSyncStore } from '../memory-store'

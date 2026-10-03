@@ -14,6 +14,10 @@ import {
   checkManifest, checkSpeciesNdjson, contentType, isValidPackId, mergeCatalogue, sanitizePath,
   servingPrefix, submissionPrefix,
 } from '../../functions/lib/submissions'
+import { onRequest as syncRoute } from '../../functions/api/sync/[[catchall]]'
+import { onRequest as creditsRoute } from '../../functions/api/credits/[[catchall]]'
+import { createMemoryStore, emptyState, type MemoryState } from '../../functions/lib/memory-store'
+import { signSession } from '../../functions/lib/session'
 
 // In-memory token store for dev server mapped by session ID
 const sessionStore = new Map<string, { user: AuthSessionUser; accessToken?: string; refreshToken?: string }>()
@@ -155,6 +159,9 @@ export function devAuthPlugin(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         if (req.url?.startsWith('/api/admin/')) {
           return handleAdmin(req, res)
+        }
+        if (req.url?.startsWith('/api/sync/') || req.url?.split('?')[0] === '/api/credits') {
+          return handleSyncDev(req, res)
         }
         if (req.url?.startsWith('/api/submissions')) {
           return handleSubmission(req, res)
@@ -704,4 +711,82 @@ function devOverview() {
   }
 
   return { packs, catalogueError: null, store: true, generatedAt: Date.now() }
+}
+
+/* ---- /api/sync/* and /api/credits in dev --------------------------------------
+ * The production handlers (functions/api/sync, functions/api/credits) run
+ * unchanged against an in-memory D1/R2 stand-in persisted to
+ * data/sync-dev-store.json (gitignored scratch). The dev session id is turned
+ * into a signed session cookie per request, so the handlers' own session,
+ * tenant and origin checks are what is exercised — not a re-implementation.
+ */
+const SYNC_STORE_PATH = path.resolve(process.cwd(), 'data/sync-dev-store.json')
+const DEV_SESSION_SECRET = 'spidex-dev-session-secret'
+
+let syncStore: ReturnType<typeof createMemoryStore> | null = null
+let syncSaveTimer: ReturnType<typeof setTimeout> | null = null
+
+function getSyncStore() {
+  if (syncStore) return syncStore
+  let initial: MemoryState | undefined
+  try {
+    initial = { ...emptyState(), ...JSON.parse(fs.readFileSync(SYNC_STORE_PATH, 'utf8')) }
+  } catch { /* first run: start empty */ }
+  syncStore = createMemoryStore(initial, () => {
+    if (syncSaveTimer) return
+    syncSaveTimer = setTimeout(() => {
+      syncSaveTimer = null
+      try {
+        fs.mkdirSync(path.dirname(SYNC_STORE_PATH), { recursive: true })
+        fs.writeFileSync(SYNC_STORE_PATH, JSON.stringify(syncStore!.state))
+      } catch { /* read-only checkout: dev sync degrades to in-memory */ }
+    }, 200)
+  })
+  return syncStore
+}
+
+async function handleSyncDev(req: any, res: any): Promise<void> {
+  const host = req.headers.host || 'localhost:5173'
+  const send = (status: number, body: unknown) => {
+    res.statusCode = status
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify(body))
+  }
+
+  const sessionId = parseCookies(req.headers.cookie)['spidex_session']
+  const user = sessionId ? sessionStore.get(sessionId)?.user : undefined
+  if (!user) return send(401, { error: 'Sign in required' })
+
+  const method = req.method ?? 'GET'
+  const chunks: Buffer[] = []
+  if (method !== 'GET' && method !== 'HEAD') {
+    for await (const chunk of req) chunks.push(chunk as Buffer)
+  }
+
+  const headers = new Headers()
+  for (const [k, v] of Object.entries(req.headers)) {
+    if (typeof v === 'string' && !['cookie', 'host', 'connection', 'transfer-encoding'].includes(k)) headers.set(k, v)
+  }
+  headers.set('Cookie', `spidex_session=${await signSession(
+    { userId: user.id, email: user.email, emailVerified: user.emailVerified }, DEV_SESSION_SECRET,
+  )}`)
+
+  const request = new Request(`http://${host}${req.url}`, {
+    method, headers, body: chunks.length ? Buffer.concat(chunks) : undefined,
+  })
+  const store = getSyncStore()
+  const env = {
+    SESSION_SECRET: DEV_SESSION_SECRET, DB: store.db, PACKS: store.r2,
+    CREDITS_ENFORCED: process.env.CREDITS_ENFORCED,
+  }
+  try {
+    const route = request.url.includes('/api/credits') ? creditsRoute : syncRoute
+    const out = await route({ request, env } as never)
+    res.statusCode = out.status
+    out.headers.forEach((value: string, key: string) => res.setHeader(key, value))
+    res.end(Buffer.from(await out.arrayBuffer()))
+  } catch (err) {
+    console.error('dev sync error', err)
+    send(500, { error: 'Sync error' })
+  }
 }

@@ -73,6 +73,9 @@ plans/
 # Dev admin store (scratch state for the local /api/admin shim)
 data/admin-store.json
 
+# Dev sync/credits store (local stand-in for D1 + R2)
+data/sync-dev-store.json
+
 # Dev pack submissions (local stand-in for the R2 bucket)
 data/submissions/
 
