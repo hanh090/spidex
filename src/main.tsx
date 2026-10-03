@@ -6,6 +6,8 @@ import { App } from './app/App'
 import { registerSW } from 'virtual:pwa-register'
 import { recordClockRef } from './features/log/clock'
 import { checkIntegrity, recordUserDataCounts } from './data/integrity'
+import { publishIntegrity } from './data/integrity-notice'
+import { markWaiting, registerUpdater } from './features/update/update-store'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode><App /></StrictMode>,
@@ -13,8 +15,8 @@ createRoot(document.getElementById('root')!).render(
 
 /**
  * 'prompt', never automatic: a service worker update must not swap content
- * mid-session in the field. Phase 6 adds the forced-update path for clients
- * below minClientVersion.
+ * mid-session in the field. Clients below the server's minClientVersion get a
+ * non-blocking banner (see app/notices.tsx) that runs the update on request.
  */
 /**
  * `registerType: 'prompt'` only prompts if a handler exists. Without one the
@@ -27,11 +29,15 @@ const updateSW = registerSW({
   onNeedRefresh() {
     // Deliberately a confirm rather than an auto-reload: an update must never
     // swap content out from under someone mid-session in the field.
+    markWaiting()
     const msg = i18n.t('update.available')
     const yes = i18n.t('update.reload')
     if (window.confirm(`${msg}\n\n${yes}?`)) void updateSW(true)
   },
 })
+// The "update required" banner (client below the server's minClientVersion)
+// applies updates through this same registration.
+registerUpdater(updateSW)
 
 /**
  * Launch checks. The clock reference is paired with monotonic uptime so a
@@ -43,6 +49,7 @@ const updateSW = registerSW({
 void (async () => {
   await recordClockRef()
   const report = await checkIntegrity()
+  publishIntegrity(report)
   if (report.userDataLost) {
     console.error(
       '[spidex] user data loss detected:',

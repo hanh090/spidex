@@ -1,16 +1,28 @@
 import type { User } from './types'
 
-export async function fetchCurrentUser(): Promise<User | null> {
+/**
+ * `known: false` means the server could not be asked (offline, outage) — the
+ * caller must not read that as "signed out", or an offline launch would hide a
+ * signed-in user's own records.
+ */
+export type SessionLookup = { known: true; user: User | null } | { known: false }
+
+export async function fetchSession(): Promise<SessionLookup> {
   try {
     const res = await fetch('/api/auth/me', {
       headers: { Accept: 'application/json' },
     })
-    if (!res.ok) return null
+    if (!res.ok) return { known: false }
     const data = await res.json()
-    return data.user || null
+    return { known: true, user: data.user || null }
   } catch {
-    return null
+    return { known: false }
   }
+}
+
+export async function fetchCurrentUser(): Promise<User | null> {
+  const session = await fetchSession()
+  return session.known ? session.user : null
 }
 
 export async function signInWithPassword(email: string, password: string): Promise<User> {

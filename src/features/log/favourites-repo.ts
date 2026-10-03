@@ -4,6 +4,7 @@
  * checklist for the next outing.
  */
 import { db, speciesUid, type Favourite, type StoredSpecies } from '../../data/db'
+import { visibleSightings } from '../auth/scope'
 
 export interface FavouriteView {
   favourite: Favourite
@@ -19,7 +20,7 @@ export interface FavouriteView {
 export async function listFavourites(): Promise<FavouriteView[]> {
   const [favs, sightings] = await Promise.all([
     db.favourites.orderBy('addedAt').reverse().toArray(),
-    db.sightings.toArray(),
+    visibleSightings(),
   ])
   const species = await db.species.bulkGet(favs.map((f) => speciesUid(f.packId, f.speciesId)))
   const seen = new Map<string, { at: number; sci?: string; common?: string }>()

@@ -23,7 +23,25 @@
   Cache-Control: public, max-age=604800
 
 # The app renders untrusted pack content and user notes; keep the surface tight.
+#
+# CSP, by what the app actually loads:
+#   script-src   'self'  Vite emits one external module; no inline script, no eval.
+#   style-src    'self' + Google Fonts stylesheet (index.html). 'unsafe-inline' is
+#                for React inline style props and cannot be verified away without
+#                a real browser; styles carry no script capability here.
+#   font-src     fonts.gstatic.com (Google Fonts files).
+#   img-src      'self' (packs, icons), data:, blob: (captured photo previews),
+#                https: (pack images with absolute credit URLs).
+#   media-src    'self' + https: (xeno-canto recordings) + blob:.
+#   connect-src  'self' only. The client never calls WorkOS directly: OAuth is a
+#                top-level redirect (navigation is not governed by connect-src)
+#                and the code exchange goes through /api/auth/callback.
+#   worker-src   'self' (service worker).
+# Pack files served by the packs Function carry their own stricter
+# `script-src 'none'` policy; Pages does not apply this file to Function responses.
 /*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(self), camera=(self), microphone=(), payment=(), usb=()
   X-Frame-Options: DENY

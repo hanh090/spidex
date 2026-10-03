@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -5,9 +6,14 @@ import { PACK_IMAGE_CACHE, isPackMediaRequest } from './src/data/cache-names'
 import { devAuthPlugin } from './server/auth/dev-auth-plugin'
 import { trackedPublicPlugin } from './server/vite/tracked-public-plugin'
 
+// The app compares this against /api/meta's minClientVersion. Bump package.json
+// "version" on any release that must force older installs to update.
+const appVersion: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
+
 // vitest picks up dependency test files without an explicit include.
 
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   // public/ is copied by trackedPublicPlugin: untracked pack media stays out.
   build: { copyPublicDir: false },
   plugins: [

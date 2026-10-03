@@ -2,7 +2,8 @@
   "account": {
     "guest": "Khách (Ngoại tuyến)",
     "signIn": "Đăng nhập / Đăng ký",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "signOutUnsynced_other": "Có {{count}} bản ghi chưa được đồng bộ. Đăng xuất sẽ ẩn chúng trên thiết bị này cho đến khi bạn đăng nhập lại, và chúng chưa có trên thiết bị khác. Vẫn đăng xuất?"
   },
   "app": {
     "name": "Spidex",
@@ -269,7 +270,11 @@
     "notPersisted": "Dữ liệu tải về có thể bị xoá",
     "persisted": "Dữ liệu tải về được bảo vệ",
     "unsupported": "Trình duyệt không báo cáo",
-    "used": "Đã dùng {{used}} trên {{quota}}"
+    "used": "Đã dùng {{used}} trên {{quota}}",
+    "lostTitle": "Một số dữ liệu đã lưu bị mất",
+    "lostUser": "Các lần quan sát hoặc ảnh đã lưu trên thiết bị này không còn nữa. Trình duyệt có thể đã xóa bộ nhớ. Hãy xuất phần còn lại và đăng nhập để khôi phục các bản ghi đã đồng bộ.",
+    "lostPacks": "Một gói đã tải về bị thiếu dữ liệu. Mở thư viện gói và tải lại.",
+    "dismiss": "Đóng"
   },
   "theme": {
     "dawn": "Rạng đông",
@@ -283,7 +288,9 @@
   "update": {
     "available": "Đã có phiên bản mới",
     "later": "Để sau",
-    "reload": "Cập nhật ngay"
+    "reload": "Cập nhật ngay",
+    "requiredTitle": "Cần cập nhật",
+    "requiredBody": "Phiên bản này quá cũ để đồng bộ. Dữ liệu của bạn vẫn nằm trên thiết bị và mọi thứ vẫn dùng được khi ngoại tuyến."
   },
   "field": {
     "targets": "Vùng chạm lớn hơn",

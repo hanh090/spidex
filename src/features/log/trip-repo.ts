@@ -6,9 +6,11 @@
  */
 import { db, type Sighting, type Trip } from '../../data/db'
 import { updateSighting } from './sighting-repo'
+import { getActiveUserId, isVisibleTo, visibleSightings, visibleTrips } from '../auth/scope'
 
 export async function startTrip(name: string, locationLabel: string): Promise<Trip> {
-  const trip: Trip = { id: crypto.randomUUID(), name, startedAt: Date.now(), locationLabel }
+  const userId = (await getActiveUserId()) ?? undefined
+  const trip: Trip = { id: crypto.randomUUID(), name, startedAt: Date.now(), locationLabel, userId }
   await db.trips.put(trip)
   return trip
 }
@@ -18,11 +20,11 @@ export async function endTrip(id: string): Promise<void> {
 }
 
 export async function activeTrip(): Promise<Trip | undefined> {
-  return (await db.trips.orderBy('startedAt').reverse().toArray()).find((tr) => !tr.endedAt)
+  return (await visibleTrips()).find((tr) => !tr.endedAt)
 }
 
 export async function listTrips(): Promise<Trip[]> {
-  return db.trips.orderBy('startedAt').reverse().toArray()
+  return visibleTrips()
 }
 
 export async function reassign(sightingId: string, tripId: string | undefined): Promise<void> {
@@ -34,7 +36,7 @@ export async function autoAssign(tripId: string): Promise<number> {
   const trip = await db.trips.get(tripId)
   if (!trip) return 0
   const until = trip.endedAt ?? Date.now()
-  const candidates = await db.sightings.where('at').between(trip.startedAt, until, true, true).toArray()
+  const candidates = (await visibleSightings()).filter((s) => s.at >= trip.startedAt && s.at <= until)
   let n = 0
   for (const s of candidates) {
     if (s.tripId) continue
@@ -45,7 +47,8 @@ export async function autoAssign(tripId: string): Promise<number> {
 }
 
 export async function getTrip(id: string): Promise<Trip | undefined> {
-  return db.trips.get(id)
+  const trip = await db.trips.get(id)
+  return trip && isVisibleTo(trip, await getActiveUserId()) ? trip : undefined
 }
 
 export type TripPatch = Partial<Pick<Trip, 'name' | 'locationLabel' | 'startedAt' | 'endedAt'>>
@@ -86,11 +89,12 @@ export function countSpecies(sightings: Sighting[]): number {
 }
 
 export async function tripSightings(tripId: string): Promise<Sighting[]> {
-  return (await db.sightings.where('tripId').equals(tripId).sortBy('at')).reverse()
+  const active = await getActiveUserId()
+  return (await db.sightings.where('tripId').equals(tripId).sortBy('at')).filter((s) => isVisibleTo(s, active)).reverse()
 }
 
 export async function listTripSummaries(): Promise<TripSummary[]> {
-  const [trips, sightings] = await Promise.all([listTrips(), db.sightings.toArray()])
+  const [trips, sightings] = await Promise.all([listTrips(), visibleSightings()])
   const byTrip = new Map<string, Sighting[]>()
   for (const s of sightings) {
     if (!s.tripId) continue

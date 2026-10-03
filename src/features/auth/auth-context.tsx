@@ -1,13 +1,14 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import type { User, AuthState } from './types'
 import {
-  fetchCurrentUser,
+  fetchSession,
   signInWithPassword,
   signUpWithPassword,
   getOAuthUrl,
   signOut as apiSignOut,
 } from './auth-api'
-import { claimGuestSightings } from './claim'
+import { setActiveUserId } from './scope'
+import { beginUserSession, endUserSession } from './session-transitions'
 
 interface AuthContextValue extends AuthState {
   signIn: (email: string, pass: string) => Promise<User>
@@ -25,12 +26,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const current = await fetchCurrentUser()
-      setUser(current)
-      if (current?.id) {
-        // Automatically claim any offline guest sightings on session discovery
-        void claimGuestSightings(current.id)
+      const session = await fetchSession()
+      // Offline or server down: keep whatever view we have rather than guess.
+      if (!session.known) return
+      if (session.user?.id) {
+        // Claims offline guest sightings and scopes local data to this user
+        // before the UI renders as them.
+        await beginUserSession(session.user.id)
+      } else {
+        // Authoritatively signed out (e.g. session expired): stop showing the
+        // previous account's records. The install identity is left alone.
+        await setActiveUserId(null)
       }
+      setUser(session.user)
     } finally {
       setLoading(false)
     }
@@ -42,25 +50,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, pass: string): Promise<User> => {
     const loggedIn = await signInWithPassword(email, pass)
+    if (loggedIn.id) await beginUserSession(loggedIn.id)
     setUser(loggedIn)
-    if (loggedIn.id) {
-      await claimGuestSightings(loggedIn.id)
-    }
     return loggedIn
   }
 
   const signUp = async (email: string, pass: string, first?: string, last?: string) => {
     const { user: created, pendingVerification } = await signUpWithPassword(email, pass, first, last)
     if (pendingVerification) return { pendingVerification }
+    if (created.id) await beginUserSession(created.id)
     setUser(created)
-    if (created.id) {
-      await claimGuestSightings(created.id)
-    }
     return { pendingVerification }
   }
 
   const signOut = async () => {
     await apiSignOut()
+    await endUserSession()
     setUser(null)
   }
 

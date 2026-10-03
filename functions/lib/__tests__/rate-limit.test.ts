@@ -22,8 +22,8 @@ describe('checkRateLimit', () => {
   it('allows up to max, then refuses with Retry-After inside the window', async () => {
     const { db } = counterDb()
     const limits = [{ key: 'k', max: 3 }]
-    for (let i = 0; i < 3; i++) expect(await checkRateLimit(db, limits, now)).toEqual({ allowed: true })
-    const res = await checkRateLimit(db, limits, now + 1000)
+    for (let i = 0; i < 3; i++) expect(await checkRateLimit(db as never, limits, now)).toEqual({ allowed: true })
+    const res = await checkRateLimit(db as never, limits, now + 1000)
     expect(res.allowed).toBe(false)
     if (!res.allowed) {
       expect(res.retryAfter).toBeGreaterThan(0)
@@ -34,14 +34,14 @@ describe('checkRateLimit', () => {
   it('starts a fresh counter in the next window', async () => {
     const { db } = counterDb()
     const limits = [{ key: 'k', max: 1 }]
-    await checkRateLimit(db, limits, now)
-    expect((await checkRateLimit(db, limits, now)).allowed).toBe(false)
-    expect((await checkRateLimit(db, limits, now + WINDOW_SECONDS * 1000)).allowed).toBe(true)
+    await checkRateLimit(db as never, limits, now)
+    expect((await checkRateLimit(db as never, limits, now)).allowed).toBe(false)
+    expect((await checkRateLimit(db as never, limits, now + WINDOW_SECONDS * 1000)).allowed).toBe(true)
   })
 
   it('sweeps old windows when a new window opens', async () => {
     const { db } = counterDb()
-    await checkRateLimit(db, [{ key: 'k', max: 5 }], now)
+    await checkRateLimit(db as never, [{ key: 'k', max: 5 }], now)
     expect(db.log.some((l) => l.sql.startsWith('DELETE FROM rate_limits'))).toBe(true)
   })
 
@@ -51,7 +51,7 @@ describe('checkRateLimit', () => {
     const spy = console.error
     console.error = () => {}
     try {
-      expect(await checkRateLimit(broken, [{ key: 'k', max: 1 }])).toEqual({ allowed: true })
+      expect(await checkRateLimit(broken as never, [{ key: 'k', max: 1 }])).toEqual({ allowed: true })
     } finally {
       console.error = spy
     }

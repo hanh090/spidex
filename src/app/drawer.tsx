@@ -18,6 +18,7 @@ import type { ReactNode } from 'react'
 import type { PersistState, StorageEstimate } from '../lib/storage'
 import { useActivePackName } from '../features/guide/use-active-pack-name'
 import { useAuth } from '../features/auth/auth-context'
+import { countUnsynced } from '../features/auth/scope'
 import { SignInModal } from '../screens/sign-in-modal'
 
 interface Props {
@@ -39,6 +40,17 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
   const [signInOpen, setSignInOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  /**
+   * Signing out hides this account's records from the next person on the
+   * device. Anything not yet synced would also be missing everywhere else, so
+   * say so first instead of letting it look like data loss afterwards.
+   */
+  const confirmSignOut = async () => {
+    const unsynced = await countUnsynced().catch(() => 0)
+    if (unsynced > 0 && !window.confirm(t('account.signOutUnsynced', { count: unsynced }))) return
+    await signOut()
+  }
 
   /*
    * The admin row appears only for allowlisted staff. This is presentation,
@@ -138,7 +150,7 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
               <Row
                 label={user?.email || 'Logged In'}
                 value={t('account.signOut', 'Sign out')}
-                onClick={() => void signOut()}
+                onClick={() => void confirmSignOut()}
               />
             )}
             {!isGuest && (
