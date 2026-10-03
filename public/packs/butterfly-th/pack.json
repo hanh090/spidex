@@ -6,7 +6,7 @@
   },
   "taxonGroup": "lepidoptera",
   "region": "TH",
-  "version": 1,
+  "version": 2,
   "license": "CC-BY-SA-4.0",
   "sources": [
     "GBIF Occurrence Backbone (api.gbif.org)",
@@ -178,10 +178,10 @@
     ],
     "aspects": {
       "required": [
-        "dorsal",
-        "ventral"
+        "dorsal"
       ],
       "optional": [
+        "ventral",
         "male",
         "female"
       ]

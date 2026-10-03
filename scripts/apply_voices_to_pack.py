@@ -45,7 +45,9 @@ def main() -> int:
         found = [s for s in voices.get(rec.get("sciName", ""), [])
                  if SAFE_LIC.match(s.get("licenseUrl") or "")]
         if found:
-            rec["sounds"] = found
+            # Optional fields are absent, never null: the pack schema rejects
+            # null and one bad field fails the whole pack.
+            rec["sounds"] = [{k: v for k, v in snd.items() if v is not None} for snd in found]
             matched += 1
         else:
             rec.pop("sounds", None)
