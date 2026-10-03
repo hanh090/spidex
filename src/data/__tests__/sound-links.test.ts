@@ -17,4 +17,15 @@ describe('sound links are http(s) only', () => {
     expect(checkSpeciesNdjson(line('https://ok.test')).issues).toEqual([])
     expect(checkSpeciesNdjson(line('JavaScript:alert(1)')).issues[0]).toMatch(/http\(s\)/)
   })
+
+  it('submission check refuses NoDerivatives image licences', () => {
+    const line = (license: string) =>
+      JSON.stringify({ id: 'a', sciName: 'A a', images: [{ credit: 'c', license }] })
+    for (const nd of ['CC-BY-ND', 'CC BY-ND 4.0'.replace(/ /g, '-'), 'cc-by-nc-nd']) {
+      expect(checkSpeciesNdjson(line(nd)).issues[0]).toMatch(/NoDerivatives/)
+    }
+    for (const ok of ['CC0', 'CC-BY', 'CC-BY-SA', 'CC-BY-NC']) {
+      expect(checkSpeciesNdjson(line(ok)).issues).toEqual([])
+    }
+  })
 })

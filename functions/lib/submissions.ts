@@ -220,6 +220,8 @@ export function checkManifest(raw: unknown, expectedId: string): string[] {
   return issues
 }
 
+const ND_LICENSE = /(^|-)ND(-|$)/i
+
 /** Per-record check on species.ndjson: JSON shape plus attribution presence. */
 export function checkSpeciesNdjson(text: string): { issues: string[]; count: number } {
   const issues: string[] = []
@@ -235,6 +237,9 @@ export function checkSpeciesNdjson(text: string): { issues: string[]; count: num
         issues.push(`line ${i + 1}: no images`)
       } else if (sp.images.some((im: any) => !im.credit || !im.license)) {
         issues.push(`line ${i + 1}: image without credit/license`)
+      } else if (sp.images.some((im: any) => ND_LICENSE.test(String(im.license)))) {
+        // Plates are redrawn from their sources, which a NoDerivatives licence forbids.
+        issues.push(`line ${i + 1}: NoDerivatives image licence is not allowed`)
       }
       // Links are rendered as <a href>: only http(s), never javascript:/data:.
       const links = (Array.isArray(sp.sounds) ? sp.sounds : []).flatMap((s: any) => [s?.sourceUrl, s?.licenseUrl])
