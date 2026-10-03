@@ -84,6 +84,41 @@ describe('bundled pack media from the bucket', () => {
   })
 })
 
+describe('admin overrides of bundled manifests', () => {
+  const assets = { fetch: async () => new Response(JSON.stringify({ packs: ['bird-vn'] })) }
+  const staticFile = () => new Response('STATIC', { headers: { 'Content-Type': 'application/json' } })
+
+  it.each(['pack.json', 'species.ndjson'])('serves overrides/<id>/%s in preference to the static file, uncached', async (file) => {
+    resetBundledPackIds()
+    const r2 = fakeR2({ [`overrides/bird-vn/${file}`]: 'OVERRIDE' })
+    const res = await servePack(ctx(`/packs/bird-vn/${file}`, staticFile, { ASSETS: assets, PACKS: r2 }))
+    expect(await res.text()).toBe('OVERRIDE')
+    expect(res.headers.get('Cache-Control')).toBe('no-store')
+  })
+
+  it('falls back to the static file when no override exists', async () => {
+    resetBundledPackIds()
+    const res = await servePack(ctx('/packs/bird-vn/pack.json', staticFile, { ASSETS: assets, PACKS: fakeR2() }))
+    expect(await res.text()).toBe('STATIC')
+  })
+
+  it('ignores overrides for packs outside the shipped index and for media files', async () => {
+    resetBundledPackIds()
+    const r2 = fakeR2({ 'overrides/other/pack.json': 'OVERRIDE', 'overrides/bird-vn/img/a.webp': 'OVERRIDE' })
+    expect(await (await servePack(ctx('/packs/other/pack.json', staticFile, { ASSETS: assets, PACKS: r2 }))).text()).toBe('STATIC')
+    expect(await (await servePack(ctx('/packs/bird-vn/img/a.webp', staticFile, { ASSETS: assets, PACKS: r2 }))).text()).toBe('STATIC')
+  })
+
+  it('does not fail the request when the bucket read throws', async () => {
+    resetBundledPackIds()
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const r2 = { get: async () => { throw new Error('boom') } }
+    const res = await servePack(ctx('/packs/bird-vn/pack.json', staticFile, { ASSETS: assets, PACKS: r2 }))
+    expect(await res.text()).toBe('STATIC')
+    err.mockRestore()
+  })
+})
+
 describe('/packs/index.json', () => {
   const staticIndex = () => new Response(JSON.stringify({ packs: ['a', 'b'], featured: ['a'] }), { headers: { 'Content-Type': 'application/json' } })
 

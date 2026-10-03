@@ -11,7 +11,9 @@
  */
 import { WorkOS } from '@workos-inc/node'
 import { isAdmin, readSession, type SessionPayload } from '../../lib/session'
-import { deletePrefix, isRealAsset, submissionPrefix } from '../../lib/submissions'
+import { deletePrefix, isRealAsset, servingPrefix, submissionPrefix } from '../../lib/submissions'
+import { bundledPackIds } from '../../lib/bundled-packs'
+import { handleMedia, type MediaBackend } from '../../lib/media-admin'
 
 interface Env {
   WORKOS_API_KEY: string
@@ -233,6 +235,22 @@ export const onRequest = async (context: any) => {
       return json({ ok: true })
     }
 
+    // Pack image management: edits land in R2 (overrides/ for bundled packs).
+    if (pathname.startsWith('/api/admin/media/')) {
+      if (!env.PACKS) return json({ error: 'Pack storage not configured', configured: false }, 503)
+      const result = await handleMedia(mediaBackend(env, request.url), {
+        method,
+        path: pathname.slice('/api/admin/media'.length),
+        query: url.searchParams,
+        contentType: request.headers.get('Content-Type'),
+        contentLength: Number(request.headers.get('Content-Length')) || null,
+        json: () => request.json(),
+        bytes: async () => new Uint8Array(await request.arrayBuffer()),
+      })
+      if (result.audit) await audit(env, session, result.audit.action, result.audit.detail)
+      return json(result.body, result.status)
+    }
+
     if (method === 'GET' && pathname === '/api/admin/users') {
       const workos = new WorkOS(env.WORKOS_API_KEY, { clientId: env.WORKOS_CLIENT_ID })
       const list = await workos.userManagement.listUsers({ limit: 100 })
@@ -247,6 +265,36 @@ export const onRequest = async (context: any) => {
   } catch (err) {
     console.error('admin error', err)
     return json({ error: 'Admin internal error' }, 500)
+  }
+}
+
+/** Production storage for the media API: ASSETS for shipped files, R2 for edits, D1 for community packs. */
+function mediaBackend(env: Env, requestUrl: string): MediaBackend {
+  const assetText = async (path: string) => {
+    const res = await env.ASSETS?.fetch(new Request(new URL(path, requestUrl)))
+    return res && isRealAsset(res) ? res : null
+  }
+  return {
+    bundledIds: async () => [...(await bundledPackIds(env, requestUrl))],
+    communityPacks: async () => {
+      if (!env.DB) return []
+      const { results } = await env.DB.prepare(
+        "SELECT id, meta FROM admin_resources WHERE kind = 'pack' AND published = 1",
+      ).all()
+      const out: { id: string; prefix: string }[] = []
+      for (const r of results as { id: string; meta: string }[]) {
+        try {
+          const meta = JSON.parse(r.meta)
+          if (meta?.community) out.push({ id: r.id, prefix: servingPrefix(r.id, meta) })
+        } catch { /* malformed meta: not editable */ }
+      }
+      return out
+    },
+    readStatic: async (id, file) => (await assetText(`/packs/${id}/${file}`))?.text() ?? null,
+    staticExists: async (id, rel) => !!(await assetText(`/packs/${id}/${rel}`)),
+    getObject: async (key) => (await env.PACKS.get(key))?.text() ?? null,
+    hasObject: async (key) => !!(await env.PACKS.head(key)),
+    putObject: async (key, body, type) => { await env.PACKS.put(key, body, { httpMetadata: { contentType: type } }) },
   }
 }
 

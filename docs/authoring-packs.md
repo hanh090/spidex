@@ -112,6 +112,25 @@ Allowed files: `pack.json`, `species.ndjson`, and media under `img/`,
 `audio/`, `fonts/` — no scripts or HTML can be served from a pack, and all
 community files are delivered with `script-src 'none'` regardless.
 
+## Editing images in the admin console
+
+Admin → **Media** edits one species' images (credit, licence, aspect, order,
+upload) without a redeploy. Saving validates the images (credit + licence
+required, no NoDerivatives licence, aspects from the pack's `traitSchema`,
+required aspects kept) and bumps the pack `version` by one.
+
+- A **bundled** pack's `pack.json` and `species.ndjson` stay in git; the edited
+  copies are stored in the bucket at `overrides/<id>/` and served in preference
+  to the static files. Uploads go to `bundled/<id>/img/`. When you later change
+  a bundled pack in git, delete its `overrides/<id>/` objects first or the
+  override keeps winning (and carries its own version number).
+- A **community** pack is edited in place under its own bucket prefix.
+- Uploads: raster images only (JPEG, PNG, WebP, GIF, AVIF), ≤ 8 MB, written to
+  `img/<file>`; an existing file is never overwritten unless `replace=1`.
+
+In `npm run dev` the same endpoints write under `data/overrides/` and
+`data/bundled/` (gitignored).
+
 ## Updating a published pack
 
 Bump `version`, re-upload through the same flow with the same `id`, and note

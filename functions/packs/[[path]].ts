@@ -15,6 +15,10 @@
  * deploy is read from there, with no D1 lookup: being in the shipped index is
  * what makes it public.
  *
+ * pack.json and species.ndjson of a bundled pack may be overridden by an admin
+ * edit stored at overrides/<id>/<file>; that object is served in preference to
+ * the static file.
+ *
  * Every response from the bucket gets CSP script-src 'none': packs may
  * contain SVG, and same-origin SVG is scriptable. The header keeps a
  * published pack inert no matter what an author uploads.
@@ -27,6 +31,11 @@ const META_FILES = /^(pack\.json|species\.ndjson)$/ // freshness > caching
 const notFound = () => new Response('Not found', { status: 404 })
 
 export const onRequestGet = async (context: any) => {
+  // An admin edit of a bundled pack's manifest or species data lives in the
+  // bucket and wins over the file in the deploy.
+  const override = await bundledOverride(context)
+  if (override) return override
+
   const res: Response = await context.next()
   if (isRealAsset(res)) return res
 
@@ -65,7 +74,21 @@ export const onRequestGet = async (context: any) => {
   return fromBucket(env.PACKS, `${servingPrefix(packId!, row.meta)}/${file}`, file!, miss)
 }
 
-async function fromBucket(bucket: any, key: string, file: string, miss: () => Response) {
+async function bundledOverride(context: any): Promise<Response | null> {
+  const { env } = context
+  if (!env?.PACKS || !env?.ASSETS) return null
+  const m = new URL(context.request.url).pathname.match(/^\/packs\/([^/]+)\/(pack\.json|species\.ndjson)$/)
+  if (!m) return null
+  try {
+    if (!(await bundledPackIds(env, context.request.url)).has(m[1]!)) return null
+    return await fromBucket(env.PACKS, `overrides/${m[1]}/${m[2]}`, m[2]!, () => null)
+  } catch (err) {
+    console.error('pack override lookup failed', err)
+    return null
+  }
+}
+
+async function fromBucket<M extends Response | null>(bucket: any, key: string, file: string, miss: () => M): Promise<Response | M> {
   let obj
   try {
     obj = await bucket.get(key)
