@@ -123,6 +123,8 @@ export interface Trip {
   startedAt: number
   endedAt?: number
   locationLabel: string
+  /** Owner once an account has claimed it; unset = guest-owned. Not indexed. */
+  userId?: string
 }
 
 export interface QueueItem {
@@ -195,6 +197,16 @@ export async function setMeta(key: string, value: unknown): Promise<void> {
 export async function getInstallId(): Promise<string> {
   const existing = await getMeta<string | null>('installId', null)
   if (existing) return existing
+  const id = crypto.randomUUID()
+  await setMeta('installId', id)
+  return id
+}
+
+/**
+ * New install identity, used on sign-out so the next person on a shared device
+ * starts clean: their records are not attributed to the previous install.
+ */
+export async function rotateInstallId(): Promise<string> {
   const id = crypto.randomUUID()
   await setMeta('installId', id)
   return id

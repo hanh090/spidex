@@ -12,6 +12,8 @@
  * to generalize its coordinates.
  */
 import { db, getInstallId, type Photo, type Sighting, type StoredSpecies } from '../../data/db'
+import { getActiveUserId, visibleSightings } from '../auth/scope'
+import { requestPersist } from '../../lib/storage'
 import { assessClock, tzOffsetMinutes } from './clock'
 import { softDelete, toRow, type CapturedPhoto } from './photo-store'
 import { recordUserDataCounts } from '../../data/integrity'
@@ -68,11 +70,18 @@ function snapshot(species: StoredSpecies) {
   }
 }
 
-export function buildSighting(draft: DraftSighting, installId: string, clockConfidence: Sighting['clockConfidence'], id: string): Sighting {
+export function buildSighting(
+  draft: DraftSighting,
+  installId: string,
+  clockConfidence: Sighting['clockConfidence'],
+  id: string,
+  userId?: string,
+): Sighting {
   const at = draft.at ?? Date.now()
   return {
     id,
     installId,
+    userId,
     speciesId: draft.species?.id,
     packId: draft.species?.packId,
     packVersion: draft.species?.packVersion,
@@ -104,7 +113,9 @@ export async function saveSighting(draft: DraftSighting): Promise<{ id: string; 
   const installId = await getInstallId()
   const clockConfidence = await assessClock()
   const id = crypto.randomUUID()
-  const sighting = buildSighting(draft, installId, clockConfidence, id)
+  // A signed-in user's new record is theirs from the start: sync and the
+  // per-account views both key on userId.
+  const sighting = buildSighting(draft, installId, clockConfidence, id, (await getActiveUserId()) ?? undefined)
   const rows: Photo[] = draft.photos.map((p) => toRow(p, id))
 
   try {
@@ -113,6 +124,9 @@ export async function saveSighting(draft: DraftSighting): Promise<{ id: string; 
       if (rows.length) await db.photos.bulkPut(rows)
     })
     await recordUserDataCounts()
+    // First record is the moment the user has data worth protecting; ask for
+    // durable storage then (no-op once granted). Never blocks or fails the save.
+    void requestPersist()
     return { id, storedPhotos: rows.length }
   } catch (e) {
     if (!isQuotaFailure(e)) throw e
@@ -138,6 +152,7 @@ export async function saveSighting(draft: DraftSighting): Promise<{ id: string; 
   }
   await recordUserDataCounts()
 
+  void requestPersist()
   const failed = rows.filter((r) => !stored.has(r.id)).map((r) => r.id)
   if (failed.length) throw new QuotaError(id, failed, [...stored])
   return { id, storedPhotos: stored.size }
@@ -205,7 +220,7 @@ export async function deleteSighting(id: string): Promise<void> {
 }
 
 export async function listSightings(): Promise<Sighting[]> {
-  return db.sightings.orderBy('at').reverse().toArray()
+  return (await visibleSightings()).sort((a, b) => b.at - a.at)
 }
 
 /** Records with no species yet — resolved at camp, not in the field. */

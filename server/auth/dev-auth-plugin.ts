@@ -17,6 +17,7 @@ import {
 import { onRequest as syncRoute } from '../../functions/api/sync/[[catchall]]'
 import { onRequest as creditsRoute } from '../../functions/api/credits/[[catchall]]'
 import { createMemoryStore, emptyState, type MemoryState } from '../../functions/lib/memory-store'
+import { metaResponse } from '../../functions/lib/meta'
 import { signSession } from '../../functions/lib/session'
 import { handleMedia, type MediaBackend } from '../../functions/lib/media-admin'
 
@@ -215,6 +216,12 @@ export function devAuthPlugin(): Plugin {
     name: 'spidex-dev-auth-plugin',
     configureServer(server: ViteDevServer) {
       server.middlewares.use(async (req, res, next) => {
+        if (req.method === 'GET' && req.url?.split('?')[0] === '/api/meta') {
+          const meta = metaResponse({ MIN_CLIENT_VERSION: process.env.MIN_CLIENT_VERSION })
+          res.setHeader('Content-Type', 'application/json')
+          res.end(await meta.text())
+          return
+        }
         if (req.url?.startsWith('/api/admin/')) {
           return handleAdmin(req, res)
         }

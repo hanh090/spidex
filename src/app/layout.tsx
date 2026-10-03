@@ -10,6 +10,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Drawer } from './drawer'
+import { Notices } from './notices'
+import { useAuth } from '../features/auth/auth-context'
 import { useScrollRestoration } from './use-scroll-restoration'
 import { IconExplore, IconIdentify, IconSightings, IconMenu } from '../ui/icons'
 import { useOnline } from '../lib/net'
@@ -25,6 +27,7 @@ import {
 export function Layout() {
   const { t } = useTranslation()
   const online = useOnline()
+  const { user, loading: authLoading } = useAuth()
   const location = useLocation()
   const mainRef = useRef<HTMLElement | null>(null)
   const { name: packName } = useActivePackName()
@@ -133,8 +136,11 @@ export function Layout() {
         </header>
       )}
 
+      <Notices />
+
       <main ref={mainRef} className="scroll-y" style={{ flex: 1, minHeight: 0, width: '100%' }}>
-        <Outlet />
+        {/* Remount on account change so no screen keeps the previous person's records on display. */}
+        <Outlet key={authLoading ? 'pending' : user?.id ?? 'guest'} />
       </main>
 
       {/*

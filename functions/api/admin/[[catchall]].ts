@@ -13,6 +13,10 @@ import { WorkOS } from '@workos-inc/node'
 import { isAdmin, readSession, type SessionPayload } from '../../lib/session'
 import { deletePrefix, isRealAsset, servingPrefix, submissionPrefix } from '../../lib/submissions'
 import { bundledPackIds } from '../../lib/bundled-packs'
+import { rejectCrossOrigin } from '../../lib/origin'
+import {
+  parseBody, parseOptionalBody, publishSchema, resourceCreateSchema, resourcePatchSchema,
+} from '../../lib/validate'
 import { handleMedia, type MediaBackend } from '../../lib/media-admin'
 
 interface Env {
@@ -55,6 +59,9 @@ export const onRequest = async (context: any) => {
   const pathname = url.pathname
   const method = request.method
 
+  const crossOrigin = rejectCrossOrigin(request)
+  if (crossOrigin) return crossOrigin
+
   const session = await readSession(request, env as unknown as Record<string, unknown>)
   const admin = isAdmin(session, env as unknown as Record<string, unknown>)
 
@@ -83,14 +90,13 @@ export const onRequest = async (context: any) => {
 
     if (pathname === '/api/admin/resources' && method === 'POST') {
       if (!env.DB) return json({ error: 'Admin store not configured', configured: false }, 503)
-      const body: any = await request.json().catch(() => ({}))
-      const kind = String(body.kind ?? '').trim()
-      const title = String(body.title ?? '').trim()
-      if (!kind || !title) return json({ error: 'kind and title are required' }, 400)
-      const id = String(body.id ?? crypto.randomUUID())
-      const meta = JSON.stringify(body.meta ?? {})
-      const published = body.published === false ? 0 : 1
-      const sort = Number.isFinite(body.sort) ? body.sort : 0
+      const parsed = await parseBody(request, resourceCreateSchema)
+      if (!parsed.ok) return parsed.response
+      const { kind, title } = parsed.data
+      const id = parsed.data.id ?? crypto.randomUUID()
+      const meta = JSON.stringify(parsed.data.meta ?? {})
+      const published = parsed.data.published === false ? 0 : 1
+      const sort = parsed.data.sort ?? 0
       await env.DB.prepare(
         'INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
       ).bind(id, kind, title, meta, published, sort, Date.now()).run()
@@ -102,13 +108,15 @@ export const onRequest = async (context: any) => {
     if (resourceMatch && method === 'PATCH') {
       if (!env.DB) return json({ error: 'Admin store not configured', configured: false }, 503)
       const id = decodeURIComponent(resourceMatch[1]!)
-      const body: any = await request.json().catch(() => ({}))
+      const parsed = await parseBody(request, resourcePatchSchema)
+      if (!parsed.ok) return parsed.response
+      const body = parsed.data
       const sets: string[] = ['updated_at = ?']
       const vals: unknown[] = [Date.now()]
-      if (typeof body.title === 'string') { sets.push('title = ?'); vals.push(body.title) }
+      if (body.title !== undefined) { sets.push('title = ?'); vals.push(body.title) }
       if (body.meta !== undefined) { sets.push('meta = ?'); vals.push(JSON.stringify(body.meta)) }
       if (body.published !== undefined) { sets.push('published = ?'); vals.push(body.published ? 1 : 0) }
-      if (Number.isFinite(body.sort)) { sets.push('sort = ?'); vals.push(body.sort) }
+      if (body.sort !== undefined) { sets.push('sort = ?'); vals.push(body.sort) }
       vals.push(id)
       const res = await env.DB.prepare(`UPDATE admin_resources SET ${sets.join(', ')} WHERE id = ?`).bind(...vals).run()
       if (!res.meta?.changes) return json({ error: 'Not found' }, 404)
@@ -130,8 +138,9 @@ export const onRequest = async (context: any) => {
     if (publishMatch && method === 'POST') {
       if (!env.DB) return json({ error: 'Admin store not configured', configured: false }, 503)
       const packId = decodeURIComponent(publishMatch[1]!)
-      const body: any = await request.json().catch(() => ({}))
-      const published = body.published === false ? 0 : 1
+      const parsed = await parseOptionalBody(request, publishSchema)
+      if (!parsed.ok) return parsed.response
+      const published = parsed.data.published === false ? 0 : 1
       await env.DB.prepare(
         `INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at)
          VALUES (?, 'pack', ?, '{}', ?, 0, ?)

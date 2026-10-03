@@ -2,7 +2,9 @@
   "account": {
     "guest": "Gast (Offline)",
     "signIn": "Anmelden / Registrieren",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "signOutUnsynced_one": "{{count}} Eintrag ist noch nicht synchronisiert. Beim Abmelden wird er auf diesem Gerät ausgeblendet, bis du dich wieder anmeldest, und ist nicht auf deinen anderen Geräten. Trotzdem abmelden?",
+    "signOutUnsynced_other": "{{count}} Einträge sind noch nicht synchronisiert. Beim Abmelden werden sie auf diesem Gerät ausgeblendet, bis du dich wieder anmeldest, und sind nicht auf deinen anderen Geräten. Trotzdem abmelden?"
   },
   "app": {
     "name": "Spidex",
@@ -278,7 +280,11 @@
     "notPersisted": "Downloads können gelöscht werden",
     "persisted": "Downloads geschützt",
     "unsupported": "Von diesem Browser nicht gemeldet",
-    "used": "{{used}} von {{quota}} belegt"
+    "used": "{{used}} von {{quota}} belegt",
+    "lostTitle": "Gespeicherte Daten fehlen",
+    "lostUser": "Auf diesem Gerät gespeicherte Beobachtungen oder Fotos sind nicht mehr vorhanden. Der Browser hat möglicherweise seinen Speicher geleert. Exportiere den Rest und melde dich an, um synchronisierte Einträge wiederherzustellen.",
+    "lostPacks": "Ein heruntergeladenes Paket ist unvollständig. Öffne die Paketbibliothek und lade es erneut herunter.",
+    "dismiss": "Schließen"
   },
   "theme": {
     "dawn": "Dämmerung",
@@ -292,7 +298,9 @@
   "update": {
     "available": "Eine neue Version ist bereit",
     "later": "Später",
-    "reload": "Jetzt aktualisieren"
+    "reload": "Jetzt aktualisieren",
+    "requiredTitle": "Update erforderlich",
+    "requiredBody": "Diese Version ist zu alt für die Synchronisierung. Deine Einträge bleiben auf diesem Gerät und alles funktioniert offline."
   },
   "field": {
     "targets": "Größere Tippflächen",

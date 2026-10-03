@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { db, type Photo, type Sighting } from '../data/db'
+import { canViewSighting } from '../features/auth/scope'
 import { photosFor } from '../features/log/photo-store'
 import { deleteSighting, resolveSpecies, updateSighting } from '../features/log/sighting-repo'
 import { useActivePack } from '../features/guide/use-pack'
@@ -34,9 +35,12 @@ export function SightingDetail() {
     if (!id) return
     let cancelled = false
     void (async () => {
-      const [s, ph] = await Promise.all([db.sightings.get(id), photosFor(id)])
+      const s = await db.sightings.get(id)
+      // Another account's record is not this person's to open, even by URL.
+      const visible = s && (await canViewSighting(s)) ? s : undefined
+      const ph = visible ? await photosFor(id) : []
       if (cancelled) return
-      setSighting(s ?? null)
+      setSighting(visible ?? null)
       setPhotos(ph)
     })()
     return () => { cancelled = true }

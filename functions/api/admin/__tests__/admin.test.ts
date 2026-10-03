@@ -9,7 +9,7 @@ const baseEnv = { SESSION_SECRET: SECRET, ADMIN_EMAILS: 'boss@x.co' }
 async function call(method: string, path: string, env: object, emailVerified = true) {
   const token = await signSession({ userId: 'admin', email: 'boss@x.co', emailVerified }, SECRET)
   return onRequest({
-    request: new Request(`https://x.test${path}`, { method, headers: { Cookie: `spidex_session=${token}` } }),
+    request: new Request(`https://x.test${path}`, { method, headers: { Origin: 'https://x.test', Cookie: `spidex_session=${token}` } }),
     env: { ...baseEnv, ...env },
   })
 }

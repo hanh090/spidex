@@ -8,11 +8,15 @@
  */
 import { WorkOS } from '@workos-inc/node'
 import { readSession, sessionCookie, sessionSecret, signSession } from '../../lib/session'
+import { rejectCrossOrigin } from '../../lib/origin'
+import { checkRateLimit, credentialLimits, tooManyRequests } from '../../lib/rate-limit'
+import { loginSchema, oauthCallbackSchema, parseBody, registerSchema } from '../../lib/validate'
 
 type Env = {
   WORKOS_API_KEY: string
   WORKOS_CLIENT_ID: string
   SESSION_SECRET?: string
+  DB?: any
 }
 
 export const onRequest = async (context: any) => {
@@ -50,14 +54,19 @@ export const onRequest = async (context: any) => {
     return json({ error: message }, status)
   }
 
+  // Every state-changing route is same-origin only. The OAuth redirect itself
+  // is a GET (never checked); the code exchange is a same-origin fetch.
+  const crossOrigin = rejectCrossOrigin(request)
+  if (crossOrigin) return crossOrigin
+
   try {
     // 1. Password login
     if (method === 'POST' && pathname === '/api/auth/password') {
-      const body: any = await request.json().catch(() => ({}))
-      const { email, password } = body
-      if (!email || !password) {
-        return json({ error: 'Email and password required' }, 400)
-      }
+      const parsed = await parseBody(request, loginSchema)
+      if (!parsed.ok) return parsed.response
+      const { email, password } = parsed.data
+      const limited = await checkRateLimit(env.DB, await credentialLimits('password', request, email))
+      if (!limited.allowed) return tooManyRequests(limited.retryAfter)
 
       let res
       try {
@@ -74,16 +83,18 @@ export const onRequest = async (context: any) => {
 
     // 2. User registration
     if (method === 'POST' && pathname === '/api/auth/register') {
-      const body: any = await request.json().catch(() => ({}))
-      const { email, password, firstName, lastName } = body
-      if (!email || !password) {
-        return json({ error: 'Email and password required' }, 400)
-      }
+      const parsed = await parseBody(request, registerSchema)
+      if (!parsed.ok) return parsed.response
+      const { email, password, firstName, lastName } = parsed.data
+      const limited = await checkRateLimit(env.DB, await credentialLimits('register', request, email))
+      if (!limited.allowed) return tooManyRequests(limited.retryAfter)
 
       const workos = workosClient()
       let newUser
       try {
-        newUser = await workos.userManagement.createUser({ email, password, firstName, lastName })
+        newUser = await workos.userManagement.createUser({
+          email, password, firstName: firstName ?? undefined, lastName: lastName ?? undefined,
+        })
       } catch (err) {
         return fail('register', err, 400, 'Could not create the account')
       }
@@ -117,11 +128,9 @@ export const onRequest = async (context: any) => {
 
     // 4. OAuth code exchange callback
     if (method === 'POST' && pathname === '/api/auth/callback') {
-      const body: any = await request.json().catch(() => ({}))
-      const { code } = body
-      if (!code) {
-        return json({ error: 'Code required' }, 400)
-      }
+      const parsed = await parseBody(request, oauthCallbackSchema)
+      if (!parsed.ok) return parsed.response
+      const { code } = parsed.data
 
       let res
       try {

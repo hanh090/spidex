@@ -19,8 +19,8 @@ import { onRequest } from '../[[catchall]]'
 import { readSession } from '../../../lib/session'
 
 const env = { WORKOS_API_KEY: 'sk_test', WORKOS_CLIENT_ID: 'client_1', SESSION_SECRET: 's3cret' }
-const post = (path: string, body: object, e: object = env) =>
-  onRequest({ request: new Request(`https://x.test${path}`, { method: 'POST', body: JSON.stringify(body) }), env: e })
+const post = (path: string, body: object, e: object = env, headers: Record<string, string> = {}) =>
+  onRequest({ request: new Request(`https://x.test${path}`, { method: 'POST', body: JSON.stringify(body), headers: { Origin: 'https://x.test', ...headers } }), env: e })
 
 beforeEach(() => {
   Object.values(um).forEach((f) => f.mockReset())
@@ -33,7 +33,7 @@ describe('/api/auth/register', () => {
   it('issues no session when sign-in is refused (pending verification)', async () => {
     um.createUser.mockResolvedValue(created)
     um.authenticateWithPassword.mockRejectedValue(new Error('email_verification_required'))
-    const res = await post('/api/auth/register', { email: 'a@x.co', password: 'pw' })
+    const res = await post('/api/auth/register', { email: 'a@x.co', password: 'pw-long-enough' })
     expect(res.status).toBe(201)
     expect(res.headers.get('Set-Cookie')).toBeNull()
     expect(await res.json()).toMatchObject({ pendingVerification: true, user: { id: 'u1' } })
@@ -42,7 +42,7 @@ describe('/api/auth/register', () => {
   it('issues a signed session, with emailVerified, when sign-in succeeds', async () => {
     um.createUser.mockResolvedValue(created)
     um.authenticateWithPassword.mockResolvedValue({ user: { ...created, emailVerified: true } })
-    const res = await post('/api/auth/register', { email: 'a@x.co', password: 'pw' })
+    const res = await post('/api/auth/register', { email: 'a@x.co', password: 'pw-long-enough' })
     expect(res.status).toBe(201)
     const cookie = res.headers.get('Set-Cookie')!
     expect(cookie).toContain('spidex_session=')
@@ -52,7 +52,7 @@ describe('/api/auth/register', () => {
 
   it('does not leak provider error text', async () => {
     um.createUser.mockRejectedValue(new Error('internal workos detail'))
-    const res = await post('/api/auth/register', { email: 'a@x.co', password: 'pw' })
+    const res = await post('/api/auth/register', { email: 'a@x.co', password: 'pw-long-enough' })
     expect(res.status).toBe(400)
     expect(JSON.stringify(await res.json())).not.toContain('workos detail')
   })
@@ -61,7 +61,7 @@ describe('/api/auth/register', () => {
 describe('/api/auth/password', () => {
   it('signs in a user with a non-Latin-1 name (no 500)', async () => {
     um.authenticateWithPassword.mockResolvedValue({ user: { id: 'u1', email: 'a@x.co', firstName: 'Hạnh', emailVerified: false } })
-    const res = await post('/api/auth/password', { email: 'a@x.co', password: 'pw' })
+    const res = await post('/api/auth/password', { email: 'a@x.co', password: 'pw-long-enough' })
     expect(res.status).toBe(200)
     expect(res.headers.get('Set-Cookie')).toContain('spidex_session=')
   })

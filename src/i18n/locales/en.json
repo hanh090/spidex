@@ -2,7 +2,9 @@
   "account": {
     "guest": "Guest (Offline)",
     "signIn": "Sign in / Register",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "signOutUnsynced_one": "{{count}} record is not synced yet. Signing out hides it on this device until you sign in again, and it is not on your other devices. Sign out anyway?",
+    "signOutUnsynced_other": "{{count}} records are not synced yet. Signing out hides them on this device until you sign in again, and they are not on your other devices. Sign out anyway?"
   },
   "app": {
     "name": "Spidex",
@@ -278,7 +280,11 @@
     "notPersisted": "Downloads may be reclaimed",
     "persisted": "Downloads protected",
     "unsupported": "Not reported by this browser",
-    "used": "{{used}} of {{quota}} used"
+    "used": "{{used}} of {{quota}} used",
+    "lostTitle": "Some saved data is missing",
+    "lostUser": "Sightings or photos that were saved on this device are no longer here. The browser may have cleared its storage. Export what remains and sign in to restore synced records.",
+    "lostPacks": "A downloaded pack is incomplete. Open the pack library and download it again.",
+    "dismiss": "Dismiss"
   },
   "theme": {
     "dawn": "Dawn",
@@ -292,7 +298,9 @@
   "update": {
     "available": "A new version is ready",
     "later": "Later",
-    "reload": "Update now"
+    "reload": "Update now",
+    "requiredTitle": "Update required",
+    "requiredBody": "This version is too old to sync. Your records stay on this device and everything works offline."
   },
   "field": {
     "targets": "Larger touch targets",

@@ -9,6 +9,7 @@
  */
 import { db, speciesUid, type Sighting, type Trip } from '../../data/db'
 import { resolve } from '../../data/localized'
+import { visibleSightings, visibleTrips } from '../auth/scope'
 
 export interface LifeListEntry {
   /** Pack-scoped key — authored species ids are only unique within a pack. */
@@ -43,8 +44,8 @@ function placeOf(s: Sighting, trips: Map<string, Trip>): string | undefined {
 
 export async function buildLifeList(): Promise<LifeListEntry[]> {
   const [all, trips, packs, species] = await Promise.all([
-    db.sightings.toArray(),
-    db.trips.toArray(),
+    visibleSightings(),
+    visibleTrips(),
     db.packs.toArray(),
     db.species.toArray(),
   ])
