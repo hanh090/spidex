@@ -95,6 +95,9 @@ export function Sightings() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <Meta tone={trip ? 'ok' : 'muted'}>{trip ? t('sightings.tripActive') : t('sightings.tripNone')}</Meta>
           </div>
+          <Link to={trip ? `/trips/${trip.id}` : '/trips'} className="t-action" style={{
+            display: 'inline-flex', alignItems: 'center', minHeight: 'var(--tap-min)', color: 'var(--accent)',
+          }}>{t('fieldLog.trips')}</Link>
           <Button variant="inline" onClick={() => void toggleTrip()}>
             {trip ? t('sightings.endTrip') : t('sightings.startTrip')}
           </Button>
@@ -126,7 +129,7 @@ export function Sightings() {
                       }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="t-body">{s.notes || t('sightings.noNotes')}</div>
-                          <Meta>{formatTime(s.at)}</Meta>
+                          <Meta>{formatTime(s.at, s.tzOffsetMinutes)}</Meta>
                           <SyncBadge sighting={s} />
                         </div>
                         <IconChevron />
@@ -155,7 +158,7 @@ export function Sightings() {
                           <div className="t-sci">{s.speciesSnapshot?.sciName}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                          <Meta>{formatTime(s.at)}</Meta>
+                          <Meta>{formatTime(s.at, s.tzOffsetMinutes)}</Meta>
                           {s.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
                           <SyncBadge sighting={s} />
                         </div>
@@ -197,11 +200,17 @@ function LifeList({ entries }: { entries: LifeListEntry[] }) {
   if (!entries.length) return <EmptyState title={t('sightings.lifeEmpty')} fix={t('sightings.lifeEmptyFix')} />
   return (
     <div style={{ padding: '0 var(--gutter-sm)' }}>
-      <div style={{ padding: 'var(--space-4) 0 var(--space-2)' }}>
+      <div style={{
+        padding: 'var(--space-4) 0 var(--space-2)', display: 'flex', flexWrap: 'wrap',
+        alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)',
+      }}>
         <Meta>{t('sightings.lifeCount', { count: entries.length })}</Meta>
+        <Link to="/life-list" className="t-action" style={{
+          display: 'inline-flex', alignItems: 'center', minHeight: 'var(--tap-min)', color: 'var(--accent)',
+        }}>{t('fieldLog.lifeListOpen')}</Link>
       </div>
       {entries.map((e) => (
-        <div key={e.speciesId} style={{
+        <div key={e.uid} style={{
           display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
           minHeight: 'var(--tap-min)', padding: 'var(--space-2) 0',
           borderBottom: 'var(--hair) solid var(--line)',

@@ -142,7 +142,7 @@ export function Sheet({
             onClick={onClose}
             aria-label={t('nav.close')}
             style={{
-              width: 40, height: 40, minHeight: 40, flex: 'none', marginLeft: status ? 0 : 'auto',
+              width: 'var(--tap-min)', height: 'var(--tap-min)', flex: 'none', marginLeft: status ? 0 : 'auto',
               display: 'grid', placeItems: 'center', borderRadius: 'var(--radius-chip)',
               border: 'var(--hair) solid var(--line)', color: 'var(--ink)',
             }}

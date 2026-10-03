@@ -102,6 +102,24 @@ describe('POST /api/submissions', () => {
     expect((await call('POST', '/api/submissions', { DB: db, PACKS: fakeR2() }, { body })).status).toBe(201)
   })
 
+  it("discards the caller's own stale uploading attempt for the same pack id and stages a fresh one", async () => {
+    const r2 = fakeR2({ 'submissions/sub_old/pack.json': 'a', 'submissions/sub_old/img/1.webp': 'b', 'submissions/sub_other/pack.json': 'keep' })
+    const db = fakeD1((sql) => (/^SELECT id/.test(sql) ? [{ id: 'sub_old' }] : ok(sql)))
+    const res = await call('POST', '/api/submissions', { DB: db, PACKS: r2 }, { body })
+    expect(res.status).toBe(201)
+    expect([...r2.store.keys()]).toEqual(['submissions/sub_other/pack.json'])
+    const stale = db.log.find((l) => /^SELECT id/.test(l.sql))!
+    expect(stale.args).toEqual(['new-pack', 'u1'])
+    expect(db.log.some((l) => /'withdrawn'/.test(l.sql) && l.args[1] === 'sub_old')).toBe(true)
+  })
+
+  it('keeps the stale attempt when its withdraw loses a race to completion', async () => {
+    const r2 = fakeR2({ 'submissions/sub_old/pack.json': 'a' })
+    const db = fakeD1((sql) => (/^SELECT id/.test(sql) ? [{ id: 'sub_old' }] : /'withdrawn'/.test(sql) ? { meta: { changes: 0 } } : ok(sql)))
+    await call('POST', '/api/submissions', { DB: db, PACKS: r2 }, { body })
+    expect(r2.store.has('submissions/sub_old/pack.json')).toBe(true)
+  })
+
   it('409s when the atomic claim insert loses a race', async () => {
     const db = fakeD1((sql) => (/^INSERT/.test(sql.trim()) ? { meta: { changes: 0 } } : ok(sql)))
     expect((await call('POST', '/api/submissions', { DB: db, PACKS: fakeR2() }, { body })).status).toBe(409)

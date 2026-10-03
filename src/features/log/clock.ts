@@ -57,3 +57,17 @@ export function tzOffsetMinutes(at = new Date()): number {
   // Intl sign convention: minutes to ADD to UTC, so flip getTimezoneOffset.
   return -at.getTimezoneOffset()
 }
+
+/** Format an instant for a datetime-local input, in the device's own zone. */
+export function toLocalInput(at: number): string {
+  return new Date(at + tzOffsetMinutes(new Date(at)) * 60_000).toISOString().slice(0, 16)
+}
+
+/**
+ * Parse a datetime-local value as device-local wall time. `valueAsNumber`
+ * would read it AS UTC; `new Date('YYYY-MM-DDTHH:mm')` is local by spec.
+ */
+export function fromLocalInput(value: string): number | null {
+  const d = new Date(value)
+  return Number.isNaN(+d) ? null : +d
+}

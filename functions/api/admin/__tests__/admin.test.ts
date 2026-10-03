@@ -55,6 +55,38 @@ describe('approve / reject', () => {
     expect(JSON.parse(insert.args[2] as string)).toMatchObject({ community: true, prefix: 'submissions/sub_1' })
   })
 
+  describe('re-approving a community pack', () => {
+    const DAY = 24 * 60 * 60 * 1000
+    const run = async (prevMeta: object) => {
+      const r2 = fakeR2({
+        'submissions/sub_prev/pack.json': 'v1', 'submissions/sub_ancient/pack.json': 'v0', 'submissions/sub_1/pack.json': 'v2',
+      })
+      const db = fakeD1((sql) => (/^SELECT/.test(sql)
+        ? (/kind = 'pack'/.test(sql) ? { meta: JSON.stringify({ community: true, submittedBy: { userId: 'u1' }, ...prevMeta }) } : sub('pending'))
+        : { meta: { changes: 1 } }))
+      const res = await approve(db, { PACKS: r2 })
+      const insert = db.log.find((l) => /^INSERT INTO admin_resources/.test(l.sql.trim()) && l.args[0] === 'x')!
+      return { res, r2, meta: JSON.parse(insert.args[2] as string) }
+    }
+
+    it('keeps the previous version and records it for later cleanup', async () => {
+      const { res, r2, meta } = await run({ prefix: 'submissions/sub_prev' })
+      expect(res.status).toBe(200)
+      expect(r2.store.has('submissions/sub_prev/pack.json')).toBe(true)
+      expect(meta.supersededPrefixes).toEqual([{ prefix: 'submissions/sub_prev', at: expect.any(Number) }])
+    })
+
+    it('sweeps superseded prefixes past the grace period and keeps recent ones', async () => {
+      const { r2, meta } = await run({
+        prefix: 'submissions/sub_prev',
+        supersededPrefixes: [{ prefix: 'submissions/sub_ancient', at: Date.now() - 2 * DAY }],
+      })
+      expect(r2.store.has('submissions/sub_ancient/pack.json')).toBe(false)
+      expect(r2.store.has('submissions/sub_prev/pack.json')).toBe(true)
+      expect(meta.supersededPrefixes.map((e: { prefix: string }) => e.prefix)).toEqual(['submissions/sub_prev'])
+    })
+  })
+
   it('reject deletes only the staging prefix', async () => {
     const r2 = fakeR2({ 'submissions/sub_1/a': '1', 'packs/x/pack.json': 'live' })
     const db = fakeD1((sql) => (/^SELECT/.test(sql) ? sub('pending') : { meta: { changes: 1 } }))

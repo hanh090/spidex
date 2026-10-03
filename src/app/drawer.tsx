@@ -186,6 +186,12 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
             ))}
           </Section>
 
+          <Section label={t('fieldLog.section')}>
+            <Row label={t('fieldLog.trips')} onClick={() => { onClose(); navigate('/trips') }} />
+            <Row label={t('fieldLog.lifeList')} onClick={() => { onClose(); navigate('/life-list') }} />
+            <Row label={t('fieldLog.favourites')} onClick={() => { onClose(); navigate('/favourites') }} />
+          </Section>
+
           <Section label={t('drawer.field', 'Field use')}>
             <Row
               label={

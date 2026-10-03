@@ -2,13 +2,20 @@
 
 export function fakeR2(initial: Record<string, string> = {}, pageSize = 2) {
   const store = new Map<string, string>(Object.entries(initial))
+  /** Content type recorded by put(), keyed like the store. */
+  const types = new Map<string, string | undefined>()
   return {
     store,
+    types,
+    async head(key: string) { return store.has(key) ? { key } : null },
     async get(key: string) {
       const v = store.get(key)
       return v === undefined ? null : { body: v, etag: 'e', text: async () => v, json: async () => JSON.parse(v) }
     },
-    async put(key: string, body: unknown) { store.set(key, typeof body === 'string' ? body : 'bin') },
+    async put(key: string, body: unknown, opts?: { httpMetadata?: { contentType?: string } }) {
+      store.set(key, typeof body === 'string' ? body : 'bin')
+      types.set(key, opts?.httpMetadata?.contentType)
+    },
     async delete(keys: string | string[]) { for (const k of Array.isArray(keys) ? keys : [keys]) store.delete(k) },
     async list({ prefix = '', cursor }: { prefix?: string; cursor?: string } = {}) {
       // Key-based cursor, like R2: stable while earlier pages are deleted.

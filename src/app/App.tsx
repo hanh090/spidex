@@ -16,6 +16,10 @@ import { NotFound } from '../screens/not-found'
 import { SyncStatus } from '../screens/sync-status'
 import { Credits } from '../screens/credits'
 import { SyncTriggers } from '../features/sync/sync-triggers'
+import { Trips } from '../screens/trips'
+import { TripDetail } from '../screens/trip-detail'
+import { LifeList } from '../screens/life-list'
+import { Favourites } from '../screens/favourites'
 
 const router = createBrowserRouter([
   {
@@ -30,6 +34,10 @@ const router = createBrowserRouter([
       { path: 'compare', element: <Compare /> },
       { path: 'log', element: <LogSighting /> },
       { path: 'sightings/:id', element: <SightingDetail /> },
+      { path: 'trips', element: <Trips /> },
+      { path: 'trips/:id', element: <TripDetail /> },
+      { path: 'life-list', element: <LifeList /> },
+      { path: 'favourites', element: <Favourites /> },
       { path: 'library', element: <Packs /> },
       { path: 'contribute', element: <Contribute /> },
       { path: 'admin', element: <Admin /> },

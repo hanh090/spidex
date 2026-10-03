@@ -18,6 +18,7 @@ import { onRequest as syncRoute } from '../../functions/api/sync/[[catchall]]'
 import { onRequest as creditsRoute } from '../../functions/api/credits/[[catchall]]'
 import { createMemoryStore, emptyState, type MemoryState } from '../../functions/lib/memory-store'
 import { signSession } from '../../functions/lib/session'
+import { handleMedia, type MediaBackend } from '../../functions/lib/media-admin'
 
 // In-memory token store for dev server mapped by session ID
 const sessionStore = new Map<string, { user: AuthSessionUser; accessToken?: string; refreshToken?: string }>()
@@ -124,6 +125,21 @@ function handleCommunityPackFile(req: any, res: any, next: () => void): void {
   let rel: string | null = null
   try { rel = sanitizePath(decodeURIComponent(file!)) } catch { /* malformed escape: not a pack file */ }
   if (!rel) return next()
+  const bundled = devBundledIds().includes(packId!)
+  if (bundled) {
+    // Admin edits (overrides/) win over the static manifest; uploaded media
+    // (bundled/) fills in where the checkout has no file, as the bucket does.
+    const edited = /^(pack\.json|species\.ndjson)$/.test(rel)
+    const key = edited ? `overrides/${packId}/${rel}` : `bundled/${packId}/${rel}`
+    const fp = devObjectPath(key)
+    if (fp && (edited || !fs.existsSync(path.join(PACKS_DIR, packId!, rel))) && fs.existsSync(fp) && fs.statSync(fp).isFile()) {
+      res.setHeader('Content-Type', contentType(rel))
+      res.setHeader('Content-Security-Policy', "script-src 'none'")
+      res.setHeader('Cache-Control', edited ? 'no-store' : 'public, max-age=86400')
+      fs.createReadStream(fp).pipe(res)
+      return
+    }
+  }
   if (fs.existsSync(path.join(PACKS_DIR, packId!, rel))) return next()
   const row = readAdminStore().find((r) => r.kind === 'pack' && r.id === packId && r.published && (r.meta as any)?.community)
   if (!row) return next()
@@ -133,6 +149,48 @@ function handleCommunityPackFile(req: any, res: any, next: () => void): void {
   res.setHeader('Content-Security-Policy', "script-src 'none'")
   res.setHeader('Cache-Control', /^(pack\.json|species\.ndjson)$/.test(rel) ? 'no-store' : 'public, max-age=86400')
   fs.createReadStream(fp).pipe(res)
+}
+
+function devBundledIds(): string[] {
+  try {
+    const idx = JSON.parse(fs.readFileSync(path.join(PACKS_DIR, 'index.json'), 'utf8'))
+    return Array.isArray(idx?.packs) ? idx.packs.filter((p: unknown): p is string => typeof p === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+/** data/<key> — the dev stand-in for an R2 object key; null if it would escape data/. */
+function devObjectPath(key: string): string | null {
+  const fp = path.resolve(SUBMISSIONS_ROOT, key)
+  return fp.startsWith(SUBMISSIONS_ROOT + path.sep) ? fp : null
+}
+
+/** Media API storage on the local filesystem (see functions/lib/media-admin.ts). */
+const devMediaBackend: MediaBackend = {
+  bundledIds: async () => devBundledIds(),
+  communityPacks: async () =>
+    readAdminStore()
+      .filter((r) => r.kind === 'pack' && r.published && (r.meta as any)?.community)
+      .map((r) => ({ id: r.id, prefix: servingPrefix(r.id, r.meta as any) })),
+  readStatic: async (id, file) => {
+    try { return fs.readFileSync(path.join(PACKS_DIR, id, file), 'utf8') } catch { return null }
+  },
+  staticExists: async (id, rel) => fs.existsSync(path.join(PACKS_DIR, id, rel)),
+  getObject: async (key) => {
+    const fp = devObjectPath(key)
+    try { return fp ? fs.readFileSync(fp, 'utf8') : null } catch { return null }
+  },
+  hasObject: async (key) => {
+    const fp = devObjectPath(key)
+    return !!fp && fs.existsSync(fp)
+  },
+  putObject: async (key, body) => {
+    const fp = devObjectPath(key)
+    if (!fp) throw new Error('bad object key')
+    fs.mkdirSync(path.dirname(fp), { recursive: true })
+    fs.writeFileSync(fp, body)
+  },
 }
 
 /** /packs/index.json with publish flags and community packs merged, as in production. */
@@ -538,6 +596,15 @@ async function handleAdmin(req: any, res: any): Promise<void> {
       })
     })
 
+  // Unlike readBody, a malformed body is an error here (the media API returns 400).
+  const readJsonStrict = (): Promise<unknown> =>
+    new Promise((resolve, reject) => {
+      let data = ''
+      req.on('data', (chunk: any) => { data += chunk })
+      req.on('end', () => { try { resolve(JSON.parse(data)) } catch (e) { reject(e) } })
+      req.on('error', reject)
+    })
+
   const sessionId = parseCookies(req.headers.cookie)['spidex_session']
   const session = sessionId ? sessionStore.get(sessionId) : undefined
   const user = session?.user
@@ -651,6 +718,30 @@ async function handleAdmin(req: any, res: any): Promise<void> {
       fs.rmSync(path.join(SUBMISSIONS_ROOT, submissionPrefix(row.id)), { recursive: true, force: true })
       devUpdateSubmission(row.id, (mm) => { mm.status = 'rejected'; mm.reviewedBy = user!.email; mm.reviewedAt = Date.now() })
       return send({ ok: true })
+    }
+
+    if (pathname.startsWith('/api/admin/media/')) {
+      const readRaw = () => new Promise<Uint8Array>((resolve, reject) => {
+        const chunks: Buffer[] = []
+        let size = 0
+        req.on('data', (c: Buffer) => {
+          size += c.length
+          // Stop buffering past the cap; the core rejects the oversize body.
+          if (size <= 16 * 1024 * 1024) chunks.push(c)
+        })
+        req.on('end', () => resolve(new Uint8Array(Buffer.concat(chunks))))
+        req.on('error', reject)
+      })
+      const result = await handleMedia(devMediaBackend, {
+        method,
+        path: pathname.slice('/api/admin/media'.length),
+        query: url.searchParams,
+        contentType: req.headers['content-type'] ?? null,
+        contentLength: req.headers['content-length'] ? Number(req.headers['content-length']) : null,
+        json: readJsonStrict,
+        bytes: readRaw,
+      })
+      return send(result.body, result.status)
     }
 
     if (method === 'GET' && pathname === '/api/admin/users') {

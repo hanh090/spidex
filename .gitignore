@@ -78,6 +78,8 @@ data/sync-dev-store.json
 
 # Dev pack submissions (local stand-in for the R2 bucket)
 data/submissions/
+data/overrides/
+data/bundled/
 
 # Vite dependency cache
 .vite/

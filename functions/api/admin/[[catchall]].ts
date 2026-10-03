@@ -11,7 +11,9 @@
  */
 import { WorkOS } from '@workos-inc/node'
 import { isAdmin, readSession, type SessionPayload } from '../../lib/session'
-import { deletePrefix, isRealAsset, submissionPrefix } from '../../lib/submissions'
+import { deletePrefix, isRealAsset, servingPrefix, submissionPrefix } from '../../lib/submissions'
+import { bundledPackIds } from '../../lib/bundled-packs'
+import { handleMedia, type MediaBackend } from '../../lib/media-admin'
 
 interface Env {
   WORKOS_API_KEY: string
@@ -23,7 +25,10 @@ interface Env {
   ASSETS?: { fetch: (input: Request | string) => Promise<Response> }
 }
 
-const JSON_HEADERS = { 'Content-Type': 'application/json' }
+/** How long a superseded pack version stays in R2 so in-flight downloads finish. */
+const SUPERSEDED_GRACE_MS = 24 * 60 * 60 * 1000
+
+const JSON_HEADERS ={ 'Content-Type': 'application/json' }
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: JSON_HEADERS })
 
@@ -193,6 +198,19 @@ export const onRequest = async (context: any) => {
         if (!claim.meta?.changes) return json({ error: 'Submission is no longer pending' }, 409)
 
         const prefix = submissionPrefix(subId)
+        // Superseded versions are not deleted at once: clients mid-download
+        // still read them. The pack row remembers each old prefix with a
+        // timestamp; entries older than the grace period are swept on the
+        // pack's next approval.
+        const oldPrefix = prevMeta ? (typeof prevMeta.prefix === 'string' && prevMeta.prefix ? prevMeta.prefix : `packs/${sm.packId}`) : null
+        const carried: { prefix: string; at: number }[] = Array.isArray(prevMeta?.supersededPrefixes)
+          ? prevMeta.supersededPrefixes.filter((e: any) => typeof e?.prefix === 'string' && Number.isFinite(e?.at))
+          : []
+        const due = carried.filter((e) => reviewedAt - e.at >= SUPERSEDED_GRACE_MS && e.prefix !== prefix)
+        const supersededPrefixes = carried.filter((e) => !due.includes(e) && e.prefix !== prefix)
+        if (oldPrefix && oldPrefix !== prefix && !supersededPrefixes.some((e) => e.prefix === oldPrefix)) {
+          supersededPrefixes.push({ prefix: oldPrefix, at: reviewedAt })
+        }
         try {
           await env.DB.prepare(
             `INSERT INTO admin_resources (id, kind, title, meta, published, sort, updated_at)
@@ -200,7 +218,7 @@ export const onRequest = async (context: any) => {
              ON CONFLICT(id) DO UPDATE SET published = 1, meta = excluded.meta, updated_at = excluded.updated_at`,
           ).bind(
             sm.packId, sm.packId,
-            JSON.stringify({ community: true, submissionId: subId, prefix, submittedBy: sm.submitter, summary: sm.summary ?? {} }),
+            JSON.stringify({ community: true, submissionId: subId, prefix, submittedBy: sm.submitter, summary: sm.summary ?? {}, supersededPrefixes }),
             reviewedAt,
           ).run()
         } catch (err) {
@@ -211,10 +229,8 @@ export const onRequest = async (context: any) => {
           throw err
         }
 
-        // The previous version's files are unreachable now; reclaim them.
-        const oldPrefix = prevMeta ? (typeof prevMeta.prefix === 'string' && prevMeta.prefix ? prevMeta.prefix : `packs/${sm.packId}`) : null
-        if (oldPrefix && oldPrefix !== prefix) {
-          await deletePrefix(env.PACKS, oldPrefix).catch((e: unknown) => console.error('old prefix cleanup failed', e))
+        for (const e of due) {
+          await deletePrefix(env.PACKS, e.prefix).catch((err: unknown) => console.error('old prefix cleanup failed', err))
         }
         await audit(env, session, 'submission.approve', `${subId}:${sm.packId}`)
         return json({ ok: true, packId: sm.packId })
@@ -233,6 +249,22 @@ export const onRequest = async (context: any) => {
       return json({ ok: true })
     }
 
+    // Pack image management: edits land in R2 (overrides/ for bundled packs).
+    if (pathname.startsWith('/api/admin/media/')) {
+      if (!env.PACKS) return json({ error: 'Pack storage not configured', configured: false }, 503)
+      const result = await handleMedia(mediaBackend(env, request.url), {
+        method,
+        path: pathname.slice('/api/admin/media'.length),
+        query: url.searchParams,
+        contentType: request.headers.get('Content-Type'),
+        contentLength: Number(request.headers.get('Content-Length')) || null,
+        json: () => request.json(),
+        bytes: async () => new Uint8Array(await request.arrayBuffer()),
+      })
+      if (result.audit) await audit(env, session, result.audit.action, result.audit.detail)
+      return json(result.body, result.status)
+    }
+
     if (method === 'GET' && pathname === '/api/admin/users') {
       const workos = new WorkOS(env.WORKOS_API_KEY, { clientId: env.WORKOS_CLIENT_ID })
       const list = await workos.userManagement.listUsers({ limit: 100 })
@@ -247,6 +279,36 @@ export const onRequest = async (context: any) => {
   } catch (err) {
     console.error('admin error', err)
     return json({ error: 'Admin internal error' }, 500)
+  }
+}
+
+/** Production storage for the media API: ASSETS for shipped files, R2 for edits, D1 for community packs. */
+function mediaBackend(env: Env, requestUrl: string): MediaBackend {
+  const assetText = async (path: string) => {
+    const res = await env.ASSETS?.fetch(new Request(new URL(path, requestUrl)))
+    return res && isRealAsset(res) ? res : null
+  }
+  return {
+    bundledIds: async () => [...(await bundledPackIds(env, requestUrl))],
+    communityPacks: async () => {
+      if (!env.DB) return []
+      const { results } = await env.DB.prepare(
+        "SELECT id, meta FROM admin_resources WHERE kind = 'pack' AND published = 1",
+      ).all()
+      const out: { id: string; prefix: string }[] = []
+      for (const r of results as { id: string; meta: string }[]) {
+        try {
+          const meta = JSON.parse(r.meta)
+          if (meta?.community) out.push({ id: r.id, prefix: servingPrefix(r.id, meta) })
+        } catch { /* malformed meta: not editable */ }
+      }
+      return out
+    },
+    readStatic: async (id, file) => (await assetText(`/packs/${id}/${file}`))?.text() ?? null,
+    staticExists: async (id, rel) => !!(await assetText(`/packs/${id}/${rel}`)),
+    getObject: async (key) => (await env.PACKS.get(key))?.text() ?? null,
+    hasObject: async (key) => !!(await env.PACKS.head(key)),
+    putObject: async (key, body, type) => { await env.PACKS.put(key, body, { httpMetadata: { contentType: type } }) },
   }
 }
 

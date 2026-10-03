@@ -104,7 +104,7 @@ export function Identify() {
             disabled={step === 0}
             aria-label={t('identify.previousStep')}
             style={{
-              width: 40, height: 40, minHeight: 40, flex: 'none',
+              width: 'var(--tap-min)', height: 'var(--tap-min)', flex: 'none',
               display: 'grid', placeItems: 'center', borderRadius: 'var(--radius-chip)',
               border: `var(--hair) solid ${step === 0 ? 'var(--line)' : 'var(--ink-muted)'}`,
               color: step === 0 ? 'var(--ink-muted)' : 'var(--ink)',
