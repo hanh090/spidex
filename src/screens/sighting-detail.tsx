@@ -18,7 +18,7 @@ import { search } from '../data/search-index'
 import { resolve } from '../data/localized'
 import { Button, Meta, Badge } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
-import { formatDate, formatTime } from '../i18n/format'
+import { formatObservedDate, formatTime } from '../i18n/format'
 
 export function SightingDetail() {
   const { id } = useParams()
@@ -75,7 +75,7 @@ export function SightingDetail() {
         {sighting.notes && <p className="t-body" style={{ margin: 0 }}>{sighting.notes}</p>}
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
-          <Meta>{formatDate(sighting.at + sighting.tzOffsetMinutes * 60_000, 'UTC')} · {formatTime(sighting.at, sighting.tzOffsetMinutes)}</Meta>
+          <Meta>{formatObservedDate(sighting.at, sighting.tzOffsetMinutes)} · {formatTime(sighting.at, sighting.tzOffsetMinutes)}</Meta>
           {sighting.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
           {sighting.lat != null && (
             <Meta>{sighting.lat.toFixed(4)}, {sighting.lng!.toFixed(4)}</Meta>

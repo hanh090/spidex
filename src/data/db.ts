@@ -42,7 +42,11 @@ export interface StoredSpecies extends SpeciesRecord {
 export const speciesUid = (packId: string, speciesId: string): string => `${packId}:${speciesId}`
 
 export interface Favourite {
-  id: string        // `${packId}:${speciesId}`
+  /** `${packId}:${speciesId}` for an unowned (guest) row, `${userId}|${packId}:${speciesId}` once an account owns it,
+   *  so two accounts on one device can each favourite the same species. See favourites-repo. */
+  id: string
+  /** Owner once an account has claimed it; unset = guest-owned. Not indexed. */
+  userId?: string
   packId: string
   speciesId: string
   addedAt: number

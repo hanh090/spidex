@@ -15,7 +15,7 @@ import type { Trip } from '../data/db'
 import { download, toCsv, toGeoJson } from '../features/log/export'
 import { Button, EmptyState, Meta, Badge } from '../ui/primitives'
 import { IconPlus, IconChevron } from '../ui/icons'
-import { formatDate, formatTime, formatNumber } from '../i18n/format'
+import { formatDate, formatObservedDate, formatTime, formatNumber } from '../i18n/format'
 import { SyncBadge } from '../features/sync/sync-badge'
 import { onSyncChange } from '../features/sync/engine'
 
@@ -221,7 +221,7 @@ function LifeList({ entries }: { entries: LifeListEntry[] }) {
           </div>
           <div style={{ textAlign: 'right' }}>
             <Meta>{t('sightings.firstSeen')}</Meta>
-            <div className="t-body">{formatDate(e.firstSeen)}</div>
+            <div className="t-body">{formatObservedDate(e.firstSeen, e.firstSeenOffset)}</div>
             <Meta>{formatNumber(e.count)}</Meta>
           </div>
         </div>

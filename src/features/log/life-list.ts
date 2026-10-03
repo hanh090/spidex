@@ -19,6 +19,8 @@ export interface LifeListEntry {
   sciName: string
   commonName: string
   firstSeen: number
+  /** Stored offset of the first record, to show its date where it was observed. */
+  firstSeenOffset: number
   lastSeen: number
   /** Where the first record was made: trip location, trip name, or coordinates. */
   firstPlace?: string
@@ -68,6 +70,7 @@ export async function buildLifeList(): Promise<LifeListEntry[]> {
         sciName: sci,
         commonName: s.speciesSnapshot?.commonName ?? sci,
         firstSeen: s.at,
+        firstSeenOffset: s.tzOffsetMinutes,
         lastSeen: s.at,
         firstPlace: placeOf(s, tripById),
         count: s.count,
@@ -79,6 +82,7 @@ export async function buildLifeList(): Promise<LifeListEntry[]> {
     } else {
       if (s.at < existing.firstSeen) {
         existing.firstSeen = s.at
+        existing.firstSeenOffset = s.tzOffsetMinutes
         existing.firstPlace = placeOf(s, tripById)
       }
       existing.lastSeen = Math.max(existing.lastSeen, s.at)

@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { checkUpdateRequired, applyUpdate, useUpdateState } from '../features/update/update-store'
+import { checkUpdateRequired, applyUpdate, showRequiredBanner, useUpdateState } from '../features/update/update-store'
 import { dismissIntegrity, useIntegrityNotice } from '../data/integrity-notice'
 
 const bar = {
@@ -39,7 +39,7 @@ export function Notices() {
 
   return (
     <>
-      {update.required && (
+      {showRequiredBanner(update) && (
         <div role="status" style={bar}>
           <div style={{ flex: 1, minWidth: 200 }}>
             <strong>{t('update.requiredTitle')}</strong>

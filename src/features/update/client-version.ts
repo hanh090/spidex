@@ -2,7 +2,10 @@
  * Client version negotiation. The build's own version (package.json, injected
  * at build time) is compared with the server's minClientVersion. Falling below
  * it never blocks anything — the app is offline-first — it only surfaces an
- * update prompt, because sync with a too-old client is what the server refuses.
+ * update prompt. No server route checks the client version, so the banner is
+ * advisory; it is shown only once a newer service worker is actually waiting,
+ * so raising MIN_CLIENT_VERSION above the deployed version cannot leave a
+ * banner that nothing can clear (see update-store.ts).
  */
 
 export const CLIENT_VERSION: string = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0'

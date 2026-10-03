@@ -13,7 +13,7 @@ import { keepMine, keepServer, listConflicts, type ConflictView } from '../featu
 import { Badge, Button, EmptyState, Meta } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { SignInModal } from './sign-in-modal'
-import { formatDate, formatNumber, formatTime } from '../i18n/format'
+import { formatDate, formatNumber, formatObservedDate, formatTime } from '../i18n/format'
 
 const STATES: BadgeState[] = ['queued', 'synced', 'conflict', 'failed']
 
@@ -123,7 +123,7 @@ export function SyncStatus() {
             padding: 'var(--space-4)', background: 'var(--paper)', display: 'grid', gap: 'var(--space-2)',
           }}>
             <div className="t-name">{local.speciesSnapshot?.commonName ?? t('sync.needsId')}</div>
-            <Meta>{formatDate(local.at + local.tzOffsetMinutes * 60_000, 'UTC')} {formatTime(local.at)}</Meta>
+            <Meta>{formatObservedDate(local.at, local.tzOffsetMinutes)} {formatTime(local.at, local.tzOffsetMinutes)}</Meta>
             <div>
               <Badge tone="accent">{t('sync.mine')}</Badge>
               <div className="t-body">{summary(local as unknown as Record<string, unknown>, t('sync.needsId'))}</div>

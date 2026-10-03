@@ -12,7 +12,7 @@ import {
 import { EmptyState, Meta } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { IconChevron } from '../ui/icons'
-import { formatDate, formatNumber } from '../i18n/format'
+import { formatNumber, formatObservedDate } from '../i18n/format'
 
 const SORTS: { id: LifeListSort; key: string }[] = [
   { id: 'date', key: 'fieldLog.sortDate' },
@@ -75,7 +75,7 @@ export function LifeList() {
 
 function Entry({ e }: { e: LifeListEntry }) {
   const { t } = useTranslation()
-  const date = formatDate(e.firstSeen)
+  const date = formatObservedDate(e.firstSeen, e.firstSeenOffset)
   const inner = (
     <>
       <div style={{ flex: 1, minWidth: 0 }}>
