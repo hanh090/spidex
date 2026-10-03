@@ -61,9 +61,11 @@ export function createMemoryStore(initial?: MemoryState, onChange?: () => void) 
         return { changes: 1 }
       }
       case Q.upsertSighting: {
-        const [id, uid, payload, ver, seqUid, now] = a as [string, string, string, number, string, number]
+        const [id, uid, payload, ver, seqUid, now, restore] = a as [string, string, string, number, string, number, number]
         const cur = state.sightings[id]
-        if (cur && !(cur.user_id === uid && cur.client_version < ver)) return { changes: 0 }
+        if (cur && !(cur.user_id === uid && cur.client_version < ver && (cur.deleted_at === null || restore === 1))) {
+          return { changes: 0 }
+        }
         state.sightings[id] = {
           id, user_id: cur ? cur.user_id : uid, payload, client_version: ver,
           server_seq: nextSeq(seqUid), updated_at: now, deleted_at: null,
@@ -97,11 +99,11 @@ export function createMemoryStore(initial?: MemoryState, onChange?: () => void) 
         }
         return { changes: n }
       }
-      case Q.liveKeysOfSighting: {
-        const [sightingId, uid] = a as [string, string]
+      case Q.keysTombstonedAt: {
+        const [sightingId, uid, at] = a as [string, string, number]
         return {
           rows: Object.values(state.photos)
-            .filter((p) => p.sighting_id === sightingId && p.user_id === uid && p.deleted_at === null)
+            .filter((p) => p.sighting_id === sightingId && p.user_id === uid && p.deleted_at === at)
             .map((p) => ({ r2_key: p.r2_key })),
           changes: 0,
         }
@@ -109,9 +111,14 @@ export function createMemoryStore(initial?: MemoryState, onChange?: () => void) 
       case Q.getPhoto:
         return { rows: state.photos[String(a[0])] ? [state.photos[String(a[0])]] : [], changes: 0 }
       case Q.insertPhoto: {
-        const [id, uid, sightingId, key, width, height, bytes, seqUid, now] =
-          a as [string, string, string, string, number, number, number, string, number]
+        const [id, uid, sightingId, key, width, height, bytes, seqUid, now, , , enforced, , cost] =
+          a as [string, string, string, string, number, number, number, string, number, string, string, number, string, number]
         if (state.photos[id]) return { changes: 0 }
+        const parent = state.sightings[sightingId]
+        if (!parent || parent.user_id !== uid || parent.deleted_at !== null) return { changes: 0 }
+        if (enforced === 1 && state.ledger.filter((r) => r.user_id === uid).reduce((n, r) => n + r.delta, 0) < cost) {
+          return { changes: 0 }
+        }
         state.photos[id] = {
           id, user_id: uid, sighting_id: sightingId, r2_key: key, width, height, bytes,
           server_seq: nextSeq(seqUid), created_at: now, deleted_at: null,
@@ -135,9 +142,14 @@ export function createMemoryStore(initial?: MemoryState, onChange?: () => void) 
       }
       case L.hasKey:
         return { rows: state.ledger.some((r) => r.idempotency_key === a[0]) ? [{ present: 1 }] : [], changes: 0 }
-      case L.append: {
-        const [id, uid, delta, reason, refType, refId, key, now] =
-          a as [string, string, number, string, string | null, string | null, string, number]
+      case L.append:
+      case L.appendForPhoto: {
+        const [id, uid, delta, reason, refType, refId, key, now, photoId] =
+          a as [string, string, number, string, string | null, string | null, string, number, string?]
+        if (sql === L.appendForPhoto) {
+          const photo = state.photos[String(photoId)]
+          if (!photo || photo.user_id !== uid) return { changes: 0 }
+        }
         if (state.ledger.some((r) => r.idempotency_key === key)) return { changes: 0 }
         state.ledger.push({
           id, user_id: uid, delta, reason, ref_type: refType, ref_id: refId, idempotency_key: key, created_at: now,

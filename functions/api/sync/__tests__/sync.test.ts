@@ -3,6 +3,7 @@ import { onRequest as syncRoute } from '../[[catchall]]'
 import { onRequest as creditsRoute } from '../../credits/[[catchall]]'
 import { signSession } from '../../../lib/session'
 import { fakeSyncStore } from '../../../lib/__tests__/fakes'
+import { MAX_BATCH } from '../../../lib/sync-sightings'
 import { PHOTO_SYNC_COST, SIGNUP_GRANT } from '../../../lib/ledger'
 
 const SECRET = 's3cret'
@@ -132,7 +133,7 @@ describe('POST /api/sync/sightings', () => {
   })
 
   it('caps the batch size', async () => {
-    const many = Array.from({ length: 51 }, (_, i) => rec(`00000000-0000-4000-8000-${String(i).padStart(12, '0')}`))
+    const many = Array.from({ length: MAX_BATCH + 1 }, (_, i) => rec(`00000000-0000-4000-8000-${String(i).padStart(12, '0')}`))
     expect((await push(store, many)).status).toBe(413)
   })
 })

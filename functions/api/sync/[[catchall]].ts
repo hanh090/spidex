@@ -52,6 +52,11 @@ function looksLikeImage(type: string, b: Uint8Array): boolean {
   return b.length > 12 && String.fromCharCode(...b.slice(0, 4)) === 'RIFF' && String.fromCharCode(...b.slice(8, 12)) === 'WEBP'
 }
 
+/** `decodeURIComponent` throws URIError on a malformed escape; that is a bad request, not a server fault. */
+const safeDecode = (raw: string): string | null => {
+  try { return decodeURIComponent(raw) } catch { return null }
+}
+
 const dimension = (v: string | null): number => {
   const n = Number(v)
   return Number.isInteger(n) && n >= 0 && n <= 30_000 ? n : 0
@@ -106,7 +111,8 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
 
     const sightingDel = path.match(/^\/api\/sync\/sightings\/([^/]+)$/)
     if (sightingDel && method === 'DELETE') {
-      const id = decodeURIComponent(sightingDel[1]!)
+      const id = safeDecode(sightingDel[1]!)
+      if (id === null) return json({ error: 'Malformed id' }, 400)
       if (!UUID.test(id)) return json({ error: 'Not found' }, 404)
       const ok = await tombstoneSighting(db, env.PACKS, userId, id, Date.now())
       return ok ? json({ result: 'applied' }) : json({ error: 'Not found' }, 404)
@@ -122,7 +128,9 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
       const ext = IMAGE_TYPES[type]
       if (!ext) return json({ error: 'Only image/jpeg and image/webp are accepted' }, 415)
       if (Number(request.headers.get('Content-Length') ?? 0) > MAX_PHOTO_BYTES) return json({ error: 'Photo too large' }, 413)
-      const bytes = new Uint8Array(await request.arrayBuffer())
+      const buffer = await request.arrayBuffer().catch(() => null)
+      if (!buffer) return json({ error: 'Could not read the request body' }, 400)
+      const bytes = new Uint8Array(buffer)
       if (!bytes.length) return json({ error: 'Empty body' }, 400)
       if (bytes.length > MAX_PHOTO_BYTES) return json({ error: 'Photo too large' }, 413)
       if (!looksLikeImage(type, bytes)) return json({ error: 'Body is not a valid image' }, 415)
@@ -142,35 +150,52 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
         return json({ result: 'applied', alreadyStored: true })
       }
 
-      if (creditsEnforced(env) && (await getBalance(db, userId)) < PHOTO_SYNC_COST) {
+      const enforced = creditsEnforced(env)
+      if (enforced && (await getBalance(db, userId)) < PHOTO_SYNC_COST) {
         return json({ error: 'needs_credits' }, 402)
       }
 
       const key = `user-photos/${userId}/${photoId}.${ext}`
       await env.PACKS.put(key, bytes.buffer as ArrayBuffer, { httpMetadata: { contentType: type } })
       const now = Date.now()
+      // The insert re-checks, inside the batch, that the sighting is still live
+      // and (when enforced) that the balance covers the cost, so a concurrent
+      // delete or a concurrent upload cannot slip past the checks above. The
+      // charge only lands if the photo row exists.
       const results = await db.batch([
         db.prepare(Q.bumpSeq).bind(userId),
         db.prepare(Q.insertPhoto).bind(
           photoId, userId, sightingId, key, dimension(url.searchParams.get('width')),
           dimension(url.searchParams.get('height')), bytes.length, userId, now,
+          sightingId, userId, enforced ? 1 : 0, userId, PHOTO_SYNC_COST,
         ),
         ...ledgerStatements(db, {
           userId, delta: -PHOTO_SYNC_COST, reason: 'photo_sync', refType: 'photo', refId: photoId,
-          idempotencyKey: photoKey(photoId), now,
+          idempotencyKey: photoKey(photoId), now, requirePhotoId: photoId,
         }),
       ])
       if (changes(results[1]) === 0) {
-        // Lost a race to another writer of the same id; only the owner may proceed.
         const row = await db.prepare(Q.getPhoto).bind(photoId).first<PhotoRow>()
-        if (!row || row.user_id !== userId) return json({ error: 'Photo id is already in use' }, 403)
+        // Never delete the object a winning writer of the same key relies on.
+        if (!row || row.r2_key !== key) await env.PACKS.delete(key).catch(() => undefined)
+        if (row) {
+          // Lost a race to another writer of the same id; only the owner may proceed.
+          if (row.user_id !== userId) return json({ error: 'Photo id is already in use' }, 403)
+          return json({ result: 'applied', alreadyStored: true })
+        }
+        const parent = await db.prepare(Q.getSighting).bind(sightingId).first<SightingOwner>()
+        if (!parent || parent.user_id !== userId || parent.deleted_at !== null) {
+          return json({ error: 'Sighting not found — sync the sighting first' }, 404)
+        }
+        return json({ error: 'needs_credits' }, 402)
       }
       return json({ result: 'applied' }, 201)
     }
 
     const photoRoute = path.match(/^\/api\/sync\/photos\/([^/]+)$/)
     if (photoRoute) {
-      const id = decodeURIComponent(photoRoute[1]!)
+      const id = safeDecode(photoRoute[1]!)
+      if (id === null) return json({ error: 'Malformed id' }, 400)
       if (!UUID.test(id)) return json({ error: 'Not found' }, 404)
       const row = await db.prepare(Q.getPhoto).bind(id).first<PhotoRow>()
       // Not-yours and does-not-exist are indistinguishable on purpose.

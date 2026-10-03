@@ -24,6 +24,8 @@ export interface LedgerEntry {
   /** Unique across the whole ledger; a replay with the same key is a no-op. */
   idempotencyKey: string
   now?: number
+  /** Append only if this photo row exists for the user (see L.appendForPhoto). */
+  requirePhotoId?: string
 }
 
 export interface HistoryRow {
@@ -44,10 +46,11 @@ export function creditsEnforced(env: { CREDITS_ENFORCED?: unknown }): boolean {
 /** The two statements that make up one ledger write. Run them in one batch. */
 export function ledgerStatements(db: D1Like, e: LedgerEntry): [D1Statement, D1Statement] {
   const now = e.now ?? Date.now()
+  const row = [crypto.randomUUID(), e.userId, e.delta, e.reason, e.refType ?? null, e.refId ?? null, e.idempotencyKey, now]
   return [
-    db.prepare(L.append).bind(
-      crypto.randomUUID(), e.userId, e.delta, e.reason, e.refType ?? null, e.refId ?? null, e.idempotencyKey, now,
-    ),
+    e.requirePhotoId
+      ? db.prepare(L.appendForPhoto).bind(...row, e.requirePhotoId, e.userId)
+      : db.prepare(L.append).bind(...row),
     db.prepare(L.refreshBalance).bind(e.userId, e.userId, now),
   ]
 }

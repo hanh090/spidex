@@ -9,7 +9,7 @@
 import { WorkOS } from '@workos-inc/node'
 import { readSession, sessionCookie, sessionSecret, signSession } from '../../lib/session'
 import { rejectCrossOrigin } from '../../lib/origin'
-import { checkRateLimit, credentialLimits, tooManyRequests } from '../../lib/rate-limit'
+import { checkRateLimit, credentialLimits, recordFailure, tooManyRequests } from '../../lib/rate-limit'
 import { loginSchema, oauthCallbackSchema, parseBody, registerSchema } from '../../lib/validate'
 
 type Env = {
@@ -18,6 +18,8 @@ type Env = {
   SESSION_SECRET?: string
   DB?: any
 }
+
+const OAUTH_PROVIDERS: ReadonlySet<string> = new Set(['GoogleOAuth', 'MicrosoftOAuth', 'authkit'])
 
 export const onRequest = async (context: any) => {
   const { request } = context
@@ -65,13 +67,15 @@ export const onRequest = async (context: any) => {
       const parsed = await parseBody(request, loginSchema)
       if (!parsed.ok) return parsed.response
       const { email, password } = parsed.data
-      const limited = await checkRateLimit(env.DB, await credentialLimits('password', request, email))
+      const limits = await credentialLimits('password', request, email)
+      const limited = await checkRateLimit(env.DB, limits)
       if (!limited.allowed) return tooManyRequests(limited.retryAfter)
 
       let res
       try {
         res = await workosClient().userManagement.authenticateWithPassword({ email, password, clientId })
       } catch (err) {
+        await recordFailure(env.DB, limits)
         return fail('password', err, 401, 'Invalid email or password')
       }
 
@@ -120,9 +124,13 @@ export const onRequest = async (context: any) => {
 
     // 3. OAuth start URL
     if (method === 'GET' && pathname.startsWith('/api/auth/oauth/')) {
-      const provider = pathname.replace('/api/auth/oauth/', '') as any
+      const provider = pathname.replace('/api/auth/oauth/', '')
+      if (!OAUTH_PROVIDERS.has(provider)) return json({ error: 'Unsupported sign-in provider' }, 400)
       const redirectUri = url.searchParams.get('redirectUri') || `${url.origin}/auth/callback`
-      const authUrl = workosClient().userManagement.getAuthorizationUrl({ provider, redirectUri, clientId })
+      let redirectOrigin: string | null = null
+      try { redirectOrigin = new URL(redirectUri).origin } catch { /* malformed */ }
+      if (redirectOrigin !== url.origin) return json({ error: 'redirectUri must be on this site' }, 400)
+      const authUrl = workosClient().userManagement.getAuthorizationUrl({ provider: provider as any, redirectUri, clientId })
       return json({ url: authUrl })
     }
 

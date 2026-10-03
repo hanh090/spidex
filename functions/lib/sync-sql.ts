@@ -9,7 +9,14 @@
  * Rules the statements follow:
  *  - every write to sightings/photos has `user_id = ?` in its predicate;
  *  - server_seq comes from sync_seq, bumped in the same batch;
- *  - nothing ever UPDATEs or DELETEs credit_ledger.
+ *  - nothing ever UPDATEs or DELETEs credit_ledger, and nothing uses
+ *    REPLACE conflict mode on it (it deletes the conflicting old row without
+ *    firing the append-only DELETE trigger; a test guards this). Idempotency is always
+ *    `ON CONFLICT(idempotency_key) DO NOTHING`.
+ *
+ * Cloudflare's Free plan allows 50 D1 queries per invocation and counts every
+ * statement inside a batch, so callers budget statements per request; see
+ * MAX_BATCH in sync-sightings.ts.
  */
 
 const NEXT_SEQ = '(SELECT seq FROM sync_seq WHERE user_id = ?)'
@@ -20,9 +27,11 @@ export const Q = {
     'INSERT INTO sync_seq (user_id, seq) VALUES (?, 1) ON CONFLICT(user_id) DO UPDATE SET seq = seq + 1',
 
   /**
-   * args: [id, userId, payload, clientVersion, userId(seq), now]
+   * args: [id, userId, payload, clientVersion, userId(seq), now, restore(0|1)]
    * The conflict branch only fires for the same owner AND a strictly newer
-   * client_version; otherwise no row changes (changes = 0).
+   * client_version; otherwise no row changes (changes = 0). A tombstoned row is
+   * only brought back when `restore` is 1 (an explicit "keep mine"): a delete
+   * on one device wins over a stale edit from another.
    */
   upsertSighting:
     `INSERT INTO sightings (id, user_id, payload, client_version, server_seq, updated_at, deleted_at)
@@ -30,7 +39,8 @@ export const Q = {
      ON CONFLICT(id) DO UPDATE SET
        payload = excluded.payload, client_version = excluded.client_version,
        server_seq = excluded.server_seq, updated_at = excluded.updated_at, deleted_at = NULL
-     WHERE sightings.user_id = excluded.user_id AND sightings.client_version < excluded.client_version`,
+     WHERE sightings.user_id = excluded.user_id AND sightings.client_version < excluded.client_version
+       AND (sightings.deleted_at IS NULL OR ? = 1)`,
 
   /** args: [id] */
   getSighting:
@@ -51,18 +61,27 @@ export const Q = {
     `UPDATE photos SET deleted_at = ?, server_seq = ${NEXT_SEQ}
      WHERE sighting_id = ? AND user_id = ? AND deleted_at IS NULL`,
 
-  /** args: [sightingId, userId] */
-  liveKeysOfSighting:
-    'SELECT r2_key FROM photos WHERE sighting_id = ? AND user_id = ? AND deleted_at IS NULL',
+  /** args: [sightingId, userId, now] — read after the tombstone batch, so a photo inserted meanwhile is included. */
+  keysTombstonedAt:
+    'SELECT r2_key FROM photos WHERE sighting_id = ? AND user_id = ? AND deleted_at = ?',
 
   /** args: [id] */
   getPhoto:
     'SELECT id, user_id, sighting_id, r2_key, bytes, deleted_at FROM photos WHERE id = ?',
 
-  /** args: [id, userId, sightingId, r2Key, width, height, bytes, userId(seq), now] */
+  /**
+   * args: [id, userId, sightingId, r2Key, width, height, bytes, userId(seq), now,
+   *        sightingId, userId, enforced(0|1), userId, cost]
+   * Inserts only while the parent sighting is live and, when credits are
+   * enforced, the ledger balance covers `cost`. Both checks run in the same
+   * transaction as the insert, so a concurrent delete or a concurrent upload
+   * cannot slip past them.
+   */
   insertPhoto:
     `INSERT INTO photos (id, user_id, sighting_id, r2_key, width, height, bytes, server_seq, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ${NEXT_SEQ}, ?)
+     SELECT ?, ?, ?, ?, ?, ?, ?, ${NEXT_SEQ}, ?
+     WHERE EXISTS (SELECT 1 FROM sightings WHERE id = ? AND user_id = ? AND deleted_at IS NULL)
+       AND (? = 0 OR (SELECT COALESCE(SUM(delta), 0) FROM credit_ledger WHERE user_id = ?) >= ?)
      ON CONFLICT(id) DO NOTHING`,
 
   /** args: [userId, since, limit] */
@@ -84,6 +103,17 @@ export const L = {
   append:
     `INSERT INTO credit_ledger (id, user_id, delta, reason, ref_type, ref_id, idempotency_key, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(idempotency_key) DO NOTHING`,
+
+  /**
+   * args: [id, userId, delta, reason, refType, refId, idempotencyKey, now, photoId, userId]
+   * Like `append`, but only when the photo row exists for that user: a photo
+   * that was not stored is never charged.
+   */
+  appendForPhoto:
+    `INSERT INTO credit_ledger (id, user_id, delta, reason, ref_type, ref_id, idempotency_key, created_at)
+     SELECT ?, ?, ?, ?, ?, ?, ?, ?
+     WHERE EXISTS (SELECT 1 FROM photos WHERE id = ? AND user_id = ?)
      ON CONFLICT(idempotency_key) DO NOTHING`,
 
   /** args: [userId, userId, now]. Cache is derived from the ledger, never incremented. */
