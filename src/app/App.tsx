@@ -13,6 +13,10 @@ import { Contribute } from '../screens/contribute'
 import { AuthCallback } from '../screens/auth-callback'
 import { AuthProvider } from '../features/auth/auth-context'
 import { NotFound } from '../screens/not-found'
+import { Trips } from '../screens/trips'
+import { TripDetail } from '../screens/trip-detail'
+import { LifeList } from '../screens/life-list'
+import { Favourites } from '../screens/favourites'
 
 const router = createBrowserRouter([
   {
@@ -27,6 +31,10 @@ const router = createBrowserRouter([
       { path: 'compare', element: <Compare /> },
       { path: 'log', element: <LogSighting /> },
       { path: 'sightings/:id', element: <SightingDetail /> },
+      { path: 'trips', element: <Trips /> },
+      { path: 'trips/:id', element: <TripDetail /> },
+      { path: 'life-list', element: <LifeList /> },
+      { path: 'favourites', element: <Favourites /> },
       { path: 'library', element: <Packs /> },
       { path: 'contribute', element: <Contribute /> },
       { path: 'admin', element: <Admin /> },
