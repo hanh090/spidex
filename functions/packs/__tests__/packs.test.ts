@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { onRequestGet as servePack } from '../[[path]]'
+import { onRequestGet as servePack, onRequestHead as headPack } from '../[[path]]'
 import { onRequestGet as serveIndex } from '../index.json'
 import { fakeD1, fakeR2, htmlFallback } from '../../lib/__tests__/fakes'
 import { resetBundledPackIds } from '../../lib/bundled-packs'
@@ -65,6 +65,15 @@ describe('bundled pack media from the bucket', () => {
     resetBundledPackIds()
     const res = await servePack(ctx('/packs/bird-vn/img/none.webp', htmlFallback, { ASSETS: assets, PACKS: fakeR2() }))
     expect(res.status).toBe(404)
+  })
+
+  it('answers HEAD like GET without a body, never the html fallback', async () => {
+    resetBundledPackIds()
+    const r2 = fakeR2({ 'bundled/bird-vn/img/a.webp': 'IMG' })
+    const res = await headPack(ctx('/packs/bird-vn/img/a.webp', htmlFallback, { ASSETS: assets, PACKS: r2 }))
+    expect(res.status).toBe(200)
+    expect(res.headers.get('Content-Type')).toBe('image/webp')
+    expect(res.body).toBeNull()
   })
 
   it('never reads bundled/ for a pack outside the shipped index', async () => {

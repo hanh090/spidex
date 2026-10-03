@@ -236,6 +236,11 @@ export function checkSpeciesNdjson(text: string): { issues: string[]; count: num
       } else if (sp.images.some((im: any) => !im.credit || !im.license)) {
         issues.push(`line ${i + 1}: image without credit/license`)
       }
+      // Links are rendered as <a href>: only http(s), never javascript:/data:.
+      const links = (Array.isArray(sp.sounds) ? sp.sounds : []).flatMap((s: any) => [s?.sourceUrl, s?.licenseUrl])
+      if (links.some((u: unknown) => u != null && !(typeof u === 'string' && /^https?:\/\//i.test(u)))) {
+        issues.push(`line ${i + 1}: sound link must be an http(s) URL`)
+      }
     } catch {
       issues.push(`line ${i + 1}: not valid JSON`)
     }

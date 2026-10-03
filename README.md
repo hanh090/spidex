@@ -112,7 +112,7 @@ an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges
 Merges to `master` deploy to the `spidex-app` Cloudflare Pages project via
 `.github/workflows/ci.yml` (secrets: `CLOUDFLARE_API_TOKEN`,
 `CLOUDFLARE_ACCOUNT_ID`; the job is skipped while they are unset). Manual
-deploy: `npm run build && npm run deploy` (or `deploy:preview`).
+deploy: `npm run build && npm run deploy`.
 
 **Pack media is not in git.** Photos, plates and the Singapore pack (~1.1 GB)
 live in the `spidex-packs` R2 bucket under `bundled/<packId>/…` and are served

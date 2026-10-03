@@ -12,7 +12,7 @@
  * staging area nothing serves. Approval (admin API) points a D1 `kind='pack'`
  * row at that prefix; withdraw only ever deletes this submission's own prefix.
  */
-import { readSession } from '../../lib/session'
+import { isAdmin, readSession } from '../../lib/session'
 import {
   isValidPackId, sanitizePath, checkManifest, checkSpeciesNdjson, deletePrefix, isRealAsset,
   submissionPrefix,
@@ -230,7 +230,7 @@ export const onRequest = async (context: any) => {
       const found = await getSubmission(env, decodeURIComponent(delMatch[1]!))
       if (!found) return json({ error: 'Not found' }, 404)
       const mine = found.meta.submitter.userId === session.userId
-      const admin = (env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean).includes(session.email.toLowerCase())
+      const admin = isAdmin(session, env)
       if (!mine && !admin) return json({ error: 'Not your submission' }, 403)
 
       // Flip the status first and only from a withdrawable state: if approval
@@ -244,8 +244,8 @@ export const onRequest = async (context: any) => {
       ).bind(Date.now(), found.row.id).run()
       if (!changed(flip)) return json({ error: `Submission is ${found.meta.status} — unpublish via the admin console` }, 409)
 
-      // Only this submission's staging prefix; a published pack's files live
-      // under a different prefix and are never reachable from here.
+      // Only this submission's staging prefix. A published pack serves from
+      // that same prefix, so the status guard above is what protects it.
       if (env.PACKS) await deletePrefix(env.PACKS, submissionPrefix(found.row.id))
       return json({ ok: true })
     }
