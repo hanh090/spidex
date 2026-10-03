@@ -347,3 +347,57 @@ describe('credit ledger', () => {
     expect((await credits({ anon: true })).status).toBe(401)
   })
 })
+
+describe('GET /api/sync/photos (pull)', () => {
+  const upload = (pid: string, sid = id1, opts: Opts = {}) =>
+    call(store, 'POST', `/api/sync/photos?photoId=${pid}&sightingId=${sid}&width=800&height=600`, { raw: JPEG, ...opts })
+  const pull = async (qs = '', opts: Opts = {}) =>
+    (await call(store, 'GET', `/api/sync/photos${qs}`, opts)).json() as Promise<any>
+  const p = (n: number) => `55555555-5555-4555-8555-55555555555${n}`
+
+  beforeEach(async () => { await push(store, [rec(id1)]) })
+
+  it('requires a session and a valid cursor', async () => {
+    expect((await call(store, 'GET', '/api/sync/photos', { anon: true })).status).toBe(401)
+    expect((await call(store, 'GET', '/api/sync/photos?since=-1')).status).toBe(400)
+    expect((await call(store, 'GET', '/api/sync/photos?since=abc')).status).toBe(400)
+  })
+
+  it('returns metadata after the cursor, including tombstones, and no bytes', async () => {
+    await upload(p(1)); await upload(p(2))
+    const all = await pull()
+    expect(all.photos.map((x: any) => x.id)).toEqual([p(1), p(2)])
+    expect(all.photos[0]).toMatchObject({ sightingId: id1, width: 800, height: 600, bytes: JPEG.length, deletedAt: null })
+    expect(JSON.stringify(all)).not.toContain('user-photos')
+
+    await call(store, 'DELETE', `/api/sync/photos/${p(1)}`)
+    const next = await pull(`?since=${all.cursor}`)
+    expect(next.photos.map((x: any) => x.id)).toEqual([p(1)])
+    expect(next.photos[0].deletedAt).not.toBeNull()
+    expect((await pull(`?since=${next.cursor}`)).photos).toEqual([])
+  })
+
+  it('pages with a stable cursor and never splits photos tombstoned together', async () => {
+    await upload(p(1)); await upload(p(2)); await upload(p(3))
+    // One sighting delete tombstones all three under a single seq.
+    await call(store, 'DELETE', `/api/sync/sightings/${id1}`)
+    const seen: string[] = []
+    let since = 0
+    for (let i = 0; i < 10; i++) {
+      const page = await pull(`?since=${since}&limit=2`)
+      seen.push(...page.photos.map((x: any) => x.id))
+      since = page.cursor
+      if (!page.hasMore) break
+    }
+    expect(new Set(seen)).toEqual(new Set([p(1), p(2), p(3)]))
+  })
+
+  it("never returns another tenant's photos", async () => {
+    await upload(p(1))
+    expect((await pull('', { user: 'user_b' })).photos).toEqual([])
+    await push(store, [rec(id2)], { user: 'user_b' })
+    await upload(p(2), id2, { user: 'user_b' })
+    expect((await pull()).photos.map((x: any) => x.id)).toEqual([p(1)])
+    expect((await pull('', { user: 'user_b' })).photos.map((x: any) => x.id)).toEqual([p(2)])
+  })
+})

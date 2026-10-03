@@ -4,6 +4,7 @@
  *   POST   /api/sync/sightings        batch upsert { records: [{id, clientVersion, payload}] }
  *   GET    /api/sync/sightings?since= pull changes after a server_seq cursor
  *   DELETE /api/sync/sightings/:id    tombstone (and its photos)
+ *   GET    /api/sync/photos?since=    pull photo metadata (incl. tombstones) after a server_seq cursor
  *   POST   /api/sync/photos           upload one derived JPEG/WebP (?photoId&sightingId&width&height)
  *   GET    /api/sync/photos/:id       stream the caller's own photo
  *   DELETE /api/sync/photos/:id       tombstone + remove the object
@@ -24,6 +25,7 @@ import { Q } from '../../lib/sync-sql'
 import {
   MAX_BATCH, PULL_DEFAULT, PULL_MAX, pullSightings, tombstoneSighting, upsertSighting,
 } from '../../lib/sync-sightings'
+import { pullPhotos } from '../../lib/sync-photos'
 import {
   PHOTO_SYNC_COST, creditsEnforced, ensureSignupGrant, getBalance, ledgerStatements, photoKey,
 } from '../../lib/ledger'
@@ -80,6 +82,13 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
       const limit = Math.min(Number(url.searchParams.get('limit') ?? PULL_DEFAULT) || PULL_DEFAULT, PULL_MAX)
       if (!Number.isInteger(since) || since < 0) return json({ error: 'since must be a non-negative integer' }, 400)
       return json(await pullSightings(db, userId, since, Math.max(1, limit)))
+    }
+
+    if (path === '/api/sync/photos' && method === 'GET') {
+      const since = Number(url.searchParams.get('since') ?? 0)
+      const limit = Math.min(Number(url.searchParams.get('limit') ?? PULL_DEFAULT) || PULL_DEFAULT, PULL_MAX)
+      if (!Number.isInteger(since) || since < 0) return json({ error: 'since must be a non-negative integer' }, 400)
+      return json(await pullPhotos(db, userId, since, Math.max(1, limit)))
     }
 
     if (path === '/api/sync/sightings' && method === 'POST') {

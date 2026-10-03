@@ -42,6 +42,23 @@ export interface PullPage {
   hasMore: boolean
 }
 
+export interface PulledPhotoMeta {
+  id: string
+  sightingId: string
+  width: number
+  height: number
+  bytes: number
+  createdAt: number
+  serverSeq: number
+  deletedAt: number | null
+}
+
+export interface PhotoPullPage {
+  photos: PulledPhotoMeta[]
+  cursor: number
+  hasMore: boolean
+}
+
 export interface PhotoUpload {
   id: string
   sightingId: string
@@ -94,6 +111,21 @@ export function createSyncApi(fetchFn: FetchLike = (input, init) => fetch(input,
       if (res.status === 402) return 'needs_credits'
       await check(res)
       return 'uploaded'
+    },
+
+    async pullPhotos(since: number): Promise<PhotoPullPage> {
+      const res = await check(await fetchFn(`/api/sync/photos?since=${since}`, { headers: { Accept: 'application/json' } }))
+      return (await res.json()) as PhotoPullPage
+    },
+
+    /** The owner's stored image, or null when it is gone (deleted or never stored). */
+    async downloadPhoto(id: string): Promise<Blob | null> {
+      const res = await fetchFn(`/api/sync/photos/${encodeURIComponent(id)}`)
+      if (res.status === 404) return null
+      await check(res)
+      const type = res.headers.get('Content-Type') ?? ''
+      if (!type.startsWith('image/')) return null
+      return res.blob()
     },
 
     async deletePhoto(id: string): Promise<void> {
