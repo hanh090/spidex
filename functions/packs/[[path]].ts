@@ -26,6 +26,7 @@
  */
 import { communityPackRow, contentType, isRealAsset, servingPrefix } from '../lib/submissions'
 import { bundledPackIds } from '../lib/bundled-packs'
+import { manifestVersion, overrideIsLive } from '../lib/pack-manifest-source'
 
 const META_FILES = /^(pack\.json|species\.ndjson)$/ // freshness > caching
 
@@ -83,11 +84,11 @@ async function bundledOverride(context: any): Promise<Response | null> {
   try {
     if (!(await bundledPackIds(env, context.request.url)).has(m[1]!)) return null
     // A deploy that ships a pack version at or above the override's supersedes
-    // the admin edit: the edit was made against an older pack.
-    const overrideVersion = await jsonVersion(await env.PACKS.get(`overrides/${m[1]}/pack.json`))
+    // the admin edit (the same rule the media editor reads through).
+    const overrideVersion = manifestVersion(await (await env.PACKS.get(`overrides/${m[1]}/pack.json`))?.text())
     if (overrideVersion == null) return null
-    const staticVersion = await jsonVersion(await env.ASSETS.fetch(new URL(`/packs/${m[1]}/pack.json`, context.request.url)))
-    if (staticVersion != null && staticVersion >= overrideVersion) return null
+    const staticVersion = manifestVersion(await assetText(env.ASSETS, new URL(`/packs/${m[1]}/pack.json`, context.request.url)))
+    if (!overrideIsLive(overrideVersion, staticVersion)) return null
     return await fromBucket(env.PACKS, `overrides/${m[1]}/${m[2]}`, m[2]!, () => null)
   } catch (err) {
     console.error('pack override lookup failed', err)
@@ -95,15 +96,10 @@ async function bundledOverride(context: any): Promise<Response | null> {
   }
 }
 
-/** `version` of a pack.json body (R2 object or Response), or null if absent/unreadable. */
-async function jsonVersion(body: { json?: () => Promise<unknown>; ok?: boolean } | null): Promise<number | null> {
-  if (!body || body.ok === false || !body.json) return null
-  try {
-    const v = ((await body.json()) as { version?: unknown }).version
-    return typeof v === 'number' ? v : null
-  } catch {
-    return null
-  }
+/** Body text of a shipped file, or null when it is missing (SPA fallback) or unreadable. */
+async function assetText(assets: { fetch: (u: URL) => Promise<Response> }, url: URL): Promise<string | null> {
+  const res = await assets.fetch(url)
+  return isRealAsset(res) ? res.text() : null
 }
 
 async function fromBucket<M extends Response | null>(bucket: any, key: string, file: string, miss: () => M): Promise<Response | M> {

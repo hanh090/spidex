@@ -398,7 +398,9 @@
       "save": "Bilder speichern",
       "needAttribution": "Jedes Bild braucht Urheber und Lizenz.",
       "badType": "Bitte ein JPEG-, PNG-, WebP-, GIF- oder AVIF-Bild verwenden.",
-      "tooLarge": "Das Bild ist größer als 8 MB."
+      "tooLarge": "Das Bild ist größer als 8 MB.",
+      "conflict": "Jemand anderes hat dieses Paket gespeichert, seit du es geöffnet hast. Lade neu, um die Änderungen zu sehen, und wiederhole deine Bearbeitung.",
+      "reload": "Neu laden"
     }
   },
   "fieldLog": {

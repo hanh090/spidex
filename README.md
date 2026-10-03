@@ -124,6 +124,10 @@ locally, upload it (resumable, skips files already sent):
 CLOUDFLARE_ACCOUNT_ID=<account> npm run upload:media
 ```
 
+Media is immutable: rename a file when its content changes, because clients
+only fetch URLs they do not already hold. The uploader refuses to overwrite an
+existing object with different bytes unless you pass `-- --force`.
+
 One-time setup:
 
 ```bash

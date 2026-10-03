@@ -398,7 +398,9 @@
       "save": "Save images",
       "needAttribution": "Every image needs a credit and a licence.",
       "badType": "Use a JPEG, PNG, WebP, GIF or AVIF image.",
-      "tooLarge": "Image is larger than 8 MB."
+      "tooLarge": "Image is larger than 8 MB.",
+      "conflict": "Someone else saved this pack since you opened it. Reload to see their changes, then redo your edit.",
+      "reload": "Reload"
     }
   },
   "fieldLog": {

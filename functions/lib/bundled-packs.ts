@@ -20,7 +20,11 @@ export function bundledPackIds(env: any, requestUrl: string): Promise<Set<string
   return cached
 }
 
-/** Test hook: forget the cached index. */
+/** Per-isolate copy of each shipped pack.json, same lifetime reasoning as the index. */
+export const shippedManifests = new Map<string, string>()
+
+/** Test hook: forget the cached index and manifests. */
 export function resetBundledPackIds() {
   cached = null
+  shippedManifests.clear()
 }

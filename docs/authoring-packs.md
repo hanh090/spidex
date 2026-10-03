@@ -121,12 +121,27 @@ required aspects kept) and bumps the pack `version` by one.
 
 - A **bundled** pack's `pack.json` and `species.ndjson` stay in git; the edited
   copies are stored in the bucket at `overrides/<id>/` and served in preference
-  to the static files. Uploads go to `bundled/<id>/img/`. When you later change
-  a bundled pack in git, delete its `overrides/<id>/` objects first or the
-  override keeps winning (and carries its own version number).
+  to the static files. Uploads go to `bundled/<id>/img/`. The override is live
+  only while its `version` is above the deployed `pack.json` version: when a
+  release ships the same or a higher version, the deployed files win again, the
+  editor starts from them, and the next save writes a new override at
+  deployed + 1.
+- Saves carry the pack version the editor loaded (`baseVersion`); if someone
+  else saved first the API answers 409 and the editor asks you to reload.
+- Image URLs are pack-relative (`img/<file>`). Absolute `http(s)` image URLs are
+  rejected (the app resolves every image against the pack's base URL); only
+  sound links are absolute.
 - A **community** pack is edited in place under its own bucket prefix.
 - Uploads: raster images only (JPEG, PNG, WebP, GIF, AVIF), ≤ 8 MB, written to
-  `img/<file>`; an existing file is never overwritten unless `replace=1`.
+  `img/<file>` (AVIF must carry an `avif`/`avis` brand, so HEIC and MP4 are
+  refused). Media is immutable: an existing file is never overwritten, and
+  `replace=1` stores the new bytes under a content-derived name
+  (`<name>-<hash8>.<ext>`) that the species entry then points to.
+- Clients cache each pack URL forever and, on a pack update, fetch only URLs
+  they do not already hold (and drop cached URLs the new release no longer
+  references). So for media shipped through `npm run upload:media`, **rename a
+  file whenever its content changes**; the uploader refuses to overwrite an
+  existing object with different bytes unless `--force`.
 
 In `npm run dev` the same endpoints write under `data/overrides/` and
 `data/bundled/` (gitignored).

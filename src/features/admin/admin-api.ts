@@ -52,13 +52,20 @@ export interface AdminUser {
   createdAt?: string
 }
 
+/** An API failure that keeps the HTTP status, so a screen can tell a conflict from an outage. */
+export class AdminApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+  }
+}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     headers: { Accept: 'application/json', ...(init?.method ? { 'Content-Type': 'application/json' } : {}) },
     ...init,
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error((data as any).error || `HTTP ${res.status}`)
+  if (!res.ok) throw new AdminApiError((data as any).error || `HTTP ${res.status}`, res.status)
   return data as T
 }
 
@@ -169,6 +176,8 @@ export interface MediaSpeciesPage {
   species: MediaSpecies[]
   total: number
   nextCursor: string | null
+  /** Pack version this page reflects; send it back as `baseVersion` when saving. */
+  version: number
   aspects: { required: string[]; optional: string[] }
 }
 
@@ -191,6 +200,7 @@ export function saveMediaImages(
   packId: string,
   speciesId: string,
   images: MediaImage[],
+  baseVersion: number,
 ): Promise<{ ok: true; version: number; images: MediaImage[] }> {
   // `flags` is read-only decoration from the server.
   const clean = images.map((im) => {
@@ -200,7 +210,7 @@ export function saveMediaImages(
   })
   return call(`/api/admin/media/packs/${encodeURIComponent(packId)}/species/${encodeURIComponent(speciesId)}/images`, {
     method: 'PUT',
-    body: JSON.stringify({ images: clean }),
+    body: JSON.stringify({ images: clean, baseVersion }),
   })
 }
 
@@ -212,6 +222,6 @@ export async function uploadMediaImage(packId: string, file: File, path: string)
     body: file,
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error((data as any).error || `HTTP ${res.status}`)
+  if (!res.ok) throw new AdminApiError((data as any).error || `HTTP ${res.status}`, res.status)
   return data as { ok: true; url: string }
 }

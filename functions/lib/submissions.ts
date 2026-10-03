@@ -109,7 +109,7 @@ export async function deletePrefix(
   bucket: { list: (o?: any) => Promise<any>; delete: (k: any) => Promise<any> },
   prefix: string,
 ): Promise<number> {
-  if (!/^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(prefix)) throw new Error(`refusing to delete prefix "${prefix}"`)
+  if (!isSafePackPrefix(prefix)) throw new Error(`refusing to delete prefix "${prefix}"`)
   let deleted = 0
   let cursor: string | undefined
   do {
@@ -151,9 +151,18 @@ export interface CommunityPackRow {
   }
 }
 
-/** Where a community pack's files live in R2. */
+/**
+ * R2 prefixes a community pack may be served from, uploaded into or swept:
+ * `submissions/<id>` (staging) or `packs/<id>` (legacy). Anything else — above
+ * all `user-photos/<userId>`, which holds private data in the same bucket — is
+ * never a pack prefix, however the admin row's meta came to say so.
+ */
+const SAFE_PACK_PREFIX = /^(submissions|packs)\/[A-Za-z0-9_-]+$/
+export const isSafePackPrefix = (p: unknown): p is string => typeof p === 'string' && SAFE_PACK_PREFIX.test(p)
+
+/** Where a community pack's files live in R2; an unsafe meta.prefix falls back to packs/<id>. */
 export function servingPrefix(packId: string, meta: CommunityPackRow['meta']): string {
-  return typeof meta.prefix === 'string' && meta.prefix ? meta.prefix : `packs/${packId}`
+  return isSafePackPrefix(meta.prefix) ? meta.prefix : `packs/${packId}`
 }
 
 export interface CatalogueRow { id: string; published: boolean; community: boolean }

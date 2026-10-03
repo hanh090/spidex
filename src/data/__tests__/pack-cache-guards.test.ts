@@ -91,7 +91,7 @@ describe('downloadPack content-type handling', () => {
   })
 })
 
-describe('pack update refetches media under unchanged filenames', () => {
+describe('pack update fetches only media it does not already hold', () => {
   beforeEach(async () => {
     await Promise.all([db.packs.clear(), db.species.clear(), db.meta.clear()])
     const cache = await caches.open(PACK_IMAGE_CACHE)
@@ -103,54 +103,97 @@ describe('pack update refetches media under unchanged filenames', () => {
    * Mimics the service worker's CacheFirst route: a request is answered from
    * the pack cache when an entry exists, otherwise from the "network".
    */
-  const stubSwFetch = (version: number, body: string, failMedia = false) => {
+  const stubSwFetch = (version: number, body: string, opts: { ndjson?: string; failMedia?: boolean } = {}) => {
     const manifest = JSON.stringify({ ...JSON.parse(manifestText), version })
     const calls: { url: string; init?: RequestInit }[] = []
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input)
       calls.push({ url, init })
       if (url.endsWith('/pack.json')) return new Response(manifest, { headers: { 'content-type': 'application/json' } })
-      if (url.endsWith('/species.ndjson')) return new Response(ndjsonText, { headers: { 'content-type': 'application/x-ndjson' } })
+      if (url.endsWith('/species.ndjson')) return new Response(opts.ndjson ?? ndjsonText, { headers: { 'content-type': 'application/x-ndjson' } })
       const hit = await (await caches.open(PACK_IMAGE_CACHE)).match(url)
       if (hit) return hit
-      if (failMedia) throw new Error('offline')
+      if (opts.failMedia) throw new Error('offline')
       return new Response(body, { headers: { 'content-type': 'image/svg+xml' } })
     }))
-    return calls
+    return { calls, media: () => calls.filter((c) => !/\.(json|ndjson)$/.test(c.url)).map((c) => c.url) }
   }
   const base = 'https://spidex.test/packs/bird-min'
   const install = () => downloadPack({ baseUrl: base, acknowledgedNoPersist: true })
+  const cachedUrls = async () => (await (await caches.open(PACK_IMAGE_CACHE)).keys()).map((k) => k.url).sort()
   const bodies = async () => {
     const cache = await caches.open(PACK_IMAGE_CACHE)
     return Promise.all((await cache.keys()).map(async (k) => (await cache.match(k))!.text()))
   }
 
-  it('replaces cached media when the pack version changes', async () => {
+  /** The species data with the first image of the first species moved to a new filename. */
+  const renamedFirstImage = () => {
+    const lines = ndjsonText.split('\n')
+    const sp = JSON.parse(lines[0]!)
+    const from: string = sp.images[0].thumbUrl
+    const to = from.replace(/(\.[a-z]+)$/i, '-1a2b3c4d$1')
+    sp.images[0] = { ...sp.images[0], thumbUrl: to, ...(sp.images[0].fullUrl ? { fullUrl: to } : {}) }
+    lines[0] = JSON.stringify(sp)
+    return { ndjson: lines.join('\n'), from: `${base}/${from}`, to: `${base}/${to}` }
+  }
+
+  it('does not fetch any media again when only the version changed', async () => {
     stubSwFetch(1, 'old')
     expect((await install()).ok).toBe(true)
-    expect(new Set(await bodies())).toEqual(new Set(['old']))
+    const before = await cachedUrls()
 
-    const calls = stubSwFetch(2, 'new')
+    const second = stubSwFetch(2, 'new')
     expect((await install()).ok).toBe(true)
-    expect(new Set(await bodies())).toEqual(new Set(['new']))
-    expect(calls.filter((c) => !/\.(json|ndjson)$/.test(c.url)).every((c) => c.init?.cache === 'reload')).toBe(true)
+    expect(second.media()).toEqual([])
+    expect(new Set(await bodies())).toEqual(new Set(['old']))
+    expect(await cachedUrls()).toEqual(before)
   })
 
-  it('keeps the old copy when the refetch fails', async () => {
+  it('fetches only the new URL and evicts the one no longer referenced', async () => {
     stubSwFetch(1, 'old')
     await install()
-    stubSwFetch(2, 'new', true)
+    const { ndjson, from, to } = renamedFirstImage()
+    expect(await cachedUrls()).toContain(from)
+
+    const second = stubSwFetch(2, 'new', { ndjson })
     expect((await install()).ok).toBe(true)
-    expect(new Set(await bodies())).toEqual(new Set(['old']))
+    expect(second.media()).toEqual([to])
+    const urls = await cachedUrls()
+    expect(urls).toContain(to)
+    expect(urls).not.toContain(from)
+    expect(second.calls.every((c) => c.init?.cache !== 'reload')).toBe(true)
   })
 
-  it('does not bypass the cache for a same-version reinstall', async () => {
+  it('skips a new URL it cannot fetch and still drops the one no longer referenced', async () => {
     stubSwFetch(1, 'old')
     await install()
-    const calls = stubSwFetch(1, 'new')
+    const { ndjson, from, to } = renamedFirstImage()
+    stubSwFetch(2, 'new', { ndjson, failMedia: true })
+    expect((await install()).ok).toBe(true)
+    const urls = await cachedUrls()
+    expect(urls).not.toContain(to)
+    expect(urls).not.toContain(from)
+    expect(urls.length).toBeGreaterThan(0)
+  })
+
+  it('retries a URL an earlier run failed to store', async () => {
+    stubSwFetch(1, 'x', { failMedia: true })
     await install()
-    expect(new Set(await bodies())).toEqual(new Set(['old']))
-    expect(calls.some((c) => c.init?.cache === 'reload')).toBe(false)
+    expect(await cachedUrls()).toEqual([])
+    const again = stubSwFetch(1, 'ok')
+    await install()
+    expect(again.media().length).toBeGreaterThan(0)
+    expect(new Set(await bodies())).toEqual(new Set(['ok']))
+  })
+
+  it('never evicts another pack\'s cached media', async () => {
+    const cache = await caches.open(PACK_IMAGE_CACHE)
+    await cache.put('https://spidex.test/packs/other-pack/img/a.webp', new Response('o', { headers: { 'content-type': 'image/webp' } }))
+    stubSwFetch(1, 'old')
+    await install()
+    stubSwFetch(2, 'new')
+    await install()
+    expect(await cachedUrls()).toContain('https://spidex.test/packs/other-pack/img/a.webp')
   })
 })
 

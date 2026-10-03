@@ -135,18 +135,15 @@ export async function downloadPack(opts: DownloadOptions): Promise<DownloadResul
   let bytes = 0
   let done = 0
 
-  // The service worker serves pack media CacheFirst under the same URL, so on a
-  // version bump a plain fetch would just read the stale entry back. Evict the
-  // old entry before fetching (restoring it if the refetch fails) and bypass
-  // the HTTP cache, so changed media under an unchanged filename is refetched.
-  const previous = await db.packs.get(manifest.id)
-  const refresh = !!previous && previous.version !== manifest.version
-
+  // Pack media is immutable: a changed image is published under a new URL
+  // (admin replaces get a content-derived name, bundled media must be renamed
+  // when its bytes change), and the service worker serves a pack URL CacheFirst
+  // forever. So an update fetches only URLs it does not already hold — new ones,
+  // plus any an earlier run failed to store — instead of the whole pack again.
   const cacheOne = async (url: string): Promise<void> => {
-    const stale = refresh ? await cache.match(url) : undefined
     try {
-      if (stale) await cache.delete(url)
-      const res = await fetch(url, refresh ? { signal, cache: 'reload' } : { signal })
+      if (await cache.match(url)) return
+      const res = await fetch(url, { signal })
       if (!res.ok || !isMediaResponse(res)) throw new Error('not media')
       const buf = await res.clone().arrayBuffer()
       await cache.put(url, res)
@@ -156,8 +153,6 @@ export async function downloadPack(opts: DownloadOptions): Promise<DownloadResul
     } catch {
       // A missing image is a content defect, not a download failure: the
       // species still resolves and the gallery shows a not-downloaded state.
-      // Keep the previous version's copy rather than leaving a hole.
-      if (stale) await cache.put(url, stale).catch(() => undefined)
     }
   }
 
@@ -212,12 +207,40 @@ export async function downloadPack(opts: DownloadOptions): Promise<DownloadResul
     }
   })
 
+  // Drop cached media the new release no longer references (replaced or removed
+  // plates). Only after the commit, so an interrupted update keeps what it had.
+  await evictUnreferenced(cache, manifest, rows, baseUrl).catch(() => undefined)
+
   // Scope only auto-advances when nothing is scoped — never steal focus from
   // a pack the user deliberately selected.
   if ((await getActivePackId()) === null) await setActivePackId(manifest.id)
 
   report({ phase: 'done', done: 1, total: 1 })
   return { ok: true, packId: manifest.id }
+}
+
+/** Absolute form of a pack-relative URL, the way Cache keys are stored. */
+const absolute = (url: string) => new URL(url, globalThis.location?.href ?? 'http://localhost').href
+
+/**
+ * Delete cached /packs/<id>/ entries that neither the new species data nor the
+ * schema's referent images point at, in either tier.
+ */
+async function evictUnreferenced(
+  cache: Cache, manifest: PackManifest, rows: StoredSpecies[], baseUrl: string,
+): Promise<void> {
+  const keep = new Set<string>()
+  for (const trait of manifest.traitSchema.traits) {
+    for (const opt of trait.options) if (opt.img) keep.add(absolute(`${baseUrl}/${opt.img}`))
+  }
+  for (const sp of rows) {
+    for (const im of sp.images) {
+      keep.add(absolute(`${baseUrl}/${im.thumbUrl}`))
+      if (im.fullUrl) keep.add(absolute(`${baseUrl}/${im.fullUrl}`))
+    }
+  }
+  const stale = (await cache.keys()).filter((k) => isPackKey(k.url, manifest.id) && !keep.has(k.url))
+  await Promise.all(stale.map((k) => cache.delete(k)))
 }
 
 /** Removing a pack must state how many sightings reference it first. */

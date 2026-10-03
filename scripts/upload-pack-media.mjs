@@ -2,7 +2,15 @@
 // .gitignore) to the R2 bucket under bundled/<packId>/<path>, where
 // functions/packs/[[path]].ts serves it from.
 //
-//   CLOUDFLARE_ACCOUNT_ID=... node scripts/upload-pack-media.mjs [--bucket spidex-packs] [--jobs 32]
+//   CLOUDFLARE_ACCOUNT_ID=... node scripts/upload-pack-media.mjs [--bucket spidex-packs] [--jobs 32] [--force]
+//
+// Bundled media is immutable. Clients cache every pack URL and, on a pack
+// update, fetch only URLs they do not already hold, so changing a file's bytes
+// under an unchanged name never reaches them. Rename the file whenever its
+// content changes (admin replaces do this automatically with a content hash).
+// The uploader therefore refuses to overwrite an existing object whose bytes
+// differ; --force overrides that, and is only right for a file nobody has
+// fetched yet.
 //
 // Talks to the Cloudflare R2 object API directly (one wrangler process per
 // file is ~50x slower). Auth: CLOUDFLARE_API_TOKEN when set, otherwise the
@@ -14,6 +22,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { overwriteDecision } from './lib/pack-media-guard.mjs'
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -21,6 +30,7 @@ const arg = (name, fallback) => {
 }
 const bucket = arg('bucket', 'spidex-packs')
 const jobs = Number(arg('jobs', '32'))
+const force = process.argv.includes('--force')
 const account = process.env.CLOUDFLARE_ACCOUNT_ID
 if (!account) throw new Error('CLOUDFLARE_ACCOUNT_ID is required')
 const statePath = '.wrangler/pack-media-uploaded.json'
@@ -57,11 +67,26 @@ const refreshToken = () => (refreshing ??= Promise.resolve().then(() => {
   refreshing = null
 }))
 
-async function put(key, file, type) {
-  const url = `https://api.cloudflare.com/client/v4/accounts/${account}/r2/buckets/${bucket}/objects/${key
+const objectUrl = (key) =>
+  `https://api.cloudflare.com/client/v4/accounts/${account}/r2/buckets/${bucket}/objects/${key
     .split('/')
     .map(encodeURIComponent)
     .join('/')}`
+
+/** Bytes stored under `key`, or null when the object does not exist. */
+async function existingBytes(key) {
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(objectUrl(key), { headers: { Authorization: `Bearer ${token}` } })
+    if (res.status === 404) return null
+    if (res.ok) return new Uint8Array(await res.arrayBuffer())
+    if (res.status === 401 || res.status === 403) await refreshToken()
+    if (attempt >= 4) throw new Error(`HTTP ${res.status} ${(await res.text()).slice(0, 200)}`)
+    await new Promise((r) => setTimeout(r, 500 * 2 ** attempt))
+  }
+}
+
+async function put(key, file, type) {
+  const url = objectUrl(key)
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(url, {
       method: 'PUT',
@@ -108,7 +133,12 @@ const save = () => {
 async function worker() {
   for (let p = todo.shift(); p; p = todo.shift()) {
     try {
-      await put(`bundled/${p.slice('public/packs/'.length)}`, p, typeOf(p))
+      const key = `bundled/${p.slice('public/packs/'.length)}`
+      const decision = overwriteDecision(await existingBytes(key), new Uint8Array(readFileSync(p)), force)
+      if (decision === 'refuse') {
+        throw new Error(`${key} already exists with different content; rename the file (bundled media is immutable) or pass --force`)
+      }
+      if (decision === 'upload') await put(key, p, typeOf(p))
       state[p] = stamp(p)
       done++
     } catch (err) {

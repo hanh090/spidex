@@ -87,6 +87,26 @@ describe('approve / reject', () => {
     })
   })
 
+  describe('a pack row whose meta points at private user photos', () => {
+    it('never sweeps or records a non-pack prefix on re-approval', async () => {
+      const r2 = fakeR2({ 'user-photos/u1/p.jpg': 'private', 'submissions/sub_1/pack.json': 'v2' })
+      const db = fakeD1((sql) => (/^SELECT/.test(sql)
+        ? (/kind = 'pack'/.test(sql)
+          ? { meta: JSON.stringify({
+            community: true, submittedBy: { userId: 'u1' }, prefix: 'user-photos/u1',
+            supersededPrefixes: [{ prefix: 'user-photos/u1', at: 1 }],
+          }) }
+          : sub('pending'))
+        : { meta: { changes: 1 } }))
+      const res = await call('POST', '/api/admin/submissions/sub_1/approve', { DB: db, PACKS: r2 })
+      expect(res.status).toBe(200)
+      expect(r2.store.has('user-photos/u1/p.jpg')).toBe(true)
+      const insert = db.log.find((l) => /^INSERT INTO admin_resources/.test(l.sql.trim()) && l.args[0] === 'x')!
+      const meta = JSON.parse(insert.args[2] as string)
+      expect(JSON.stringify(meta.supersededPrefixes)).not.toMatch(/user-photos/)
+    })
+  })
+
   it('reject deletes only the staging prefix', async () => {
     const r2 = fakeR2({ 'submissions/sub_1/a': '1', 'packs/x/pack.json': 'live' })
     const db = fakeD1((sql) => (/^SELECT/.test(sql) ? sub('pending') : { meta: { changes: 1 } }))
