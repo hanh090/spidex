@@ -127,3 +127,91 @@ export function fetchAdminSubmissions(): Promise<{ submissions: AdminSubmission[
 export function reviewSubmission(id: string, action: 'approve' | 'reject'): Promise<{ ok: true; packId?: string }> {
   return call(`/api/admin/submissions/${encodeURIComponent(id)}/${action}`, { method: 'POST' })
 }
+
+/* ---- media ----------------------------------------------------------------- */
+
+export interface MediaFlags { nc: boolean; nd: boolean; archetype: boolean }
+
+export interface MediaPack {
+  id: string
+  community: boolean
+  missing?: boolean
+  name?: { en: string; vi?: string; de?: string }
+  version?: number
+  speciesCount?: number
+  licenses?: Record<string, number>
+  counts?: { images: number; nc: number; nd: number; archetype: number }
+}
+
+export interface MediaImage {
+  id: string
+  aspect: string
+  credit: string
+  license: string
+  thumbUrl: string
+  fullUrl?: string
+  /** Server-computed on read; ignored on write. */
+  flags?: MediaFlags
+}
+
+export interface MediaSpecies {
+  id: string
+  sciName: string
+  name: string
+  family: string
+  flags: MediaFlags
+  images: MediaImage[]
+}
+
+export type MediaFilter = 'all' | 'nc' | 'nd' | 'archetype'
+
+export interface MediaSpeciesPage {
+  species: MediaSpecies[]
+  total: number
+  nextCursor: string | null
+  aspects: { required: string[]; optional: string[] }
+}
+
+export function fetchMediaPacks(): Promise<{ packs: MediaPack[] }> {
+  return call('/api/admin/media/packs')
+}
+
+export function fetchMediaSpecies(
+  packId: string,
+  opts: { q?: string; filter?: MediaFilter; cursor?: string | null } = {},
+): Promise<MediaSpeciesPage> {
+  const qs = new URLSearchParams()
+  if (opts.q) qs.set('q', opts.q)
+  if (opts.filter && opts.filter !== 'all') qs.set('filter', opts.filter)
+  if (opts.cursor) qs.set('cursor', opts.cursor)
+  return call(`/api/admin/media/packs/${encodeURIComponent(packId)}/species?${qs}`)
+}
+
+export function saveMediaImages(
+  packId: string,
+  speciesId: string,
+  images: MediaImage[],
+): Promise<{ ok: true; version: number; images: MediaImage[] }> {
+  // `flags` is read-only decoration from the server.
+  const clean = images.map((im) => {
+    const { flags, ...rest } = im
+    void flags
+    return rest
+  })
+  return call(`/api/admin/media/packs/${encodeURIComponent(packId)}/species/${encodeURIComponent(speciesId)}/images`, {
+    method: 'PUT',
+    body: JSON.stringify({ images: clean }),
+  })
+}
+
+/** Upload a raster image into the pack; resolves to its pack-relative url (img/<file>). */
+export async function uploadMediaImage(packId: string, file: File, path: string): Promise<{ ok: true; url: string }> {
+  const res = await fetch(`/api/admin/media/packs/${encodeURIComponent(packId)}/upload?path=${encodeURIComponent(path)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error((data as any).error || `HTTP ${res.status}`)
+  return data as { ok: true; url: string }
+}

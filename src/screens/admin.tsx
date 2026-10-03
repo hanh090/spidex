@@ -1,8 +1,9 @@
 /**
  * /admin — the resource console.
  *
- * Three panels, all backed by /api/admin/*: Overview (what is deployed —
- * packs read from the shipped assets themselves), Resources (the D1-backed
+ * Panels, all backed by /api/admin/*: Overview (what is deployed —
+ * packs read from the shipped assets themselves), Media (pack image editing,
+ * see admin-media.tsx), Resources (the D1-backed
  * store: pack publish flags, checklists, datasets, audio collections), and
  * Users (the WorkOS directory, read-only).
  *
@@ -11,11 +12,13 @@
  * ADMIN_EMAILS allowlist server-side. Hiding the screen is UX; the API is
  * the lock.
  */
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavBar } from '../ui/nav-bar'
 import { Badge, Button, EmptyState, Meta, Skeleton } from '../ui/primitives'
 import { SignInModal } from './sign-in-modal'
+import { Alert, Chip, fieldStyle } from './admin-parts'
+import { MediaPanel } from './admin-media'
 import {
   fetchAdminOverview, fetchAdminResources, fetchAdminStatus, fetchAdminUsers,
   createAdminResource, updateAdminResource, deleteAdminResource, setPackPublished,
@@ -25,7 +28,7 @@ import {
 import { resolve } from '../data/localized'
 import { formatBytes, formatNumber } from '../i18n/format'
 
-type SectionKey = 'overview' | 'submissions' | 'resources' | 'users'
+type SectionKey = 'overview' | 'submissions' | 'media' | 'resources' | 'users'
 
 const RESOURCE_KINDS = ['pack', 'checklist', 'dataset', 'audio', 'note'] as const
 
@@ -64,7 +67,7 @@ export function Admin() {
         <div style={{
           display: 'flex', borderBottom: 'var(--hair) solid var(--line)', background: 'var(--panel)', flex: 'none',
         }}>
-          {(['overview', 'submissions', 'resources', 'users'] as const).map((s) => (
+          {(['overview', 'submissions', 'media', 'resources', 'users'] as const).map((s) => (
             <button
               key={s}
               onClick={() => setSection(s)}
@@ -86,6 +89,7 @@ export function Admin() {
           )}
           {section === 'overview' && <Overview />}
           {section === 'submissions' && <Submissions />}
+          {section === 'media' && <MediaPanel />}
           {section === 'resources' && <Resources />}
           {section === 'users' && <Users />}
         </div>
@@ -454,48 +458,4 @@ function Users() {
       ))}
     </div>
   )
-}
-
-/* ---- bits ----------------------------------------------------------------- */
-
-function Alert({ children }: { children: ReactNode }) {
-  return (
-    <p
-      role="alert"
-      className="t-body"
-      style={{
-        background: 'var(--alert)', border: 'var(--hair) solid var(--warn)',
-        borderRadius: 'var(--radius-tap)', padding: 'var(--space-3)', margin: '0 0 var(--space-3)',
-      }}
-    >
-      {children}
-    </p>
-  )
-}
-
-function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      className="t-meta"
-      style={{
-        minHeight: 36, padding: '0 var(--space-3)',
-        borderRadius: 'var(--radius-chip)',
-        border: `var(--hair) solid ${active ? 'var(--accent)' : 'var(--line)'}`,
-        color: active ? 'var(--accent)' : 'var(--ink-muted)',
-        background: 'transparent',
-      }}
-    >
-      {label}
-    </button>
-  )
-}
-
-function fieldStyle(): React.CSSProperties {
-  return {
-    minHeight: 'var(--tap-min)', padding: 'var(--space-2) var(--space-3)',
-    border: 'var(--hair) solid var(--ink-muted)', borderRadius: 'var(--radius-tap)',
-    background: 'var(--paper)', color: 'var(--ink)', font: 'var(--type-body)',
-  }
 }

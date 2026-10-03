@@ -304,7 +304,8 @@
       "overview": "Übersicht",
       "resources": "Ressourcen",
       "users": "Nutzer",
-      "submissions": "Prüfung"
+      "submissions": "Prüfung",
+      "media": "Medien"
     },
     "signInTitle": "Anmeldung erforderlich",
     "signInFix": "Die Konsole erfordert ein Team-Konto.",
@@ -356,6 +357,40 @@
       "published": "Veröffentlicht",
       "rejected": "Abgelehnt",
       "withdrawn": "Zurückgezogen"
+    },
+    "media": {
+      "pickPack": "Pack auswählen, um dessen Bilder zu bearbeiten",
+      "imageCount_one": "{{n}} Bild",
+      "imageCount_other": "{{n}} Bilder",
+      "flag": {
+        "nc": "NC",
+        "nd": "ND",
+        "archetype": "Archetyp"
+      },
+      "filter": {
+        "all": "Alle",
+        "nc": "Nicht kommerziell",
+        "nd": "Keine Bearbeitung",
+        "archetype": "Nur Archetypen"
+      },
+      "back": "‹ Zurück",
+      "search": "Nach Name oder ID suchen",
+      "matches_one": "{{n}} Art",
+      "matches_other": "{{n}} Arten",
+      "none": "Keine Art gefunden.",
+      "more": "Mehr laden",
+      "requiredAspects": "Pflicht-Ansichten: {{aspects}}",
+      "aspect": "Ansicht",
+      "credit": "Urheber (Fotograf)",
+      "license": "Lizenz (z. B. CC-BY-4.0)",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "remove": "Entfernen",
+      "upload": "Bild hochladen",
+      "save": "Bilder speichern",
+      "needAttribution": "Jedes Bild braucht Urheber und Lizenz.",
+      "badType": "Bitte ein JPEG-, PNG-, WebP-, GIF- oder AVIF-Bild verwenden.",
+      "tooLarge": "Das Bild ist größer als 8 MB."
     }
   }
 }

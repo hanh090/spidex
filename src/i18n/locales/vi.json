@@ -295,7 +295,8 @@
       "overview": "Tổng quan",
       "resources": "Tài nguyên",
       "users": "Người dùng",
-      "submissions": "Duyệt bài"
+      "submissions": "Duyệt bài",
+      "media": "Hình ảnh"
     },
     "signInTitle": "Cần đăng nhập",
     "signInFix": "Bảng quản trị yêu cầu tài khoản quản trị viên.",
@@ -347,6 +348,40 @@
       "published": "Đã đăng",
       "rejected": "Bị từ chối",
       "withdrawn": "Đã rút"
+    },
+    "media": {
+      "pickPack": "Chọn một gói để chỉnh sửa hình ảnh",
+      "imageCount_one": "{{n}} ảnh",
+      "imageCount_other": "{{n}} ảnh",
+      "flag": {
+        "nc": "NC",
+        "nd": "ND",
+        "archetype": "Mẫu họ"
+      },
+      "filter": {
+        "all": "Tất cả",
+        "nc": "Phi thương mại",
+        "nd": "Không phái sinh",
+        "archetype": "Chỉ ảnh mẫu họ"
+      },
+      "back": "‹ Quay lại",
+      "search": "Tìm theo tên hoặc ID",
+      "matches_one": "{{n}} loài",
+      "matches_other": "{{n}} loài",
+      "none": "Không có loài nào khớp.",
+      "more": "Tải thêm",
+      "requiredAspects": "Góc ảnh bắt buộc: {{aspects}}",
+      "aspect": "Góc ảnh",
+      "credit": "Tác giả (người chụp)",
+      "license": "Giấy phép (ví dụ CC-BY-4.0)",
+      "moveUp": "Chuyển lên",
+      "moveDown": "Chuyển xuống",
+      "remove": "Xóa",
+      "upload": "Tải ảnh lên",
+      "save": "Lưu hình ảnh",
+      "needAttribution": "Mỗi ảnh cần có tác giả và giấy phép.",
+      "badType": "Hãy dùng ảnh JPEG, PNG, WebP, GIF hoặc AVIF.",
+      "tooLarge": "Ảnh lớn hơn 8 MB."
     }
   }
 }
