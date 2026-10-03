@@ -388,7 +388,9 @@
       "save": "Lưu hình ảnh",
       "needAttribution": "Mỗi ảnh cần có tác giả và giấy phép.",
       "badType": "Hãy dùng ảnh JPEG, PNG, WebP, GIF hoặc AVIF.",
-      "tooLarge": "Ảnh lớn hơn 8 MB."
+      "tooLarge": "Ảnh lớn hơn 8 MB.",
+      "conflict": "Người khác đã lưu gói này kể từ khi bạn mở. Hãy tải lại để xem thay đổi của họ rồi sửa lại.",
+      "reload": "Tải lại"
     }
   },
   "fieldLog": {

@@ -11,8 +11,8 @@
  */
 import { WorkOS } from '@workos-inc/node'
 import { isAdmin, readSession, type SessionPayload } from '../../lib/session'
-import { deletePrefix, isRealAsset, servingPrefix, submissionPrefix } from '../../lib/submissions'
-import { bundledPackIds } from '../../lib/bundled-packs'
+import { deletePrefix, isRealAsset, isSafePackPrefix, servingPrefix, submissionPrefix } from '../../lib/submissions'
+import { bundledPackIds, shippedManifests } from '../../lib/bundled-packs'
 import { rejectCrossOrigin } from '../../lib/origin'
 import {
   parseBody, parseOptionalBody, publishSchema, resourceCreateSchema, resourcePatchSchema,
@@ -211,9 +211,9 @@ export const onRequest = async (context: any) => {
         // still read them. The pack row remembers each old prefix with a
         // timestamp; entries older than the grace period are swept on the
         // pack's next approval.
-        const oldPrefix = prevMeta ? (typeof prevMeta.prefix === 'string' && prevMeta.prefix ? prevMeta.prefix : `packs/${sm.packId}`) : null
+        const oldPrefix = prevMeta ? servingPrefix(sm.packId, prevMeta) : null
         const carried: { prefix: string; at: number }[] = Array.isArray(prevMeta?.supersededPrefixes)
-          ? prevMeta.supersededPrefixes.filter((e: any) => typeof e?.prefix === 'string' && Number.isFinite(e?.at))
+          ? prevMeta.supersededPrefixes.filter((e: any) => isSafePackPrefix(e?.prefix) && Number.isFinite(e?.at))
           : []
         const due = carried.filter((e) => reviewedAt - e.at >= SUPERSEDED_GRACE_MS && e.prefix !== prefix)
         const supersededPrefixes = carried.filter((e) => !due.includes(e) && e.prefix !== prefix)
@@ -313,7 +313,15 @@ function mediaBackend(env: Env, requestUrl: string): MediaBackend {
       }
       return out
     },
-    readStatic: async (id, file) => (await assetText(`/packs/${id}/${file}`))?.text() ?? null,
+    readStatic: async (id, file) => {
+      // Shipped manifests only change with a deploy (a new isolate), so the
+      // pack list does not spend a subrequest per pack re-reading them.
+      const cached = file === 'pack.json' ? shippedManifests.get(id) : undefined
+      if (cached !== undefined) return cached
+      const text = (await (await assetText(`/packs/${id}/${file}`))?.text()) ?? null
+      if (file === 'pack.json' && text != null) shippedManifests.set(id, text)
+      return text
+    },
     staticExists: async (id, rel) => !!(await assetText(`/packs/${id}/${rel}`)),
     getObject: async (key) => (await env.PACKS.get(key))?.text() ?? null,
     hasObject: async (key) => !!(await env.PACKS.head(key)),

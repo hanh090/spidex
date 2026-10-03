@@ -20,6 +20,8 @@ import { createMemoryStore, emptyState, type MemoryState } from '../../functions
 import { metaResponse } from '../../functions/lib/meta'
 import { signSession } from '../../functions/lib/session'
 import { handleMedia, type MediaBackend } from '../../functions/lib/media-admin'
+import { manifestVersion, overrideIsLive } from '../../functions/lib/pack-manifest-source'
+import { rejectCrossOrigin } from '../../functions/lib/origin'
 
 // In-memory token store for dev server mapped by session ID
 const sessionStore = new Map<string, { user: AuthSessionUser; accessToken?: string; refreshToken?: string }>()
@@ -130,7 +132,9 @@ function handleCommunityPackFile(req: any, res: any, next: () => void): void {
   if (bundled) {
     // Admin edits (overrides/) win over the static manifest; uploaded media
     // (bundled/) fills in where the checkout has no file, as the bucket does.
-    const edited = /^(pack\.json|species\.ndjson)$/.test(rel)
+    // The override is only live while its version is above the checkout's (the
+    // same rule as production's /packs route and the media editor).
+    const edited = /^(pack\.json|species\.ndjson)$/.test(rel) && devOverrideIsLive(packId!)
     const key = edited ? `overrides/${packId}/${rel}` : `bundled/${packId}/${rel}`
     const fp = devObjectPath(key)
     if (fp && (edited || !fs.existsSync(path.join(PACKS_DIR, packId!, rel))) && fs.existsSync(fp) && fs.statSync(fp).isFile()) {
@@ -150,6 +154,14 @@ function handleCommunityPackFile(req: any, res: any, next: () => void): void {
   res.setHeader('Content-Security-Policy', "script-src 'none'")
   res.setHeader('Cache-Control', /^(pack\.json|species\.ndjson)$/.test(rel) ? 'no-store' : 'public, max-age=86400')
   fs.createReadStream(fp).pipe(res)
+}
+
+function devOverrideIsLive(packId: string): boolean {
+  const read = (fp: string | null) => { try { return fp ? fs.readFileSync(fp, 'utf8') : null } catch { return null } }
+  return overrideIsLive(
+    manifestVersion(read(devObjectPath(`overrides/${packId}/pack.json`))),
+    manifestVersion(read(path.join(PACKS_DIR, packId, 'pack.json'))),
+  )
 }
 
 function devBundledIds(): string[] {
@@ -594,6 +606,14 @@ async function handleAdmin(req: any, res: any): Promise<void> {
     res.statusCode = status
     res.end(JSON.stringify(body))
   }
+
+  // Same cross-origin refusal as production, so a request production would turn
+  // away is not accepted here.
+  const headers = new Headers()
+  for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v)
+  const blocked = rejectCrossOrigin(new Request(url, { method, headers }))
+  if (blocked) return send(await blocked.json(), blocked.status)
+
   const readBody = async (): Promise<any> =>
     new Promise((resolve) => {
       let data = ''

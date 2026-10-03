@@ -37,6 +37,10 @@ describe('servingPrefix', () => {
     expect(servingPrefix('x', { prefix: 'submissions/sub_1' })).toBe('submissions/sub_1')
     expect(servingPrefix('x', {})).toBe('packs/x')
   })
+  it.each(['user-photos/u1', 'overrides/bird-vn', 'bundled/x', 'submissions', 'submissions/a/b', 'submissions/../user-photos', '../x/y'])(
+    'never serves from the unsafe prefix %s', (prefix) => {
+      expect(servingPrefix('x', { prefix })).toBe('packs/x')
+    })
 })
 
 describe('mergeCatalogue', () => {
@@ -66,5 +70,11 @@ describe('deletePrefix', () => {
   it('refuses a prefix that could widen to the bucket root', async () => {
     await expect(deletePrefix(fakeR2(), 'packs')).rejects.toThrow()
     await expect(deletePrefix(fakeR2(), '')).rejects.toThrow()
+  })
+  it('refuses to sweep private user photos or other non-pack prefixes', async () => {
+    const r2 = fakeR2({ 'user-photos/u1/p.jpg': 'private', 'overrides/bird/pack.json': '{}' })
+    await expect(deletePrefix(r2, 'user-photos/u1')).rejects.toThrow()
+    await expect(deletePrefix(r2, 'overrides/bird')).rejects.toThrow()
+    expect(r2.store.size).toBe(2)
   })
 })

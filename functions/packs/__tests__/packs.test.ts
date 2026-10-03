@@ -33,6 +33,13 @@ describe('/packs/<id>/<file>', () => {
     expect(await res.text()).toBe('{"id":"old"}')
   })
 
+  it('never serves private user photos through a community pack whose meta.prefix points at them', async () => {
+    const r2 = fakeR2({ 'user-photos/u1/p.jpg': 'PRIVATE', 'user-photos/u1/pack.json': '{"id":"c"}' })
+    const db = fakeD1(() => row({ community: true, prefix: 'user-photos/u1' }))
+    expect((await servePack(ctx('/packs/c/p.jpg', htmlFallback, { DB: db, PACKS: r2 }))).status).toBe(404)
+    expect((await servePack(ctx('/packs/c/pack.json', htmlFallback, { DB: db, PACKS: r2 }))).status).toBe(404)
+  })
+
   it('answers 404, not index.html, for an unpublished or unknown pack', async () => {
     const r2 = fakeR2({ 'submissions/sub_1/pack.json': '{}' })
     const db = fakeD1(() => row({ community: true, prefix: 'submissions/sub_1' }, 0))

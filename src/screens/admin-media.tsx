@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { Badge, Button, Meta, Skeleton } from '../ui/primitives'
 import { Alert, Chip, fieldStyle } from './admin-parts'
 import {
-  fetchMediaPacks, fetchMediaSpecies, saveMediaImages, uploadMediaImage,
+  AdminApiError, fetchMediaPacks, fetchMediaSpecies, saveMediaImages, uploadMediaImage,
   type MediaFilter, type MediaFlags, type MediaImage, type MediaPack, type MediaSpecies,
 } from '../features/admin/admin-api'
 import { resolve } from '../data/localized'
@@ -24,8 +24,8 @@ const EXT_BY_TYPE: Record<string, string> = {
   'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/avif': 'avif',
 }
 
-/** Relative pack paths resolve under /packs/<id>/; absolute http(s) urls pass through. */
-const previewUrl = (packId: string, url: string) => (/^https?:\/\//i.test(url) ? url : `/packs/${packId}/${url}`)
+/** Image urls are pack-relative: the app resolves them under /packs/<id>/, so the preview does too. */
+const previewUrl = (packId: string, url: string) => `/packs/${packId}/${url}`
 
 const card: React.CSSProperties = {
   border: 'var(--hair) solid var(--line)', borderRadius: 'var(--radius-card)',
@@ -116,7 +116,7 @@ function PackSpecies({ pack, onBack }: { pack: MediaPack; onBack: () => void }) 
   const [aspects, setAspects] = useState<{ required: string[]; optional: string[] }>({ required: [], optional: [] })
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState<MediaSpecies | null>(null)
-  const [version, setVersion] = useState(pack.version)
+  const [version, setVersion] = useState<number | undefined>(pack.version)
   const reqId = useRef(0)
 
   // Debounce typing so a 1,500-species pack is not re-fetched per keystroke.
@@ -134,6 +134,7 @@ function PackSpecies({ pack, onBack }: { pack: MediaPack; onBack: () => void }) 
         setTotal(page.total)
         setCursor(page.nextCursor)
         setAspects(page.aspects)
+        setVersion(page.version)
         setError(null)
       })
       .catch((e) => { if (id === reqId.current) setError((e as Error).message) })
@@ -147,7 +148,9 @@ function PackSpecies({ pack, onBack }: { pack: MediaPack; onBack: () => void }) 
         packId={pack.id}
         species={editing}
         aspects={aspects}
+        baseVersion={version}
         onCancel={() => setEditing(null)}
+        onReload={() => { setEditing(null); setRows(null); load(null) }}
         onSaved={(sp, v) => {
           setRows((prev) => prev?.map((r) => (r.id === sp.id ? sp : r)) ?? prev)
           setVersion(v)
@@ -221,17 +224,21 @@ function Thumb({ packId, url, size }: { packId: string; url?: string; size: numb
   )
 }
 
-function SpeciesEditor({ packId, species, aspects, onCancel, onSaved }: {
+function SpeciesEditor({ packId, species, aspects, baseVersion, onCancel, onReload, onSaved }: {
   packId: string
   species: MediaSpecies
   aspects: { required: string[]; optional: string[] }
+  /** Pack version this editor was opened against; the server refuses a save if it moved. */
+  baseVersion: number | undefined
   onCancel: () => void
+  onReload: () => void
   onSaved: (sp: MediaSpecies, version: number) => void
 }) {
   const { t } = useTranslation()
   const [images, setImages] = useState<MediaImage[]>(species.images)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [conflict, setConflict] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const allAspects = [...aspects.required, ...aspects.optional]
 
@@ -277,16 +284,24 @@ function SpeciesEditor({ packId, species, aspects, onCancel, onSaved }: {
 
   const missing = images.some((im) => !im.credit.trim() || !im.license.trim())
   const save = async () => {
+    if (baseVersion == null) return setError(t('admin.media.conflict'))
     setBusy(true)
     setError(null)
+    setConflict(false)
     try {
-      const r = await saveMediaImages(packId, species.id, images)
+      const r = await saveMediaImages(packId, species.id, images, baseVersion)
       const flagged = r.images.map((im) => ({ ...im, flags: undefined }))
       // Reload this species' flags from the server so badges reflect the saved licences.
       const fresh = await fetchMediaSpecies(packId, { q: species.id }).then((p) => p.species.find((s) => s.id === species.id))
       onSaved(fresh ?? { ...species, images: flagged }, r.version)
     } catch (e) {
-      setError((e as Error).message)
+      if (e instanceof AdminApiError && e.status === 409) {
+        setConflict(true)
+        setError(t('admin.media.conflict'))
+      } else {
+        // Validation errors (for example an absolute image URL) come from the server verbatim.
+        setError((e as Error).message)
+      }
     } finally {
       setBusy(false)
     }
@@ -301,6 +316,7 @@ function SpeciesEditor({ packId, species, aspects, onCancel, onSaved }: {
       </div>
       <Meta>{t('admin.media.requiredAspects', { aspects: aspects.required.join(', ') })}</Meta>
       {error && <Alert>{error}</Alert>}
+      {conflict && <Button variant="secondary" onClick={onReload}>{t('admin.media.reload')}</Button>}
 
       {images.map((im, i) => (
         <section key={im.id} style={{ ...card, display: 'grid', gap: 'var(--space-3)' }}>
