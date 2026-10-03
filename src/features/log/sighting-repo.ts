@@ -188,10 +188,16 @@ export async function updateSighting(id: string, patch: Partial<Sighting>): Prom
  * and Phase 6 union-merges tombstones across devices.
  */
 export async function deleteSighting(id: string): Promise<void> {
-  await db.transaction('rw', db.sightings, db.photos, async () => {
+  await db.transaction('rw', db.sightings, db.photos, db.syncQueue, async () => {
     const photos = await db.photos.where('sightingId').equals(id).toArray()
     for (const p of photos) {
       if (!p.deletedAt) await softDelete(p.id)
+    }
+    // A signed-in record may exist on the server: queue the tombstone so the
+    // sync engine can send it (the engine treats "never existed" as done).
+    const existing = await db.sightings.get(id)
+    if (existing?.userId) {
+      await db.syncQueue.put({ id: `delete:${id}`, kind: 'sighting', refId: id, op: 'delete', attempts: 0, queuedAt: Date.now() })
     }
     await db.sightings.delete(id)
   })

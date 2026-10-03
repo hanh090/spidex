@@ -451,5 +451,62 @@
     "favNotSeen": "Not seen yet",
     "favLastSeen": "Last seen {{date}}",
     "favRemove": "Remove {{name}} from favourites"
+  },
+  "sync": {
+    "title": "Sync status",
+    "foregroundOnly": "Sync runs while Spidex is open: when you sign in, come back online, return to the app, or tap Sync now. Nothing syncs in the background.",
+    "lastSync": "Last sync",
+    "never": "Not synced yet",
+    "syncNow": "Sync now",
+    "syncing": "Syncing…",
+    "counts": "Records by sync state",
+    "state": {
+      "queued": "Queued",
+      "synced": "Synced",
+      "conflict": "Conflict",
+      "failed": "Failed"
+    },
+    "countSightings_one": "{{n}} sighting",
+    "countSightings_other": "{{n}} sightings",
+    "countPhotos_one": "{{n}} photo",
+    "countPhotos_other": "{{n}} photos",
+    "conflictsTitle": "Conflicts",
+    "noConflicts": "No conflicts.",
+    "conflictsLede": "These sightings were changed here and somewhere else. Nothing is overwritten until you choose.",
+    "needsId": "Needs ID",
+    "mine": "On this device",
+    "server": "On the server",
+    "serverDeleted": "Deleted on another device",
+    "keepMine": "Keep mine",
+    "keepServer": "Keep server",
+    "signInTitle": "Sign in to sync",
+    "signInFix": "Syncing backs up your sightings to your account. Guests keep everything on this device.",
+    "offline": "You are offline. Sync will run when a connection is back.",
+    "authExpired": "Your session ended. Sign in again to sync.",
+    "failed": "Sync could not finish. Your records are safe on this device; try again.",
+    "lastFailed": "The last sync did not finish. Your records are safe on this device.",
+    "needsCredits": "Some photos are waiting for credits and were not uploaded."
+  },
+  "credits": {
+    "title": "Credits",
+    "notCharged": "Not charged yet. Credits are recorded so we can learn what things cost, but nothing is deducted or blocked.",
+    "enforced": "Credits are being charged. Photo backup stops when your balance runs out; your local data is never deleted.",
+    "balance": "Balance",
+    "loading": "Loading…",
+    "unavailable": "Unavailable",
+    "offlineCached": "Offline — last known balance",
+    "history": "History",
+    "noHistory": "No activity yet.",
+    "historyOffline": "History needs a connection.",
+    "more": "Show more",
+    "signInTitle": "Sign in to see credits",
+    "signInFix": "Credits belong to your account. Guests have none.",
+    "reason": {
+      "signup_grant": "Welcome credits",
+      "photo_sync": "Photo backup",
+      "ai_id": "AI identification",
+      "adjustment": "Adjustment",
+      "founder_grant": "Founder grant"
+    }
   }
 }

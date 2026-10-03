@@ -13,6 +13,9 @@ import { Contribute } from '../screens/contribute'
 import { AuthCallback } from '../screens/auth-callback'
 import { AuthProvider } from '../features/auth/auth-context'
 import { NotFound } from '../screens/not-found'
+import { SyncStatus } from '../screens/sync-status'
+import { Credits } from '../screens/credits'
+import { SyncTriggers } from '../features/sync/sync-triggers'
 import { Trips } from '../screens/trips'
 import { TripDetail } from '../screens/trip-detail'
 import { LifeList } from '../screens/life-list'
@@ -38,6 +41,8 @@ const router = createBrowserRouter([
       { path: 'library', element: <Packs /> },
       { path: 'contribute', element: <Contribute /> },
       { path: 'admin', element: <Admin /> },
+      { path: 'sync', element: <SyncStatus /> },
+      { path: 'credits', element: <Credits /> },
       { path: 'auth/callback', element: <AuthCallback /> },
       // Anything else. Without this, an unknown path raises out of the router
       // and the user gets React Router's raw error page.
@@ -60,6 +65,7 @@ const router = createBrowserRouter([
 export function App() {
   return (
     <AuthProvider>
+      <SyncTriggers />
       <RouterProvider router={router} future={{ v7_startTransition: true }} />
     </AuthProvider>
   )
