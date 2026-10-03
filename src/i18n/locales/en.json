@@ -158,7 +158,7 @@
     "online": "Online"
   },
   "notFound": {
-    "fix": "The link may be out of date. Everything in the guide is reachable from the three tabs below.",
+    "fix": "The link may be out of date. Everything in the guide is reachable from Explore.",
     "home": "Go to Explore",
     "title": "This page does not exist"
   },
@@ -270,6 +270,8 @@
     "play": "Play",
     "pause": "Pause",
     "seek": "Seek",
+    "soundError": "This recording could not be loaded.",
+    "soundRetry": "Retry",
     "viewPlate": "View the {{name}} plate full screen"
   },
   "storage": {
@@ -302,7 +304,8 @@
       "overview": "Overview",
       "resources": "Resources",
       "users": "Users",
-      "submissions": "Review"
+      "submissions": "Review",
+      "media": "Media"
     },
     "signInTitle": "Sign in required",
     "signInFix": "The console needs a staff account.",
@@ -354,6 +357,40 @@
       "published": "Published",
       "rejected": "Rejected",
       "withdrawn": "Withdrawn"
+    },
+    "media": {
+      "pickPack": "Choose a pack to edit its images",
+      "imageCount_one": "{{n}} image",
+      "imageCount_other": "{{n}} images",
+      "flag": {
+        "nc": "NC",
+        "nd": "ND",
+        "archetype": "Archetype"
+      },
+      "filter": {
+        "all": "All",
+        "nc": "Non-commercial",
+        "nd": "No-derivatives",
+        "archetype": "Archetype only"
+      },
+      "back": "‹ Back",
+      "search": "Search by name or ID",
+      "matches_one": "{{n}} species",
+      "matches_other": "{{n}} species",
+      "none": "No species match.",
+      "more": "Load more",
+      "requiredAspects": "Required aspects: {{aspects}}",
+      "aspect": "Aspect",
+      "credit": "Credit (photographer)",
+      "license": "Licence (e.g. CC-BY-4.0)",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "upload": "Upload image",
+      "save": "Save images",
+      "needAttribution": "Every image needs a credit and a licence.",
+      "badType": "Use a JPEG, PNG, WebP, GIF or AVIF image.",
+      "tooLarge": "Image is larger than 8 MB."
     }
   },
   "fieldLog": {

@@ -9,7 +9,7 @@
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { parseManifest, parseSpeciesNdjson } from '../src/data/pack-manifest'
-import { sanitizePath } from '../functions/lib/submissions'
+import { sanitizePath, checkSpeciesNdjson } from '../functions/lib/submissions'
 
 const dir = process.argv[2]
 if (!dir || !existsSync(join(dir, 'pack.json'))) {
@@ -45,6 +45,15 @@ if (!parsed.ok) {
   console.error('species.ndjson issues:')
   for (const i of parsed.issues.slice(0, 50)) console.error(`  ${i.path}: ${i.message}`)
   if (parsed.issues.length > 50) console.error(`  …and ${parsed.issues.length - 50} more`)
+  process.exit(1)
+}
+
+// The server's upload gate (ND image licences, non-http(s) sound links, missing
+// attribution) runs here too, so a pack that passes locally is not refused at upload.
+const gate = checkSpeciesNdjson(speciesText)
+if (gate.issues.length) {
+  console.error('species.ndjson would be refused at upload:')
+  for (const msg of gate.issues) console.error(`  ${msg}`)
   process.exit(1)
 }
 

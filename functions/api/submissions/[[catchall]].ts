@@ -101,6 +101,20 @@ export const onRequest = async (context: any) => {
         } catch { /* not owned */ }
         if (!owned) return json({ error: 'That pack id already exists' }, 409)
       }
+      // A failed upload leaves the caller's own `uploading` submission behind.
+      // Retrying the same pack id discards that stale attempt (status guard in
+      // the UPDATE, so a submission that just went pending is never touched)
+      // instead of forcing the user to find Withdraw.
+      const stale = await env.DB.prepare(
+        "SELECT id FROM admin_resources WHERE kind = 'submission' AND json_extract(meta, '$.packId') = ? AND json_extract(meta, '$.submitter.userId') = ? AND json_extract(meta, '$.status') = 'uploading'",
+      ).bind(packId, session.userId).all()
+      for (const r of Array.isArray(stale?.results) ? (stale.results as { id: string }[]) : []) {
+        const flip = await env.DB.prepare(
+          `UPDATE admin_resources SET updated_at = ?, meta = json_set(meta, '$.status', 'withdrawn')
+           WHERE id = ? AND kind = 'submission' AND json_extract(meta, '$.status') = 'uploading'`,
+        ).bind(Date.now(), r.id).run()
+        if (changed(flip) && env.PACKS) await deletePrefix(env.PACKS, submissionPrefix(r.id))
+      }
       const open = await env.DB.prepare(
         "SELECT COUNT(*) AS n FROM admin_resources WHERE kind = 'submission' AND json_extract(meta, '$.submitter.userId') = ? AND json_extract(meta, '$.status') IN ('uploading','pending')",
       ).bind(session.userId).first()

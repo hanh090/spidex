@@ -47,10 +47,22 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
   const audio = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => () => { audio.current?.pause() }, [])
 
+  const fail = () => {
+    // Drop the element so Retry builds a fresh one instead of reusing a
+    // media element stuck in its error state.
+    audio.current?.pause()
+    audio.current = null
+    setPlaying(false)
+    setProgress(0)
+    setFailed(true)
+  }
+
   const toggle = () => {
+    setFailed(false)
     if (!audio.current) {
       const el = new Audio(sound.url)
       el.preload = 'metadata'
@@ -58,14 +70,19 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
         setProgress(el.duration ? el.currentTime / el.duration : 0)
       })
       el.addEventListener('ended', () => { setPlaying(false); setProgress(0) })
-      el.addEventListener('error', () => setPlaying(false))
+      el.addEventListener('error', () => { if (audio.current === el) fail() })
       audio.current = el
     }
     if (playing) {
       audio.current.pause()
       setPlaying(false)
     } else {
-      void audio.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false))
+      const el = audio.current
+      void el.play().then(() => setPlaying(true)).catch((e: unknown) => {
+        // Autoplay refusals and interrupted loads are not a broken recording.
+        if (audio.current === el && (el.error || (e as Error)?.name === 'NotSupportedError')) fail()
+        else setPlaying(false)
+      })
     }
   }
 
@@ -110,12 +127,27 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
           aria-valuemax={100}
           aria-valuenow={Math.round(progress * 100)}
           onPointerDown={seek}
-          style={{ height: 20, display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          style={{ minHeight: 'var(--tap-min)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
         >
           <div style={{ height: 4, width: '100%', background: 'var(--line)', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{ width: `${progress * 100}%`, height: '100%', background: 'var(--accent)' }} />
           </div>
         </div>
+        {failed && (
+          <div role="alert" className="t-meta" style={{ color: 'var(--warn)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <span>{t('species.soundError')}</span>
+            <button
+              onClick={toggle}
+              style={{
+                minHeight: 'var(--tap-min)', padding: '0 var(--space-3)', background: 'none',
+                border: 'var(--hair) solid var(--warn)', borderRadius: 'var(--radius-tap)',
+                color: 'inherit', font: 'inherit', cursor: 'pointer',
+              }}
+            >
+              {t('species.soundRetry')}
+            </button>
+          </div>
+        )}
         <div className="t-meta" style={{ color: 'var(--ink-muted)', overflowWrap: 'anywhere' }}>
           {[sound.type, fmt(sound.durationSec)].filter(Boolean).join(' · ')}
           {(sound.type || sound.durationSec) && ' · '}
