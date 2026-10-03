@@ -102,7 +102,7 @@ describe('deleteSighting', () => {
     const photo = await db.photos.get('ph-1')
     expect(photo, 'the photo row must survive as a tombstone').toBeDefined()
     expect(photo!.deletedAt).toBeGreaterThan(0)
-    expect(await photo!.original.text()).toBe('original-bytes')
+    expect(await photo!.original!.text()).toBe('original-bytes')
   })
 })
 

@@ -102,10 +102,14 @@ export interface Photo {
    *  photo-sync ledger idempotency key are all this value. */
   id: string
   sightingId: string
-  /** The untouched capture. Users are wildlife photographers. */
-  original: Blob
-  /** Downscaled derivative used for display and, later, for sync. */
+  /** The untouched capture. Users are wildlife photographers. Absent on a
+   *  photo pulled from the account (see `pulled`): only the derivative syncs. */
+  original?: Blob
+  /** Downscaled derivative used for display and for sync. */
   derived: Blob
+  /** Downloaded from the account on another device: derivative only, no
+   *  original here, and never re-uploaded. */
+  pulled?: true
   width: number
   height: number
   takenAt: number
