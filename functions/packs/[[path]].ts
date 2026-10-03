@@ -17,7 +17,8 @@
  *
  * pack.json and species.ndjson of a bundled pack may be overridden by an admin
  * edit stored at overrides/<id>/<file>; that object is served in preference to
- * the static file.
+ * the static file, until a deploy ships a pack.json version at or above the
+ * override's.
  *
  * Every response from the bucket gets CSP script-src 'none': packs may
  * contain SVG, and same-origin SVG is scriptable. The header keeps a
@@ -81,9 +82,26 @@ async function bundledOverride(context: any): Promise<Response | null> {
   if (!m) return null
   try {
     if (!(await bundledPackIds(env, context.request.url)).has(m[1]!)) return null
+    // A deploy that ships a pack version at or above the override's supersedes
+    // the admin edit: the edit was made against an older pack.
+    const overrideVersion = await jsonVersion(await env.PACKS.get(`overrides/${m[1]}/pack.json`))
+    if (overrideVersion == null) return null
+    const staticVersion = await jsonVersion(await env.ASSETS.fetch(new URL(`/packs/${m[1]}/pack.json`, context.request.url)))
+    if (staticVersion != null && staticVersion >= overrideVersion) return null
     return await fromBucket(env.PACKS, `overrides/${m[1]}/${m[2]}`, m[2]!, () => null)
   } catch (err) {
     console.error('pack override lookup failed', err)
+    return null
+  }
+}
+
+/** `version` of a pack.json body (R2 object or Response), or null if absent/unreadable. */
+async function jsonVersion(body: { json?: () => Promise<unknown>; ok?: boolean } | null): Promise<number | null> {
+  if (!body || body.ok === false || !body.json) return null
+  try {
+    const v = ((await body.json()) as { version?: unknown }).version
+    return typeof v === 'number' ? v : null
+  } catch {
     return null
   }
 }

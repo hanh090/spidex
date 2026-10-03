@@ -85,15 +85,35 @@ describe('bundled pack media from the bucket', () => {
 })
 
 describe('admin overrides of bundled manifests', () => {
-  const assets = { fetch: async () => new Response(JSON.stringify({ packs: ['bird-vn'] })) }
+  // Static assets: the shipped index, and bird-vn's deployed pack.json at version `deployed`.
+  const assetsAt = (deployed: number) => ({
+    fetch: async (u: URL | string) => String(u).endsWith('/packs/index.json')
+      ? new Response(JSON.stringify({ packs: ['bird-vn'] }))
+      : new Response(JSON.stringify({ version: deployed })),
+  })
+  const assets = assetsAt(5)
   const staticFile = () => new Response('STATIC', { headers: { 'Content-Type': 'application/json' } })
+  const overrides = (file: string, body = 'OVERRIDE') =>
+    fakeR2({ 'overrides/bird-vn/pack.json': JSON.stringify({ version: 6 }), [`overrides/bird-vn/${file}`]: body })
 
-  it.each(['pack.json', 'species.ndjson'])('serves overrides/<id>/%s in preference to the static file, uncached', async (file) => {
+  it.each(['species.ndjson'])('serves overrides/<id>/%s in preference to the static file, uncached', async (file) => {
     resetBundledPackIds()
-    const r2 = fakeR2({ [`overrides/bird-vn/${file}`]: 'OVERRIDE' })
-    const res = await servePack(ctx(`/packs/bird-vn/${file}`, staticFile, { ASSETS: assets, PACKS: r2 }))
+    const res = await servePack(ctx(`/packs/bird-vn/${file}`, staticFile, { ASSETS: assets, PACKS: overrides(file) }))
     expect(await res.text()).toBe('OVERRIDE')
     expect(res.headers.get('Cache-Control')).toBe('no-store')
+  })
+
+  it('serves the override pack.json while it is newer than the deployed one', async () => {
+    resetBundledPackIds()
+    const res = await servePack(ctx('/packs/bird-vn/pack.json', staticFile, { ASSETS: assets, PACKS: overrides('species.ndjson') }))
+    expect(await res.json()).toEqual({ version: 6 })
+  })
+
+  it('lets a deploy at or above the override version supersede the admin edit', async () => {
+    resetBundledPackIds()
+    const r2 = overrides('species.ndjson')
+    const res = await servePack(ctx('/packs/bird-vn/species.ndjson', staticFile, { ASSETS: assetsAt(6), PACKS: r2 }))
+    expect(await res.text()).toBe('STATIC')
   })
 
   it('falls back to the static file when no override exists', async () => {
