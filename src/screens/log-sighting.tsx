@@ -12,13 +12,16 @@ import { useSpecies } from '../features/guide/use-pack'
 import { useGeo } from '../features/log/geo'
 import { prepare, releasePreview, type CapturedPhoto } from '../features/log/photo-store'
 import { QuotaError, retryPhotos, saveSighting } from '../features/log/sighting-repo'
-import { tzOffsetMinutes } from '../features/log/clock'
-import { activeTrip } from '../features/log/trip-repo'
+import { toLocalInput } from '../features/log/clock'
+import { activeTrip, listTrips, startTrip } from '../features/log/trip-repo'
+import type { Trip } from '../data/db'
 import { Button, Meta } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { IconPlus } from '../ui/icons'
 import { resolve } from '../data/localized'
 import { formatDate, formatTime } from '../i18n/format'
+
+const NEW_TRIP = '__new'
 
 export function LogSighting() {
   const { t } = useTranslation()
@@ -39,7 +42,13 @@ export function LogSighting() {
    *  never the whole save, which would mint a second record. */
   const [savedId, setSavedId] = useState<string | null>(null)
 
-  useEffect(() => { void activeTrip().then((tr) => setTripId(tr?.id)) }, [])
+  /** Non-null while the user is naming a trip to create on save. */
+  const [newTripName, setNewTripName] = useState<string | null>(null)
+  const [trips, setTrips] = useState<Trip[]>([])
+
+  useEffect(() => {
+    void Promise.all([activeTrip(), listTrips()]).then(([tr, all]) => { setTripId(tr?.id); setTrips(all) })
+  }, [])
   useEffect(() => { geo.acquire() }, [])   // on demand, once, on open
   // Preview URLs are full-resolution derivatives; release them on unmount.
   useEffect(() => () => { photos.forEach(releasePreview) }, [photos])
@@ -65,6 +74,15 @@ export function LogSighting() {
 
     const fix = geo.state.kind === 'fixed' ? geo.state : null
     try {
+      let useTripId = tripId
+      if (newTripName !== null) {
+        // Created once: remembered so a failed save does not mint a second trip on retry.
+        const created = await startTrip(newTripName.trim() || new Date().toLocaleDateString(), '')
+        useTripId = created.id
+        setTripId(created.id)
+        setTrips((all) => [created, ...all])
+        setNewTripName(null)
+      }
       await saveSighting({
         species: species ?? undefined,
         count,
@@ -73,7 +91,7 @@ export function LogSighting() {
         lat: fix?.lat,
         lng: fix?.lng,
         accuracy: fix?.accuracy,
-        tripId,
+        tripId: useTripId,
         photos,
       })
       navigate('/sightings', { replace: true })
@@ -175,6 +193,46 @@ export function LogSighting() {
           />
 
           <FieldRow
+            label={t('fieldLog.logTrip')}
+            value={
+              <div>
+                <select
+                  value={newTripName !== null ? NEW_TRIP : tripId ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    if (v === NEW_TRIP) { setNewTripName(''); return }
+                    setNewTripName(null)
+                    setTripId(v || undefined)
+                  }}
+                  aria-label={t('fieldLog.logTrip')}
+                  style={{
+                    display: 'block', width: '100%', minHeight: 'var(--tap-min)',
+                    background: 'var(--paper)', border: 'var(--hair) solid var(--line)',
+                    color: 'var(--ink)', padding: '0 var(--space-2)', font: 'var(--type-body)',
+                  }}
+                >
+                  <option value="">{t('fieldLog.logNoTrip')}</option>
+                  {trips.map((tr) => <option key={tr.id} value={tr.id}>{tr.name || t('fieldLog.tripUntitled')}</option>)}
+                  <option value={NEW_TRIP}>{t('fieldLog.logNewTrip')}</option>
+                </select>
+                {newTripName !== null && (
+                  <input
+                    value={newTripName}
+                    onChange={(e) => setNewTripName(e.target.value)}
+                    placeholder={t('fieldLog.logNewTripName')}
+                    aria-label={t('fieldLog.logNewTripName')}
+                    style={{
+                      display: 'block', width: '100%', marginTop: 'var(--space-1)', minHeight: 'var(--tap-min)',
+                      background: 'var(--paper)', border: 'var(--hair) solid var(--line)',
+                      color: 'var(--ink)', padding: '0 var(--space-2)', font: 'var(--type-body)',
+                    }}
+                  />
+                )}
+              </div>
+            }
+          />
+
+          <FieldRow
             label={t('log.count')}
             value={
               <div style={{ display: 'flex', border: 'var(--hair) solid var(--line)', width: 'fit-content' }}>
@@ -214,11 +272,6 @@ export function LogSighting() {
       </div>
     </div>
   )
-}
-
-/** Format an instant for a datetime-local input, in the device's own zone. */
-function toLocalInput(at: number): string {
-  return new Date(at + tzOffsetMinutes(new Date(at)) * 60_000).toISOString().slice(0, 16)
 }
 
 function FieldRow({ label, value, action }: { label: string; value: React.ReactNode; action?: React.ReactNode }) {
