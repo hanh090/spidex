@@ -139,6 +139,9 @@ function classify(e: unknown): 'auth' | 'http' | 'network' {
 async function pushDeletes(api: SyncApi, userId: string): Promise<void> {
   // Only the active account's own deletes: the server resolves "whose" from the
   // session, so another account's delete would be answered 404 and then dropped.
+  // Deletes queued before items carried an owner are adopted by the first
+  // account that syncs — what happened to them before ownership existed.
+  await db.syncQueue.filter((q) => q.op === 'delete' && !q.userId).modify({ userId })
   const items = await db.syncQueue.filter((q) => q.op === 'delete' && q.kind === 'sighting' && q.userId === userId).toArray()
   for (const item of items) {
     try {
