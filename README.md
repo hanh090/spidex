@@ -69,10 +69,15 @@ identification key works with **zero connectivity**.
 ## Quick start
 
 ```bash
-npm install
-cp .env.example .env   # WorkOS keys, ADMIN_EMAILS, XENO_CANTO_API_KEY
+nvm use               # Node 22 (see .nvmrc), same as CI
+npm ci
+cp .env.example .env   # optional: WorkOS keys for sign-in, ADMIN_EMAILS for /admin
 npm run dev            # http://localhost:5173
 ```
+
+Guest mode needs no keys. The two fixture packs (Birds and Butterflies
+`(fixture)`) install from the checkout; the real packs' media is fetched from
+the deployed site (`SPIDEX_MEDIA_ORIGIN`, `off` to disable).
 
 ```bash
 npm test               # vitest
@@ -132,9 +137,16 @@ One-time setup:
 
 ```bash
 wrangler r2 bucket create spidex-packs     # R2 enabled on the account first
-wrangler d1 create spidex-admin
-wrangler d1 execute spidex-admin --file=migrations/0001_admin.sql --remote
+wrangler d1 create spidex-admin            # put its id in wrangler.toml
+for f in migrations/*.sql; do               # every migration, in order
+  wrangler d1 execute spidex-admin --remote --file="$f"
+done
+wrangler pages project create spidex-app --production-branch=main
 ```
+
+Commands that talk to Cloudflare need `CLOUDFLARE_ACCOUNT_ID` set to the
+account that owns these resources. Back up the database before applying a new
+migration: `wrangler d1 export spidex-admin --remote --output backups/d1/<date>.sql`.
 
 ## License
 
