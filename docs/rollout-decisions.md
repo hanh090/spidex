@@ -30,6 +30,10 @@ says what was chosen, why, and how to change it.
 | 23 | Navigation | Three tabs (Explore, Identify, Sightings) plus a drawer, instead of the plan's four tabs with "More" | Matches the field-native redesign already shipped | — |
 | 24 | Content process | The plan's expert review, 10-species pilot and image-bitrate bake-off are not done; packs ship from the iNaturalist/xeno-canto pipeline with licence filtering | These need a human expert; code cannot replace them | Engage an expert before marketing species accuracy |
 | 25 | Account linking | No "link another sign-in method" UI; WorkOS matches accounts by verified email | Rare need at launch | Add when users ask |
+| 26 | Cloudflare plan | Everything is sized for the Workers Free plan: sync batches of 12 records (≤39 D1 queries per request, tested), admin pack list under 50 subrequests | Free is the current plan and the per-request limit is hard | Raise `MAX_BATCH`/`PUSH_BATCH` together on Workers Paid |
+| 27 | Sync conflicts | A delete beats a stale edit from another device; a sighting only comes back by an explicit "Keep mine", and photos are never dropped while their sighting is unresolved | Never lose a field note silently, never resurrect without asking | — |
+| 28 | Media files | Media is immutable: replacing an image writes a new content-hashed filename, so phones fetch only changed images on a pack update; bundled media must be renamed when its bytes change (`upload:media` refuses otherwise) | A version bump must not re-download a whole pack on the Free plan | `--force` overwrites, but phones that cached the old bytes keep them |
+| 29 | Merging | `master` requires the CI `build` check (admins included) | A PR was merged red once | Settings → Branches |
 
 ## Code review
 
