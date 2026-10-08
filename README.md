@@ -51,8 +51,9 @@ identification key works with **zero connectivity**.
 - **Open platform** — any signed-in user can publish a pack from `/contribute`
   (files stream to R2, an admin review flips it live); see
   [docs/authoring-packs.md](docs/authoring-packs.md)
-- **Admin** — `/admin`, a D1-backed console for the pack catalogue, resources
-  and users, gated by signed sessions and an admin allowlist
+- **Admin** — a D1-backed console for the pack catalogue, resources and users
+  on its own domain (`spidex-admin` Pages project), gated by signed sessions
+  and an admin allowlist; the public app serves no admin surface at all
 - **i18n** — English · Tiếng Việt · Deutsch
 
 ## Stack
@@ -114,10 +115,17 @@ an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges
 
 ## Deploy
 
-Merges to `master` deploy to the `spidex-app` Cloudflare Pages project via
+Merges to `master` deploy to two Cloudflare Pages projects via
 `.github/workflows/ci.yml` (secrets: `CLOUDFLARE_API_TOKEN`,
-`CLOUDFLARE_ACCOUNT_ID`; the job is skipped while they are unset). Manual
-deploy: `npm run build && npm run deploy`.
+`CLOUDFLARE_ACCOUNT_ID`; the job is skipped while they are unset):
+
+- `spidex-app` — the public app, from `dist/`
+- `spidex-admin` — the admin console, from `dist-admin/` (built with
+  `vite --mode admin`; `ADMIN_HOST=spidex-admin.pages.dev` on `spidex-app`
+  makes `/api/admin/*` a 404 off the admin domain)
+
+Manual deploy: `npm run build && npm run deploy` (public) and
+`npm run build:admin && npm run deploy:admin` (admin).
 
 **Pack media is not in git.** Photos, plates and the Singapore pack (~1.1 GB)
 live in the `spidex-packs` R2 bucket under `bundled/<packId>/…` and are served

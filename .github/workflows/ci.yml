@@ -51,3 +51,5 @@ jobs:
           cache: npm
       - if: steps.creds.outputs.ok == 'true'
         run: npm ci && npm run build && npm run deploy
+      - if: steps.creds.outputs.ok == 'true'
+        run: npm run build:admin && npm run deploy:admin

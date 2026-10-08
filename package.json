@@ -13,11 +13,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:admin": "vite --mode admin",
     "build": "tsc -b && vite build",
+    "build:admin": "tsc -b && vite build --mode admin && printf '/* /admin 200\n' > dist-admin/_redirects",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit && tsc -p tsconfig.functions.json --noEmit",
     "test": "vitest run",
     "deploy": "wrangler pages deploy dist --project-name=spidex-app --branch=main",
+    "deploy:admin": "wrangler pages deploy dist-admin --project-name=spidex-admin --branch=main",
     "upload:media": "node scripts/upload-pack-media.mjs"
   },
   "dependencies": {
