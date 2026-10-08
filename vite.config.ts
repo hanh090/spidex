@@ -12,15 +12,20 @@ const appVersion: string = JSON.parse(readFileSync(new URL('./package.json', imp
 
 // vitest picks up dependency test files without an explicit include.
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const isAdmin = mode === 'admin'
+  return {
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
   // public/ is copied by trackedPublicPlugin: untracked pack media stays out.
-  build: { copyPublicDir: false },
+  build: {
+    copyPublicDir: false,
+    ...(isAdmin && { outDir: 'dist-admin', rollupOptions: { input: 'admin.html' } }),
+  },
   plugins: [
     react(),
     devAuthPlugin(),
     trackedPublicPlugin(),
-    VitePWA({
+    ...(isAdmin ? [] : [VitePWA({
       // 'prompt', never 'autoUpdate': an update must never swap content out from
       // under someone mid-session in the field.
       registerType: 'prompt',
@@ -57,7 +62,7 @@ export default defineConfig({
           },
         ],
       },
-    }),
+    })]),
   ],
   test: {
     include: ['{src,functions,server}/**/*.{test,spec}.{ts,tsx}'],
@@ -66,4 +71,5 @@ export default defineConfig({
     // integrity — is unexecuted by CI while the suite still reports green.
     setupFiles: ['src/test/setup.ts'],
   },
+  }
 })

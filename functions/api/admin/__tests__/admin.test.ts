@@ -25,6 +25,24 @@ describe('admin gate', () => {
   })
 })
 
+describe('host gate', () => {
+  it('404s every admin route on a non-matching host', async () => {
+    const res = await call('GET', '/api/admin/me', { ADMIN_HOST: 'admin.test' })
+    expect(res.status).toBe(404)
+  })
+
+  it('answers normally on the matching host', async () => {
+    const res = await call('GET', '/api/admin/me', { ADMIN_HOST: 'x.test' })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ isAdmin: true })
+  })
+
+  it('is open when ADMIN_HOST is unset', async () => {
+    const res = await call('GET', '/api/admin/me', {})
+    expect(res.status).toBe(200)
+  })
+})
+
 describe('approve / reject', () => {
   const approve = (db: ReturnType<typeof fakeD1>, extra: object = { PACKS: fakeR2() }) =>
     call('POST', '/api/admin/submissions/sub_1/approve', { DB: db, ...extra })

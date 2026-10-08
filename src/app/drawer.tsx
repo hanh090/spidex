@@ -3,13 +3,12 @@
  * Per the design system: the full lockup, pack scope, pack library, language,
  * theme. Nothing that a user would navigate to as a task.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LANGUAGES, setLanguage, type LanguageCode } from '../i18n'
 import { THEMES, type ThemeSetting } from '../lib/theme'
 import type { Density } from '../lib/density'
-import { fetchAdminStatus } from '../features/admin/admin-api'
 import { formatBytes } from '../i18n/format'
 import { Meta, Row } from '../ui/primitives'
 import { IconClose } from '../ui/icons'
@@ -38,7 +37,6 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
   const { name: packName } = useActivePackName()
   const { user, isGuest, signOut } = useAuth()
   const [signInOpen, setSignInOpen] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
   /**
@@ -51,18 +49,6 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
     if (unsynced > 0 && !window.confirm(t('account.signOutUnsynced', { count: unsynced }))) return
     await signOut()
   }
-
-  /*
-   * The admin row appears only for allowlisted staff. This is presentation,
-   * not the boundary — /api/admin/* re-verifies on every call regardless of
-   * what the drawer chose to render.
-   */
-  useEffect(() => {
-    if (!user) { setIsAdmin(false); return }
-    let cancelled = false
-    void fetchAdminStatus().then((s) => { if (!cancelled) setIsAdmin(s.isAdmin) })
-    return () => { cancelled = true }
-  }, [user])
 
   /*
    * Escape, focus trap, focus restore, and inert-when-closed. The panel stays
@@ -158,9 +144,6 @@ export function Drawer({ open, onClose, themeSetting, onTheme, density, onDensit
                 <Row label={t('sync.title')} onClick={() => { onClose(); navigate('/sync') }} />
                 <Row label={t('credits.title')} onClick={() => { onClose(); navigate('/credits') }} />
               </>
-            )}
-            {isAdmin && (
-              <Row label={t('drawer.admin', 'Admin console')} onClick={() => { onClose(); navigate('/admin') }} />
             )}
           </Section>
 

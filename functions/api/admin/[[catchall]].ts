@@ -24,6 +24,8 @@ interface Env {
   WORKOS_CLIENT_ID: string
   SESSION_SECRET?: string
   ADMIN_EMAILS?: string
+  // Set on the public project only: the admin API answers solely on this host.
+  ADMIN_HOST?: string
   DB?: any
   PACKS?: any
   ASSETS?: { fetch: (input: Request | string) => Promise<Response> }
@@ -58,6 +60,13 @@ export const onRequest = async (context: any) => {
   const url = new URL(request.url)
   const pathname = url.pathname
   const method = request.method
+
+  // Host gate: on the public domain the whole admin API is a 404. Unset means
+  // open, so local dev and the admin Pages project need no variable.
+  const adminHost = env.ADMIN_HOST
+  if (typeof adminHost === 'string' && adminHost && url.host !== adminHost) {
+    return json({ error: 'Not found' }, 404)
+  }
 
   const crossOrigin = rejectCrossOrigin(request)
   if (crossOrigin) return crossOrigin

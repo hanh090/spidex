@@ -8,7 +8,6 @@ import { Compare } from '../screens/compare'
 import { LogSighting } from '../screens/log-sighting'
 import { SightingDetail } from '../screens/sighting-detail'
 import { Packs } from '../screens/packs'
-import { Admin } from '../screens/admin'
 import { Contribute } from '../screens/contribute'
 import { AuthCallback } from '../screens/auth-callback'
 import { AuthProvider } from '../features/auth/auth-context'
@@ -40,7 +39,6 @@ const router = createBrowserRouter([
       { path: 'favourites', element: <Favourites /> },
       { path: 'library', element: <Packs /> },
       { path: 'contribute', element: <Contribute /> },
-      { path: 'admin', element: <Admin /> },
       { path: 'sync', element: <SyncStatus /> },
       { path: 'credits', element: <Credits /> },
       { path: 'auth/callback', element: <AuthCallback /> },
