@@ -259,7 +259,10 @@
     "notFoundFix": "It may have been deleted, or it belongs to another account.",
     "edit": "Edit",
     "saveEdit": "Save changes",
-    "cancelEdit": "Cancel"
+    "cancelEdit": "Cancel",
+    "search": "Search sightings…",
+    "searchNone": "No sightings match",
+    "searchNoneFix": "Try a species name or a word from your notes, or clear the search."
   },
   "species": {
     "compare": "Compare",

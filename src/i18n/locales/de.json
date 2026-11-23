@@ -259,7 +259,10 @@
     "notFoundFix": "Sie wurde vielleicht gelöscht oder gehört zu einem anderen Konto.",
     "edit": "Bearbeiten",
     "saveEdit": "Änderungen speichern",
-    "cancelEdit": "Abbrechen"
+    "cancelEdit": "Abbrechen",
+    "search": "Beobachtungen durchsuchen…",
+    "searchNone": "Keine passende Beobachtung",
+    "searchNoneFix": "Versuche einen Artnamen oder ein Wort aus deinen Notizen, oder lösche die Suche."
   },
   "species": {
     "compare": "Vergleichen",

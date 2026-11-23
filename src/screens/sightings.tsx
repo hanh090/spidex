@@ -4,11 +4,12 @@
  *
  * "Log a sighting" is a pinned action here rather than a fourth tab.
  */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Sighting } from '../data/db'
 import { groupByDay, listSightings } from '../features/log/sighting-repo'
+import { filterSightings } from '../features/log/sighting-search'
 import { buildLifeList, type LifeListEntry } from '../features/log/life-list'
 import { activeTrip, autoAssign, endTrip, startTrip } from '../features/log/trip-repo'
 import type { Trip } from '../data/db'
@@ -29,6 +30,7 @@ export function Sightings() {
   const [life, setLife] = useState<LifeListEntry[]>([])
   const [trip, setTrip] = useState<Trip | null>(null)
   const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
 
   const refresh = useCallback(async () => {
     const [rows, ll, tr] = await Promise.all([listSightings(), buildLifeList(), activeTrip()])
@@ -59,8 +61,10 @@ export function Sightings() {
     return onSyncChange(() => void refresh())
   }, [refresh])
 
-  const needsId = all.filter((s) => !s.speciesId)
-  const identified = all.filter((s) => s.speciesId)
+  // Search narrows what is listed; export below still covers the whole log.
+  const shown = useMemo(() => filterSightings(all, query), [all, query])
+  const needsId = shown.filter((s) => !s.speciesId)
+  const identified = shown.filter((s) => s.speciesId)
 
   if (loading) return null
 
@@ -112,6 +116,45 @@ export function Sightings() {
             ? <EmptyState title={t('sightings.empty')} fix={t('sightings.emptyFix')} />
             : (
               <>
+                <div style={{ padding: 'var(--space-3) var(--gutter-sm) 0' }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                    minHeight: 'var(--tap-min)', padding: '0 0 0 var(--space-3)',
+                    background: 'var(--paper)', border: 'var(--hair) solid var(--line)',
+                  }}>
+                    <input
+                      enterKeyHint="search"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={t('sightings.search')}
+                      aria-label={t('sightings.search')}
+                      /* 16px is the floor: iOS Safari zooms the viewport on focus below it. */
+                      style={{
+                        border: 0, background: 'transparent', outline: 'none',
+                        fontSize: 16, fontWeight: 500, width: '100%', minWidth: 0, color: 'var(--ink)',
+                      }}
+                    />
+                    {query && (
+                      <button
+                        onClick={() => setQuery('')}
+                        aria-label={t('explore.clearSearch')}
+                        style={{ minWidth: 'var(--tap-min)', minHeight: 'var(--tap-min)', color: 'var(--ink-muted)', flex: 'none' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {shown.length === 0 && (
+                  <div style={{ padding: 'var(--space-6) var(--gutter-sm)', textAlign: 'center' }}>
+                    <div className="t-heading">{t('sightings.searchNone')}</div>
+                    <p className="t-body" style={{ color: 'var(--ink-muted)', margin: 'var(--space-2) auto 0', maxWidth: '34ch' }}>
+                      {t('sightings.searchNoneFix')}
+                    </p>
+                  </div>
+                )}
+
                 {needsId.length > 0 && (
                   <section style={{
                     margin: 'var(--gutter-sm)', border: 'var(--hair) solid var(--warn)', background: 'var(--alert)',

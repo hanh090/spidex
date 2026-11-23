@@ -249,7 +249,10 @@
     "notFoundFix": "Có thể nó đã bị xoá, hoặc thuộc về một tài khoản khác.",
     "edit": "Sửa",
     "saveEdit": "Lưu thay đổi",
-    "cancelEdit": "Huỷ"
+    "cancelEdit": "Huỷ",
+    "search": "Tìm trong ghi nhận…",
+    "searchNone": "Không có ghi nhận nào khớp",
+    "searchNoneFix": "Thử tên loài hoặc một từ trong ghi chú, hoặc xoá ô tìm kiếm."
   },
   "species": {
     "compare": "So sánh",
