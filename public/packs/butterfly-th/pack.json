@@ -1,17 +1,17 @@
 {
   "id": "butterfly-th",
   "name": {
-    "en": "Butterflies of TH",
-    "vi": "Bướm TH"
+    "en": "Butterflies of Thailand",
+    "vi": "Bướm Thái Lan"
   },
   "taxonGroup": "lepidoptera",
-  "region": "TH",
+  "region": "Thailand",
   "version": 3,
   "license": "CC-BY-SA-4.0",
   "sources": [
     "GBIF Occurrence Backbone (api.gbif.org)",
     "iNaturalist Research Grade Observations",
-    "Official Biodiversity Checklist of TH"
+    "Official Biodiversity Checklist of Thailand"
   ],
   "speciesCount": 1119,
   "sizeBytes": {
