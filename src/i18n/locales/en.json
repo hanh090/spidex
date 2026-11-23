@@ -256,7 +256,10 @@
     "tripNone": "No trip",
     "unidentified": "Unidentified",
     "notFound": "This sighting no longer exists.",
-    "notFoundFix": "It may have been deleted, or it belongs to another account."
+    "notFoundFix": "It may have been deleted, or it belongs to another account.",
+    "edit": "Edit",
+    "saveEdit": "Save changes",
+    "cancelEdit": "Cancel"
   },
   "species": {
     "compare": "Compare",

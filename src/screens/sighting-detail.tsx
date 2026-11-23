@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { db, type Photo, type Sighting } from '../data/db'
 import { canViewSighting } from '../features/auth/scope'
 import { photosFor } from '../features/log/photo-store'
-import { deleteSighting, resolveSpecies, updateSighting } from '../features/log/sighting-repo'
+import { deleteSighting, editPatch, NOTES_MAX, resolveSpecies, updateSighting } from '../features/log/sighting-repo'
 import { useActivePack } from '../features/guide/use-pack'
 import { Plate } from '../features/guide/species-grid'
 import { search } from '../data/search-index'
@@ -30,6 +30,8 @@ export function SightingDetail() {
   const [sighting, setSighting] = useState<Sighting | null | undefined>(undefined)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [picking, setPicking] = useState(false)
+  // A draft while editing; null when the record is shown read-only.
+  const [draft, setDraft] = useState<{ notes: string; count: number } | null>(null)
   const [query, setQuery] = useState('')
 
   useEffect(() => {
@@ -87,7 +89,42 @@ export function SightingDetail() {
           </div>
         )}
 
-        {sighting.notes && <p className="t-body" style={{ margin: 0 }}>{sighting.notes}</p>}
+        {draft ? (
+          <>
+            <section>
+              <div style={{ marginBottom: 'var(--space-2)' }}><Meta>{t('log.notes')}</Meta></div>
+              <textarea
+                value={draft.notes}
+                onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+                rows={4}
+                maxLength={NOTES_MAX}
+                autoFocus
+                aria-label={t('log.notes')}
+                placeholder={t('log.notesPlaceholder')}
+                style={{
+                  width: '100%', padding: 'var(--space-3)', background: 'var(--paper)',
+                  border: 'var(--hair) solid var(--line)', font: 'var(--type-body)',
+                  color: 'var(--ink)', resize: 'vertical',
+                }}
+              />
+            </section>
+            <section style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Meta>{t('log.count')}</Meta>
+              <div style={{ display: 'flex', border: 'var(--hair) solid var(--line)', width: 'fit-content' }}>
+                <button onClick={() => setDraft({ ...draft, count: Math.max(1, draft.count - 1) })} aria-label={t('log.decrease')}
+                  style={{ minWidth: 'var(--tap-min)', minHeight: 'var(--tap-min)', color: 'var(--ink)' }}>−</button>
+                <span className="t-money" style={{
+                  minWidth: 56, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderInline: 'var(--hair) solid var(--line)',
+                }}>{draft.count}</span>
+                <button onClick={() => setDraft({ ...draft, count: draft.count + 1 })} aria-label={t('log.increase')}
+                  style={{ minWidth: 'var(--tap-min)', minHeight: 'var(--tap-min)', color: 'var(--ink)' }}>+</button>
+              </div>
+            </section>
+          </>
+        ) : (
+          sighting.notes && <p className="t-body" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{sighting.notes}</p>
+        )}
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
           <Meta>{formatObservedDate(sighting.at, sighting.tzOffsetMinutes)} · {formatTime(sighting.at, sighting.tzOffsetMinutes)}</Meta>
@@ -98,7 +135,7 @@ export function SightingDetail() {
           )}
         </div>
 
-        {!sighting.speciesId && !picking && (
+        {!sighting.speciesId && !picking && !draft && (
           <Button variant="primary" full onClick={() => setPicking(true)}>{t('sightings.resolve')}</Button>
         )}
 
@@ -132,17 +169,36 @@ export function SightingDetail() {
 
       <div style={{ flex: 1 }} />
 
-      <div className="column" style={{ flex: 'none', padding: 'var(--space-6) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))', display: 'flex', gap: 'var(--space-2)' }}>
-        <Button variant="secondary" onClick={async () => {
-          await updateSighting(sighting.id, { count: sighting.count + 1 })
-          setSighting({ ...sighting, count: sighting.count + 1 })
-        }}>{t('sightings.addOne')}</Button>
-        <Button variant="inline" onClick={async () => {
-          // One mis-tap in the field would otherwise destroy untouched originals.
-          if (!confirm(t('sightings.deleteConfirm'))) return
-          await deleteSighting(sighting.id)
-          navigate('/sightings', { replace: true })
-        }}>{t('sightings.delete')}</Button>
+      <div className="column" style={{ flex: 'none', padding: 'var(--space-6) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+        {draft ? (
+          <>
+            <Button variant="primary" onClick={async () => {
+              const patch = editPatch(sighting, draft)
+              if (patch) {
+                await updateSighting(sighting.id, patch)
+                setSighting({ ...sighting, ...patch })
+              }
+              setDraft(null)
+            }}>{t('sightings.saveEdit')}</Button>
+            <Button variant="inline" onClick={() => setDraft(null)}>{t('sightings.cancelEdit')}</Button>
+          </>
+        ) : (
+          <>
+            <Button variant="secondary" onClick={async () => {
+              await updateSighting(sighting.id, { count: sighting.count + 1 })
+              setSighting({ ...sighting, count: sighting.count + 1 })
+            }}>{t('sightings.addOne')}</Button>
+            <Button variant="secondary" onClick={() => setDraft({ notes: sighting.notes, count: sighting.count })}>
+              {t('sightings.edit')}
+            </Button>
+            <Button variant="inline" onClick={async () => {
+              // One mis-tap in the field would otherwise destroy untouched originals.
+              if (!confirm(t('sightings.deleteConfirm'))) return
+              await deleteSighting(sighting.id)
+              navigate('/sightings', { replace: true })
+            }}>{t('sightings.delete')}</Button>
+          </>
+        )}
       </div>
     </div>
   )

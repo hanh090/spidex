@@ -8,7 +8,9 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { db, speciesUid, type StoredSpecies } from '../../../data/db'
-import { buildSighting, deleteSighting, groupByDay, listNeedsId, resolveSpecies, saveSighting } from '../sighting-repo'
+import {
+  buildSighting, deleteSighting, editPatch, groupByDay, listNeedsId, NOTES_MAX, resolveSpecies, saveSighting, updateSighting,
+} from '../sighting-repo'
 import { buildLifeList } from '../life-list'
 import { generalize, toCsv, toGeoJson } from '../export'
 import { assessClock, noteWallClock, tzOffsetMinutes } from '../clock'
@@ -84,6 +86,38 @@ describe('saveSighting', () => {
     expect(row!.speciesId).toBe('sp-1')
     expect(row!.speciesSnapshot!.sensitivity).toBe(3)
     expect(row!.clientVersion).toBe(2)   // an edit bumps the ordering key
+  })
+})
+
+describe('editing a sighting', () => {
+  it('changes only what was edited and marks the record for sync', async () => {
+    const { id } = await saveSighting({ species: species(), count: 1, notes: 'on a reed', photos: [] })
+    const before = (await db.sightings.get(id))!
+    await db.sightings.update(id, { syncState: 'synced' })
+
+    const patch = editPatch(before, { notes: '  on a reed, dived twice ', count: 3 })
+    expect(patch).toEqual({ notes: 'on a reed, dived twice', count: 3 })
+    await updateSighting(id, patch!)
+
+    const after = (await db.sightings.get(id))!
+    expect(after.notes).toBe('on a reed, dived twice')
+    expect(after.count).toBe(3)
+    expect(after.clientVersion).toBe(before.clientVersion + 1)
+    expect(after.syncState).toBe('local')
+    // The observation itself is untouched.
+    expect(after.at).toBe(before.at)
+    expect(after.speciesId).toBe(before.speciesId)
+  })
+
+  it('is a no-op when nothing changed, so no version is spent', () => {
+    expect(editPatch({ notes: 'same', count: 2 }, { notes: 'same ', count: 2 })).toBeNull()
+  })
+
+  it('never stores a count below one or notes the sync API would reject', () => {
+    expect(editPatch({ notes: '', count: 4 }, { notes: '', count: 0 })).toEqual({ count: 1 })
+    expect(editPatch({ notes: '', count: 4 }, { notes: '', count: Number.NaN })).toBeNull()
+    const long = editPatch({ notes: '', count: 1 }, { notes: 'x'.repeat(NOTES_MAX + 50), count: 1 })
+    expect(long?.notes).toHaveLength(NOTES_MAX)
   })
 })
 

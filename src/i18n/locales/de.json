@@ -256,7 +256,10 @@
     "tripNone": "Keine Tour",
     "unidentified": "Unbestimmt",
     "notFound": "Diese Beobachtung gibt es nicht mehr.",
-    "notFoundFix": "Sie wurde vielleicht gelöscht oder gehört zu einem anderen Konto."
+    "notFoundFix": "Sie wurde vielleicht gelöscht oder gehört zu einem anderen Konto.",
+    "edit": "Bearbeiten",
+    "saveEdit": "Änderungen speichern",
+    "cancelEdit": "Abbrechen"
   },
   "species": {
     "compare": "Vergleichen",

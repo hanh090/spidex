@@ -246,7 +246,10 @@
     "tripNone": "Chưa có chuyến",
     "unidentified": "Chưa xác định",
     "notFound": "Ghi nhận này không còn tồn tại.",
-    "notFoundFix": "Có thể nó đã bị xoá, hoặc thuộc về một tài khoản khác."
+    "notFoundFix": "Có thể nó đã bị xoá, hoặc thuộc về một tài khoản khác.",
+    "edit": "Sửa",
+    "saveEdit": "Lưu thay đổi",
+    "cancelEdit": "Huỷ"
   },
   "species": {
     "compare": "So sánh",
