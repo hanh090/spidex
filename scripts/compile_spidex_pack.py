@@ -11,6 +11,9 @@ import json
 import re
 import argparse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from checklist_ingest import CONFIGS  # noqa: E402  (the region names live there)
+
 def slugify(text):
     text = text.lower()
     text = re.sub(r'[^a-z0-9]+', '-', text).strip('-')
@@ -72,14 +75,23 @@ def infer_bird_traits(family, genus, sci_name):
         "colour": ["black", "white"] if "corvidae" in fam else ["brown", "green"]
     }
 
-# ISO 3166-1 alpha-2 code -> (English name, Vietnamese name). A code missing
-# here is used as given, so add the country before compiling its first pack.
-REGION_NAMES = {
-    "VN": ("Vietnam", "Việt Nam"),
-    "TH": ("Thailand", "Thái Lan"),
-    "MY": ("Malaysia", "Malaysia"),
-    "SG": ("Singapore", "Singapore"),
-}
+def region_names(data):
+    """
+    The (English, Vietnamese) region name a pack is titled with.
+
+    The one source is the ingest config that produced the checklist: its
+    `region_name` is written into the checklist, and older checklists that
+    predate that field are looked up in the same config by pack id. There is
+    deliberately no fallback to the bare ISO code, which is how packs once
+    shipped as "Birds of TH": a missing name stops the compile instead.
+    """
+    name = data.get("region_name") or CONFIGS.get(data["pack_id"], {}).get("region_name")
+    if not name or not name.get("en") or not name.get("vi"):
+        raise ValueError(
+            f"No region name for pack {data['pack_id']!r} (region {data.get('region')!r}). "
+            "Add region_name to its entry in scripts/checklist_ingest.py CONFIGS."
+        )
+    return name["en"], name["vi"]
 
 def compile_pack(checklist_path, output_base_dir="public/packs"):
     with open(checklist_path, "r", encoding="utf-8") as f:
@@ -88,7 +100,7 @@ def compile_pack(checklist_path, output_base_dir="public/packs"):
     pack_id = data["pack_id"]
     taxon_group = data["taxon_group"]
     # Checklists carry an ISO country code; the pack is named for people.
-    region, region_vi = REGION_NAMES.get(data["region"], (data["region"], data["region"]))
+    region, region_vi = region_names(data)
     species_raw = data["species"]
     
     pack_dir = os.path.join(output_base_dir, pack_id)

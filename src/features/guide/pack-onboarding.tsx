@@ -4,8 +4,9 @@
  * This is the only screen that has to sell something, and what it sells is the
  * one claim that matters in the field — the guide keeps working when the
  * signal does not. So it leads with the specimens rather than with prose: a
- * band of real plates pulled from the packs on offer, the combined species
- * count, and two cards that show you what is inside before you spend 200MB.
+ * band of real plates pulled from the featured packs, the species and pack
+ * counts of the whole published catalogue, and two cards that show you what is
+ * inside before you spend 200MB.
  *
  * Every string comes from the interface bundle or the pack's own manifest.
  * Nothing about a pack — its name, count or region — is written in this file,
@@ -22,8 +23,8 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Meta } from '../../ui/primitives'
 import { PackCard } from './pack-card'
 import { resolve } from '../../data/localized'
-import { fetchPackIndex } from '../../data/pack-index'
-import { downloadPack, fetchManifest, type Progress } from '../../data/pack-download'
+import { fetchPublishedPacks, type PublishedPack } from './published-packs'
+import { downloadPack, type Progress } from '../../data/pack-download'
 import { fetchPackPreview, type PackPreview } from '../../data/pack-preview'
 import { setActivePackId } from '../../data/db'
 import type { PackManifest } from '../../data/pack-manifest'
@@ -47,23 +48,27 @@ export function PackOnboarding() {
   const [progress, setProgress] = useState<Progress | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
 
+  /** Every pack on offer — the same set, and so the same count, as the library. */
+  const [published, setPublished] = useState<PublishedPack[]>([])
+
   // Manifests come from the packs named by the published index — or the
-  // bundled fallback when the index cannot be fetched. Previews are
+  // bundled fallback when the index cannot be fetched. The featured cards are
+  // drawn from that same list, so nothing is fetched twice. Previews are
   // best-effort and never gate the cards.
   useEffect(() => {
     const ac = new AbortController()
     let cancelled = false
     void (async () => {
-      const { featured } = await fetchPackIndex()
-      const found = await Promise.all(
-        featured.map(async (id) => {
-          const res = await fetchManifest(packBaseUrl(id))
-          if (!res.ok) return null
-          const preview = await fetchPackPreview(packBaseUrl(id), 3, ac.signal)
-          return { id, manifest: res.manifest, preview }
-        }),
-      )
-      if (!cancelled) setOffers(found.filter(Boolean) as Offer[])
+      const { index, packs } = await fetchPublishedPacks()
+      if (cancelled) return
+      setPublished(packs)
+      const featured = index.featured
+        .map((id) => packs.find((p) => p.id === id))
+        .filter((p): p is PublishedPack => p !== undefined)
+      const found = await Promise.all(featured.map(async ({ id, manifest }) => ({
+        id, manifest, preview: await fetchPackPreview(packBaseUrl(id), 3, ac.signal),
+      })))
+      if (!cancelled) setOffers(found)
     })()
     return () => { cancelled = true; ac.abort() }
   }, [])
@@ -92,7 +97,7 @@ export function PackOnboarding() {
     setProgress(null)
   }
 
-  const totalSpecies = offers.reduce((n, o) => n + o.manifest.speciesCount, 0)
+  const totalSpecies = published.reduce((n, p) => n + p.manifest.speciesCount, 0)
 
   /*
    * Interleave the packs so the band is not one taxon then the other, and cap
@@ -109,7 +114,7 @@ export function PackOnboarding() {
     <div className="scroll-y" style={{ height: '100%', width: '100%' }}>
       <div className="column" style={{ paddingBottom: 'var(--space-8)' }}>
 
-        <Hero plates={plates} totalSpecies={totalSpecies} packCount={offers.length} />
+        <Hero plates={plates} totalSpecies={totalSpecies} packCount={published.length} />
 
         <div style={{ padding: '0 var(--gutter-sm)' }}>
           {problem && (
@@ -229,7 +234,7 @@ function Hero({ plates, totalSpecies, packCount }: {
           {t('onboarding.lede')}
         </p>
 
-        {/* Real figures, summed from the manifests actually on offer. */}
+        {/* Real figures, summed from every manifest the library would list. */}
         {totalSpecies > 0 && (
           <dl style={{
             display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2) var(--space-6)',

@@ -241,6 +241,7 @@ def merge_checklists(pack_key, out_dir):
         json.dump({
             "pack_id": pack_key,
             "region": cfg["region"],
+            "region_name": cfg["region_name"],
             "taxon_group": cfg["taxon_group"],
             "total_species": len(sorted_species),
             "species": sorted_species

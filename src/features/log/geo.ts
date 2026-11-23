@@ -3,7 +3,8 @@
  *
  * A save is NEVER blocked on a GPS state — a sighting with no fix is still a
  * sighting. Continuous tracking is the largest battery drain available to this
- * app and is deliberately absent.
+ * app and is deliberately absent. A position typed by hand is form state, not
+ * a GPS state: it has no accuracy, and must never be shown as a fix.
  */
 import { useCallback, useState } from 'react'
 
@@ -33,11 +34,7 @@ export function useGeo() {
     )
   }, [])
 
-  const setManual = useCallback((lat: number, lng: number) => {
-    setState({ kind: 'fixed', lat, lng, accuracy: 0 })
-  }, [])
-
   const clear = useCallback(() => setState({ kind: 'idle' }), [])
 
-  return { state, acquire, setManual, clear }
+  return { state, acquire, clear }
 }

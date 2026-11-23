@@ -11,14 +11,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { db, setActivePackId, getActivePackId, type StoredPack } from '../data/db'
-import { downloadPack, deletePack, fetchManifest, packReferenceCount, type Progress } from '../data/pack-download'
+import { downloadPack, deletePack, packReferenceCount, type Progress } from '../data/pack-download'
 import { previewUpdate } from '../data/pack-update'
 import { packBaseUrl } from '../features/guide/use-pack'
 import type { PackManifest } from '../data/pack-manifest'
 import { Button } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { PackCard } from '../features/guide/pack-card'
-import { fetchPackIndex } from '../data/pack-index'
+import { fetchPublishedPacks } from '../features/guide/published-packs'
 import { fetchPackPreview, type PackPreview } from '../data/pack-preview'
 import { resolve } from '../data/localized'
 import { formatNumber } from '../i18n/format'
@@ -56,7 +56,7 @@ export function Packs() {
    * whose remote manifests fail in turn — leaving exactly the installed set.
    */
   const refresh = useCallback(async () => {
-    const [packs, active, index] = await Promise.all([db.packs.toArray(), getActivePackId(), fetchPackIndex()])
+    const [packs, active, published] = await Promise.all([db.packs.toArray(), getActivePackId(), fetchPublishedPacks()])
     setInstalled(packs)
     setActiveId(active)
 
@@ -64,13 +64,15 @@ export function Packs() {
       packs.map((p) => [p.id, { id: p.id, manifest: p.manifest, local: true, preview: [] }]),
     )
 
-    for (const [i, id] of index.packs.entries()) {
-      const m = await fetchManifest(packBaseUrl(id))
-      // A failed fetch is the normal offline case, not an error: an installed
-      // entry already covers it, and one not installed simply cannot be
-      // downloaded right now.
-      if (m.ok) byId.set(id, { id, manifest: m.manifest, local: false, preview: [], catNo: i + 1 })
-      else if (byId.has(id)) byId.get(id)!.catNo = i + 1
+    for (const p of published.packs) {
+      byId.set(p.id, { id: p.id, manifest: p.manifest, local: false, preview: [], catNo: p.catNo })
+    }
+    // A failed fetch is the normal offline case, not an error: an installed
+    // entry already covers it (and keeps its catalogue number), and one not
+    // installed simply cannot be downloaded right now.
+    for (const [i, id] of published.index.packs.entries()) {
+      const entry = byId.get(id)
+      if (entry && entry.catNo === undefined) entry.catNo = i + 1
     }
 
     // Plates are decorative and best-effort; a pack lists with or without them.

@@ -11,7 +11,8 @@ import { useTranslation } from 'react-i18next'
 import { useSpecies } from '../features/guide/use-pack'
 import { useGeo } from '../features/log/geo'
 import { prepare, releasePreview, type CapturedPhoto } from '../features/log/photo-store'
-import { NOTES_MAX, QuotaError, retryPhotos, saveSighting } from '../features/log/sighting-repo'
+import { NOTES_MAX, parsePosition, QuotaError, retryPhotos, saveSighting } from '../features/log/sighting-repo'
+import { PositionFields } from '../features/log/position-fields'
 import { toLocalInput } from '../features/log/clock'
 import { activeTrip, listTrips, startTrip } from '../features/log/trip-repo'
 import type { Trip } from '../data/db'
@@ -41,6 +42,10 @@ export function LogSighting() {
   /** Set when the sighting committed but photos did not — retry photos only,
    *  never the whole save, which would mint a second record. */
   const [savedId, setSavedId] = useState<string | null>(null)
+
+  /** Non-null while the position is typed by hand; it then wins over GPS. */
+  const [manualPos, setManualPos] = useState<{ lat: string; lng: string } | null>(null)
+  const [posInvalid, setPosInvalid] = useState(false)
 
   /** Non-null while the user is naming a trip to create on save. */
   const [newTripName, setNewTripName] = useState<string | null>(null)
@@ -72,7 +77,18 @@ export function LogSighting() {
       return
     }
 
-    const fix = geo.state.kind === 'fixed' ? geo.state : null
+    let position: { lat: number; lng: number; accuracy?: number } | null = geo.state.kind === 'fixed' ? geo.state : null
+    if (manualPos) {
+      try {
+        // Typed by hand: no accuracy, and both empty means no position.
+        position = parsePosition(manualPos.lat, manualPos.lng)
+      } catch {
+        setPosInvalid(true)
+        setProblem(t('log.positionInvalid'))
+        setSaving(false)
+        return
+      }
+    }
     try {
       let useTripId = tripId
       if (newTripName !== null) {
@@ -88,9 +104,9 @@ export function LogSighting() {
         count,
         notes,
         at,
-        lat: fix?.lat,
-        lng: fix?.lng,
-        accuracy: fix?.accuracy,
+        lat: position?.lat,
+        lng: position?.lng,
+        accuracy: position?.accuracy,
         tripId: useTripId,
         photos,
       })
@@ -166,8 +182,24 @@ export function LogSighting() {
         </section>
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <FieldRow label={t('log.position')} value={<GeoValue geo={geo} />}
-            action={<Button variant="inline" onClick={geo.acquire}>{t('log.retry')}</Button>} />
+          <FieldRow
+            label={t('log.position')}
+            value={manualPos
+              ? <PositionFields lat={manualPos.lat} lng={manualPos.lng} invalid={posInvalid}
+                  onChange={(next) => { setManualPos(next); setPosInvalid(false) }} />
+              : <GeoValue geo={geo} />}
+            action={manualPos
+              ? <Button variant="inline" onClick={() => { setManualPos(null); setPosInvalid(false); geo.acquire() }}>{t('log.useGps')}</Button>
+              : (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <Button variant="inline" onClick={geo.acquire}>{t('log.retry')}</Button>
+                  <Button variant="inline" onClick={() => {
+                    // Start from the fix when there is one: correcting it is the common case.
+                    const s = geo.state
+                    setManualPos(s.kind === 'fixed' ? { lat: s.lat.toFixed(6), lng: s.lng.toFixed(6) } : { lat: '', lng: '' })
+                  }}>{t('log.enterPosition')}</Button>
+                </div>
+              )} />
 
           <FieldRow
             label={t('log.time')}

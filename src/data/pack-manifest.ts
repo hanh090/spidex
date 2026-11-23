@@ -142,11 +142,11 @@ export const zSpeciesRecord = z.object({
   sciName: z.string().min(1),
   commonNames: zLocalizedText,
   family: z.string().min(1),
-  traits: z.record(z.union([z.string(), z.array(z.string())])),
+  traits: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
   keyFeatures: z.array(zLocalizedText).default([]),
   habitat: zLocalizedText.optional(),
   /** Values for the pack's declared `sections`, keyed by section key. */
-  taxonFields: z.record(zLocalizedText).default({}),
+  taxonFields: z.record(z.string(), zLocalizedText).default({}),
   similarTo: z.array(z.string()).default([]),
   /** Months present/flying, 1-12. */
   months: z.array(z.number().int().min(1).max(12)).default([]),

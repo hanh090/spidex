@@ -71,3 +71,19 @@ export function fromLocalInput(value: string): number | null {
   const d = new Date(value)
   return Number.isNaN(+d) ? null : +d
 }
+
+/**
+ * Format an instant for a datetime-local input as wall time at a given UTC
+ * offset. Editing a saved sighting uses its OWN recorded offset, so a record
+ * made in Hanoi and corrected at home keeps the Hanoi time it was seen at.
+ */
+export function toZonedInput(at: number, offsetMinutes: number): string {
+  return new Date(at + offsetMinutes * 60_000).toISOString().slice(0, 16)
+}
+
+/** Parse `YYYY-MM-DDTHH:mm` as wall time at a given UTC offset. */
+export function fromZonedInput(value: string, offsetMinutes: number): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null
+  const utc = Date.parse(`${value}:00Z`)
+  return Number.isNaN(utc) ? null : utc - offsetMinutes * 60_000
+}

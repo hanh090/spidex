@@ -47,24 +47,13 @@ const router = createBrowserRouter([
       { path: '*', element: <NotFound /> },
     ],
   },
-], {
-  // Opt into the v7 behaviours now so the upgrade is a no-op and the console
-  // stays free of deprecation warnings. None of these routes use data APIs,
-  // fetchers or relative links inside the splat route.
-  future: {
-    v7_relativeSplatPath: true,
-    v7_fetcherPersist: true,
-    v7_normalizeFormMethod: true,
-    v7_partialHydration: true,
-    v7_skipActionErrorRevalidation: true,
-  },
-})
+])
 
 export function App() {
   return (
     <AuthProvider>
       <SyncTriggers />
-      <RouterProvider router={router} future={{ v7_startTransition: true }} />
+      <RouterProvider router={router} />
     </AuthProvider>
   )
 }
