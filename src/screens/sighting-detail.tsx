@@ -11,13 +11,14 @@ import { useTranslation } from 'react-i18next'
 import { db, type Photo, type Sighting } from '../data/db'
 import { canViewSighting } from '../features/auth/scope'
 import { photosFor } from '../features/log/photo-store'
-import { deleteSighting, resolveSpecies, updateSighting } from '../features/log/sighting-repo'
+import { deleteSighting, editPatch, NOTES_MAX, resolveSpecies, updateSighting } from '../features/log/sighting-repo'
 import { useActivePack } from '../features/guide/use-pack'
 import { Plate } from '../features/guide/species-grid'
 import { search } from '../data/search-index'
 import { resolve } from '../data/localized'
-import { Button, Meta, Badge } from '../ui/primitives'
+import { Button, EmptyState, Meta, Badge } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
+import { PlateViewer } from '../ui/lightbox'
 import { formatObservedDate, formatTime } from '../i18n/format'
 
 export function SightingDetail() {
@@ -26,9 +27,12 @@ export function SightingDetail() {
   const navigate = useNavigate()
   const { species: all, baseUrl } = useActivePack()
 
-  const [sighting, setSighting] = useState<Sighting | null>(null)
+  // undefined while the lookup runs, null when there is nothing to show.
+  const [sighting, setSighting] = useState<Sighting | null | undefined>(undefined)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [picking, setPicking] = useState(false)
+  // A draft while editing; null when the record is shown read-only.
+  const [draft, setDraft] = useState<{ notes: string; count: number } | null>(null)
   const [query, setQuery] = useState('')
 
   useEffect(() => {
@@ -52,8 +56,22 @@ export function SightingDetail() {
     return all.filter((s) => rank.has(s.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!)
   }, [all, query])
 
-  if (!sighting) return null
+  if (sighting === undefined) return null
 
+  // A deleted record, a stale link or another account's id: say so and offer
+  // the way back, rather than leaving a blank screen with no navigation.
+  if (sighting === null) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
+        <NavBar fallback="/sightings" />
+        <EmptyState
+          title={t('sightings.notFound')}
+          fix={t('sightings.notFoundFix')}
+          action={<Button variant="secondary" onClick={() => navigate('/sightings', { replace: true })}>{t('sightings.title')}</Button>}
+        />
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
@@ -62,7 +80,7 @@ export function SightingDetail() {
       <div className="column" style={{ padding: 'var(--space-3) var(--gutter-sm) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {photos.length > 0 && (
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-            {photos.map((p) => <PhotoThumb key={p.id} photo={p} />)}
+            {photos.map((p, i) => <PhotoThumb key={p.id} photo={p} index={i + 1} />)}
           </div>
         )}
 
@@ -72,17 +90,53 @@ export function SightingDetail() {
           </div>
         )}
 
-        {sighting.notes && <p className="t-body" style={{ margin: 0 }}>{sighting.notes}</p>}
+        {draft ? (
+          <>
+            <section>
+              <div style={{ marginBottom: 'var(--space-2)' }}><Meta>{t('log.notes')}</Meta></div>
+              <textarea
+                value={draft.notes}
+                onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+                rows={4}
+                maxLength={NOTES_MAX}
+                autoFocus
+                aria-label={t('log.notes')}
+                placeholder={t('log.notesPlaceholder')}
+                style={{
+                  width: '100%', padding: 'var(--space-3)', background: 'var(--paper)',
+                  border: 'var(--hair) solid var(--line)', font: 'var(--type-body)',
+                  color: 'var(--ink)', resize: 'vertical',
+                }}
+              />
+            </section>
+            <section style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Meta>{t('log.count')}</Meta>
+              <div style={{ display: 'flex', border: 'var(--hair) solid var(--line)', width: 'fit-content' }}>
+                <button onClick={() => setDraft({ ...draft, count: Math.max(1, draft.count - 1) })} aria-label={t('log.decrease')}
+                  style={{ minWidth: 'var(--tap-min)', minHeight: 'var(--tap-min)', color: 'var(--ink)' }}>−</button>
+                <span className="t-money" style={{
+                  minWidth: 56, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderInline: 'var(--hair) solid var(--line)',
+                }}>{draft.count}</span>
+                <button onClick={() => setDraft({ ...draft, count: draft.count + 1 })} aria-label={t('log.increase')}
+                  style={{ minWidth: 'var(--tap-min)', minHeight: 'var(--tap-min)', color: 'var(--ink)' }}>+</button>
+              </div>
+            </section>
+          </>
+        ) : (
+          sighting.notes && <p className="t-body" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{sighting.notes}</p>
+        )}
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
           <Meta>{formatObservedDate(sighting.at, sighting.tzOffsetMinutes)} · {formatTime(sighting.at, sighting.tzOffsetMinutes)}</Meta>
+          <Meta>{t('fieldLog.lifeTimes', { count: sighting.count })}</Meta>
           {sighting.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
           {sighting.lat != null && (
             <Meta>{sighting.lat.toFixed(4)}, {sighting.lng!.toFixed(4)}</Meta>
           )}
         </div>
 
-        {!sighting.speciesId && !picking && (
+        {!sighting.speciesId && !picking && !draft && (
           <Button variant="primary" full onClick={() => setPicking(true)}>{t('sightings.resolve')}</Button>
         )}
 
@@ -116,30 +170,78 @@ export function SightingDetail() {
 
       <div style={{ flex: 1 }} />
 
-      <div className="column" style={{ flex: 'none', padding: 'var(--space-6) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))', display: 'flex', gap: 'var(--space-2)' }}>
-        <Button variant="secondary" onClick={async () => {
-          await updateSighting(sighting.id, { count: sighting.count + 1 })
-          setSighting({ ...sighting, count: sighting.count + 1 })
-        }}>{t('sightings.addOne', { count: sighting.count })}</Button>
-        <Button variant="inline" onClick={async () => {
-          // One mis-tap in the field would otherwise destroy untouched originals.
-          if (!confirm(t('sightings.deleteConfirm'))) return
-          await deleteSighting(sighting.id)
-          navigate('/sightings', { replace: true })
-        }}>{t('sightings.delete')}</Button>
+      <div className="column" style={{ flex: 'none', padding: 'var(--space-6) var(--gutter-sm) max(var(--space-4), calc(var(--space-2) + env(safe-area-inset-bottom)))', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+        {draft ? (
+          <>
+            <Button variant="primary" onClick={async () => {
+              const patch = editPatch(sighting, draft)
+              if (patch) {
+                await updateSighting(sighting.id, patch)
+                setSighting({ ...sighting, ...patch })
+              }
+              setDraft(null)
+            }}>{t('sightings.saveEdit')}</Button>
+            <Button variant="inline" onClick={() => setDraft(null)}>{t('sightings.cancelEdit')}</Button>
+          </>
+        ) : (
+          <>
+            <Button variant="secondary" onClick={async () => {
+              await updateSighting(sighting.id, { count: sighting.count + 1 })
+              setSighting({ ...sighting, count: sighting.count + 1 })
+            }}>{t('sightings.addOne')}</Button>
+            <Button variant="secondary" onClick={() => setDraft({ notes: sighting.notes, count: sighting.count })}>
+              {t('sightings.edit')}
+            </Button>
+            <Button variant="inline" onClick={async () => {
+              // One mis-tap in the field would otherwise destroy untouched originals.
+              if (!confirm(t('sightings.deleteConfirm'))) return
+              await deleteSighting(sighting.id)
+              navigate('/sightings', { replace: true })
+            }}>{t('sightings.delete')}</Button>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
-function PhotoThumb({ photo }: { photo: Photo }) {
-  const [url, setUrl] = useState<string>()
+/**
+ * A thumbnail that opens the photo full screen. A field photo is evidence for
+ * an identification, and the detail that settles it is rarely legible at 96px.
+ * The viewer shows the untouched original, falling back to the derived copy.
+ */
+function PhotoThumb({ photo, index }: { photo: Photo; index: number }) {
+  const { t } = useTranslation()
+  const [thumb, setThumb] = useState<string>()
+  const [full, setFull] = useState<string>()
+  const [open, setOpen] = useState(false)
+
   useEffect(() => {
     const u = URL.createObjectURL(photo.derived)
-    setUrl(u)
+    setThumb(u)
     return () => URL.revokeObjectURL(u)
   }, [photo])
-  return url
-    ? <img src={url} alt="" style={{ width: 96, height: 96, objectFit: 'cover', border: 'var(--hair) solid var(--line)' }} />
-    : null
+
+  // The original can be several megabytes: only materialise it while viewing.
+  useEffect(() => {
+    if (!open) return
+    const u = URL.createObjectURL(photo.original ?? photo.derived)
+    setFull(u)
+    return () => { URL.revokeObjectURL(u); setFull(undefined) }
+  }, [open, photo])
+
+  if (!thumb) return null
+  const alt = t('sightings.photoAlt', { n: index })
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label={t('sightings.viewPhoto', { n: index })}
+        style={{ padding: 0, background: 'none', display: 'block', cursor: 'zoom-in' }}
+      >
+        <img src={thumb} alt={alt} style={{ display: 'block', width: 96, height: 96, objectFit: 'cover', border: 'var(--hair) solid var(--line)' }} />
+      </button>
+      {open && full && <PlateViewer src={full} alt={alt} onClose={() => setOpen(false)} />}
+    </>
+  )
 }

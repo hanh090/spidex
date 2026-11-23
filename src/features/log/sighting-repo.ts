@@ -198,6 +198,26 @@ export async function updateSighting(id: string, patch: Partial<Sighting>): Prom
   })
 }
 
+/** The sync API rejects longer notes, so the forms stop there. */
+export const NOTES_MAX = 5000
+
+/**
+ * What an edit of the notes and count actually changes, or null when nothing
+ * did. Saving an untouched form must not bump the version: that would queue a
+ * pointless upload and could raise a sync conflict against another device.
+ */
+export function editPatch(
+  current: Pick<Sighting, 'notes' | 'count'>,
+  draft: { notes: string; count: number },
+): Partial<Pick<Sighting, 'notes' | 'count'>> | null {
+  const notes = draft.notes.trim().slice(0, NOTES_MAX)
+  const count = Number.isFinite(draft.count) ? Math.max(1, Math.floor(draft.count)) : current.count
+  const patch: Partial<Pick<Sighting, 'notes' | 'count'>> = {}
+  if (notes !== current.notes) patch.notes = notes
+  if (count !== current.count) patch.count = count
+  return Object.keys(patch).length ? patch : null
+}
+
 /**
  * Tombstone rather than hard-delete: the photo rows hold untouched originals,
  * and Phase 6 union-merges tombstones across devices.

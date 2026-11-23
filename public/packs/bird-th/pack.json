@@ -1,17 +1,17 @@
 {
   "id": "bird-th",
   "name": {
-    "en": "Birds of TH",
-    "vi": "Chim TH"
+    "en": "Birds of Thailand",
+    "vi": "Chim Thái Lan"
   },
   "taxonGroup": "aves",
-  "region": "TH",
+  "region": "Thailand",
   "version": 6,
   "license": "CC-BY-SA-4.0",
   "sources": [
     "GBIF Occurrence Backbone (api.gbif.org)",
     "iNaturalist Research Grade Observations",
-    "Official Biodiversity Checklist of TH"
+    "Official Biodiversity Checklist of Thailand"
   ],
   "speciesCount": 1493,
   "sizeBytes": {

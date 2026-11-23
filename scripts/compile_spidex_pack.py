@@ -72,13 +72,23 @@ def infer_bird_traits(family, genus, sci_name):
         "colour": ["black", "white"] if "corvidae" in fam else ["brown", "green"]
     }
 
+# ISO 3166-1 alpha-2 code -> (English name, Vietnamese name). A code missing
+# here is used as given, so add the country before compiling its first pack.
+REGION_NAMES = {
+    "VN": ("Vietnam", "Việt Nam"),
+    "TH": ("Thailand", "Thái Lan"),
+    "MY": ("Malaysia", "Malaysia"),
+    "SG": ("Singapore", "Singapore"),
+}
+
 def compile_pack(checklist_path, output_base_dir="public/packs"):
     with open(checklist_path, "r", encoding="utf-8") as f:
         data = json.load(f)
         
     pack_id = data["pack_id"]
     taxon_group = data["taxon_group"]
-    region = data["region"]
+    # Checklists carry an ISO country code; the pack is named for people.
+    region, region_vi = REGION_NAMES.get(data["region"], (data["region"], data["region"]))
     species_raw = data["species"]
     
     pack_dir = os.path.join(output_base_dir, pack_id)
@@ -89,7 +99,7 @@ def compile_pack(checklist_path, output_base_dir="public/packs"):
     if taxon_group == "lepidoptera":
         pack_name = {
             "en": f"Butterflies of {region}",
-            "vi": f"Bướm {region}"
+            "vi": f"Bướm {region_vi}"
         }
         trait_schema = {
             "traits": [
@@ -146,7 +156,7 @@ def compile_pack(checklist_path, output_base_dir="public/packs"):
     else:  # Aves
         pack_name = {
             "en": f"Birds of {region}",
-            "vi": f"Chim {region}"
+            "vi": f"Chim {region_vi}"
         }
         trait_schema = {
             "traits": [

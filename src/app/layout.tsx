@@ -149,7 +149,7 @@ export function Layout() {
       */}
       {isMainTab && (
         <nav
-          aria-label={t('nav.menu')}
+          aria-label={t('nav.tabs')}
           style={{
             flex: 'none', width: '100%', display: 'flex', background: 'var(--paper)',
             borderTop: 'var(--hair) solid var(--ink)',

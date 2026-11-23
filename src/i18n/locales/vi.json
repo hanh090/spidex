@@ -147,7 +147,8 @@
     "explore": "Khám phá",
     "identify": "Định danh",
     "menu": "Menu",
-    "sightings": "Ghi nhận"
+    "sightings": "Ghi nhận",
+    "tabs": "Các mục chính"
   },
   "net": {
     "offline": "Ngoại tuyến",
@@ -243,7 +244,17 @@
     "trip": "Chuyến đi",
     "tripActive": "Đang trong chuyến",
     "tripNone": "Chưa có chuyến",
-    "unidentified": "Chưa xác định"
+    "unidentified": "Chưa xác định",
+    "notFound": "Ghi nhận này không còn tồn tại.",
+    "notFoundFix": "Có thể nó đã bị xoá, hoặc thuộc về một tài khoản khác.",
+    "edit": "Sửa",
+    "saveEdit": "Lưu thay đổi",
+    "cancelEdit": "Huỷ",
+    "search": "Tìm trong ghi nhận…",
+    "searchNone": "Không có ghi nhận nào khớp",
+    "searchNoneFix": "Thử tên loài hoặc một từ trong ghi chú, hoặc xoá ô tìm kiếm.",
+    "viewPhoto": "Xem ảnh {{n}} toàn màn hình",
+    "photoAlt": "Ảnh ghi nhận {{n}}"
   },
   "species": {
     "compare": "So sánh",

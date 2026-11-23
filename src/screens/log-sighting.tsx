@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { useSpecies } from '../features/guide/use-pack'
 import { useGeo } from '../features/log/geo'
 import { prepare, releasePreview, type CapturedPhoto } from '../features/log/photo-store'
-import { QuotaError, retryPhotos, saveSighting } from '../features/log/sighting-repo'
+import { NOTES_MAX, QuotaError, retryPhotos, saveSighting } from '../features/log/sighting-repo'
 import { toLocalInput } from '../features/log/clock'
 import { activeTrip, listTrips, startTrip } from '../features/log/trip-repo'
 import type { Trip } from '../data/db'
@@ -155,6 +155,7 @@ export function LogSighting() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
+            maxLength={NOTES_MAX}
             placeholder={t('log.notesPlaceholder')}
             style={{
               width: '100%', padding: 'var(--space-3)', background: 'var(--paper)',
