@@ -12,7 +12,7 @@ import { signSession } from '../../../../functions/lib/session'
 import { createMemoryStore } from '../../../../functions/lib/memory-store'
 import { syncNow, getSyncCounts, badgeFor } from '../engine'
 import { getConflict, keepMine, keepServer, listConflicts } from '../conflict'
-import { deleteSighting } from '../../log/sighting-repo'
+import { deleteSighting, editDraftFrom, editPatch, updateSighting } from '../../log/sighting-repo'
 
 const SECRET = 's3cret'
 const ORIGIN = 'https://x.test'
@@ -143,6 +143,44 @@ describe('push then pull', () => {
     expect(store.state.sightings[s.id]!.deleted_at).not.toBeNull()
     expect(await db.syncQueue.count()).toBe(0)
     expect(await db.sightings.get(s.id)).toBeUndefined() // not resurrected by the pull
+  })
+})
+
+describe('editing time, position and trip', () => {
+  it('syncs the edit, and a cleared position leaves the server copy and other devices too', async () => {
+    const s = sighting({ lat: 21.0285, lng: 105.8542, accuracy: 9, tripId: 'trip-a' })
+    await db.sightings.put(s)
+    const fetchFn = routedFetch(store, A)
+    await syncNow(A, { fetchFn })
+
+    const synced = (await db.sightings.get(s.id))!
+    const newAt = s.at - 2 * 3600_000
+    const draft = {
+      ...editDraftFrom(synced),
+      time: new Date(newAt + synced.tzOffsetMinutes * 60_000).toISOString().slice(0, 16),
+      lat: '', lng: '', tripId: 'trip-b',
+    }
+    await updateSighting(s.id, editPatch(synced, draft)!)
+    const report = await syncNow(A, { fetchFn })
+    expect(report).toMatchObject({ ok: true, pushed: 1, stale: 0 })
+
+    const row = store.state.sightings[s.id]!
+    const payload = JSON.parse(row.payload)
+    expect(payload.at).toBe(Math.floor(newAt / 60_000) * 60_000)
+    expect(payload.tripId).toBe('trip-b')
+    expect(payload).not.toHaveProperty('lat')
+    expect(payload).not.toHaveProperty('lng')
+    expect(payload).not.toHaveProperty('accuracy')
+    expect(row.client_version).toBe(2)
+
+    // A second device pulls the edited record.
+    await db.sightings.clear()
+    await db.meta.clear()
+    await syncNow(A, { fetchFn })
+    const pulled = (await db.sightings.get(s.id))!
+    expect(pulled.at).toBe(payload.at)
+    expect(pulled.tripId).toBe('trip-b')
+    expect(pulled.lat).toBeUndefined()
   })
 })
 

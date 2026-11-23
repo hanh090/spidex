@@ -14,7 +14,7 @@
 import { db, getInstallId, type Photo, type Sighting, type StoredSpecies } from '../../data/db'
 import { getActiveUserId, visibleSightings } from '../auth/scope'
 import { requestPersist } from '../../lib/storage'
-import { assessClock, tzOffsetMinutes } from './clock'
+import { assessClock, fromZonedInput, toZonedInput, tzOffsetMinutes } from './clock'
 import { softDelete, toRow, type CapturedPhoto } from './photo-store'
 import { recordUserDataCounts } from '../../data/integrity'
 import { resolve } from '../../data/localized'
@@ -202,19 +202,119 @@ export async function updateSighting(id: string, patch: Partial<Sighting>): Prom
 export const NOTES_MAX = 5000
 
 /**
- * What an edit of the notes and count actually changes, or null when nothing
- * did. Saving an untouched form must not bump the version: that would queue a
- * pointless upload and could raise a sync conflict against another device.
+ * The edit form's fields, held as the raw strings the inputs show.
+ *
+ * Comparing strings, not parsed values, is what keeps an untouched save a
+ * no-op: the time input only holds minutes while `at` holds milliseconds, so
+ * a parsed round-trip would differ from the stored value and spend a version.
+ */
+export interface EditDraft {
+  notes: string
+  count: number
+  /** `YYYY-MM-DDTHH:mm`, in the sighting's own recorded offset. */
+  time?: string
+  /** Decimal degrees; both empty means "no position". */
+  lat?: string
+  lng?: string
+  /** '' means no trip. */
+  tripId?: string
+}
+
+/** The sync API rejects an `at` outside these bounds; the form stops there too. */
+export const EARLIEST_AT = Date.UTC(2000, 0, 1)
+const MAX_FUTURE_MS = 24 * 3600 * 1000
+
+/** Raised when an edited field could not be saved as typed. */
+export class SightingEditError extends Error {
+  constructor(public readonly field: 'time' | 'position') {
+    super(`invalid-${field}`)
+    this.name = 'SightingEditError'
+  }
+}
+
+/** The edit form, prefilled from a stored record. */
+export function editDraftFrom(s: Pick<Sighting, 'notes' | 'count' | 'at' | 'tzOffsetMinutes' | 'lat' | 'lng' | 'tripId'>): Required<EditDraft> {
+  return {
+    notes: s.notes,
+    count: s.count,
+    time: toZonedInput(s.at, s.tzOffsetMinutes),
+    lat: s.lat == null ? '' : String(s.lat),
+    lng: s.lng == null ? '' : String(s.lng),
+    tripId: s.tripId ?? '',
+  }
+}
+
+/**
+ * A typed position, or null for "no position". Throws when only one half is
+ * given or either is out of range: the sync API would reject the record, and
+ * a stored latitude without a longitude breaks every screen that shows it.
+ */
+export function parsePosition(lat: string, lng: string): { lat: number; lng: number } | null {
+  const a = lat.trim()
+  const b = lng.trim()
+  if (!a && !b) return null
+  // A decimal comma is how de and vi write numbers.
+  const la = Number(a.replace(',', '.'))
+  const lo = Number(b.replace(',', '.'))
+  if (!a || !b || !Number.isFinite(la) || !Number.isFinite(lo) || Math.abs(la) > 90 || Math.abs(lo) > 180) {
+    throw new SightingEditError('position')
+  }
+  return { lat: la, lng: lo }
+}
+
+type Editable = Pick<Sighting, 'notes' | 'count' | 'at' | 'tzOffsetMinutes' | 'clockConfidence' | 'lat' | 'lng' | 'accuracy' | 'tripId'>
+
+/**
+ * What an edit actually changes, or null when nothing did. Saving an untouched
+ * form must not bump the version: that would queue a pointless upload and
+ * could raise a sync conflict against another device.
+ *
+ * Fields the draft leaves out are not edited. A cleared position or trip is
+ * returned as an explicit `undefined`, which removes the stored value.
  */
 export function editPatch(
-  current: Pick<Sighting, 'notes' | 'count'>,
-  draft: { notes: string; count: number },
-): Partial<Pick<Sighting, 'notes' | 'count'>> | null {
+  current: Pick<Sighting, 'notes' | 'count'> & Partial<Editable>,
+  draft: EditDraft,
+  now = Date.now(),
+): Partial<Editable> | null {
   const notes = draft.notes.trim().slice(0, NOTES_MAX)
   const count = Number.isFinite(draft.count) ? Math.max(1, Math.floor(draft.count)) : current.count
-  const patch: Partial<Pick<Sighting, 'notes' | 'count'>> = {}
+  const patch: Partial<Editable> = {}
   if (notes !== current.notes) patch.notes = notes
   if (count !== current.count) patch.count = count
+
+  if (draft.time !== undefined && current.at !== undefined) {
+    const offset = current.tzOffsetMinutes ?? 0
+    if (draft.time !== toZonedInput(current.at, offset)) {
+      const at = fromZonedInput(draft.time, offset)
+      if (at === null || at < EARLIEST_AT || at > now + MAX_FUTURE_MS) throw new SightingEditError('time')
+      patch.at = at
+      // The time is now the observer's own statement, not the device clock's,
+      // so a "check time" warning about that clock no longer applies.
+      if (current.clockConfidence === 'suspect') patch.clockConfidence = 'trusted'
+    }
+  }
+
+  if (draft.lat !== undefined || draft.lng !== undefined) {
+    const was = { lat: current.lat == null ? '' : String(current.lat), lng: current.lng == null ? '' : String(current.lng) }
+    const lat = draft.lat ?? was.lat
+    const lng = draft.lng ?? was.lng
+    if (lat.trim() !== was.lat || lng.trim() !== was.lng) {
+      const pos = parsePosition(lat, lng)
+      // "10.50" for a stored 10.5 is the same place, not an edit.
+      if (pos?.lat !== current.lat || pos?.lng !== current.lng) {
+        patch.lat = pos?.lat
+        patch.lng = pos?.lng
+        // Typed by hand: there is no GPS accuracy to report.
+        patch.accuracy = undefined
+      }
+    }
+  }
+
+  if (draft.tripId !== undefined && (draft.tripId || undefined) !== current.tripId) {
+    patch.tripId = draft.tripId || undefined
+  }
+
   return Object.keys(patch).length ? patch : null
 }
 

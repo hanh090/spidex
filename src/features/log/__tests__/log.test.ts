@@ -7,9 +7,10 @@
  * across a timezone boundary, and pack delete keeping sightings.
  */
 import { describe, it, expect, beforeEach } from 'vitest'
-import { db, speciesUid, type StoredSpecies } from '../../../data/db'
+import { db, speciesUid, type Sighting, type StoredSpecies } from '../../../data/db'
 import {
-  buildSighting, deleteSighting, editPatch, groupByDay, listNeedsId, NOTES_MAX, resolveSpecies, saveSighting, updateSighting,
+  buildSighting, deleteSighting, editDraftFrom, editPatch, groupByDay, listNeedsId, NOTES_MAX, parsePosition, resolveSpecies,
+  saveSighting, SightingEditError, updateSighting,
 } from '../sighting-repo'
 import { buildLifeList } from '../life-list'
 import { generalize, toCsv, toGeoJson } from '../export'
@@ -120,6 +121,94 @@ describe('editing a sighting', () => {
     expect(long?.notes).toHaveLength(NOTES_MAX)
   })
 })
+
+describe('editing time, position and trip', () => {
+  // Seen at 06:15:42.123 on 3 Oct 2026 in Hanoi (UTC+7): 23:15:42 UTC on the 2nd.
+  const SEEN = Date.UTC(2026, 9, 2, 23, 15, 42, 123)
+  const NOW = Date.UTC(2026, 10, 23)
+  const base = {
+    notes: 'on a reed', count: 2, at: SEEN, tzOffsetMinutes: 420, clockConfidence: 'trusted' as const,
+    lat: 21.028511234, lng: 105.854212345, accuracy: 12, tripId: 'trip-a',
+  }
+
+  it('saving the prefilled form changes nothing, even with sub-minute time and full GPS precision', () => {
+    // The time input holds minutes and the stored value milliseconds: a parsed
+    // round-trip would differ and spend a version on every untouched save.
+    expect(editDraftFrom(base).time).toBe('2026-10-03T06:15')
+    expect(editPatch(base, editDraftFrom(base), NOW)).toBeNull()
+    expect(editPatch(base, { ...editDraftFrom(base), lat: '21.028511234 ', lng: '105.854212345' }, NOW)).toBeNull()
+  })
+
+  it("edits the time as wall time at the sighting's own offset, not this device's", () => {
+    const patch = editPatch(base, { ...editDraftFrom(base), time: '2026-10-03T05:40' }, NOW)
+    expect(patch).toEqual({ at: Date.UTC(2026, 9, 2, 22, 40) })
+    // Still the 3rd where it was seen, so it stays in the same day group.
+    const [day] = groupByDay([{ ...base, ...patch } as Sighting])
+    expect(day!.key).toBe('2026-10-03')
+  })
+
+  it('clears the clock warning once the observer has set the time', () => {
+    const suspect = { ...base, clockConfidence: 'suspect' as const }
+    expect(editPatch(suspect, { ...editDraftFrom(suspect), time: '2026-10-03T07:00' }, NOW))
+      .toEqual({ at: Date.UTC(2026, 9, 3, 0, 0), clockConfidence: 'trusted' })
+    // An edit that leaves the time alone does not vouch for it.
+    expect(editPatch(suspect, { ...editDraftFrom(suspect), notes: 'x' }, NOW)).toEqual({ notes: 'x' })
+  })
+
+  it('refuses a time the sync API would reject', () => {
+    const at = (time: string) => () => editPatch(base, { ...editDraftFrom(base), time }, NOW)
+    expect(at('1999-12-31T23:00')).toThrow(SightingEditError)
+    expect(at('2026-11-25T12:00')).toThrow(SightingEditError)
+    expect(at('')).toThrow(SightingEditError)
+  })
+
+  it('sets a typed position with no accuracy, and clears one when both fields are emptied', () => {
+    const none = { ...base, lat: undefined, lng: undefined, accuracy: undefined }
+    expect(editPatch(none, { ...editDraftFrom(none), lat: '10,7626', lng: ' 106.6602' }, NOW))
+      .toEqual({ lat: 10.7626, lng: 106.6602, accuracy: undefined })
+
+    const cleared = editPatch(base, { ...editDraftFrom(base), lat: '', lng: ' ' }, NOW)
+    expect(cleared).toEqual({ lat: undefined, lng: undefined, accuracy: undefined })
+    expect(Object.keys(cleared!)).toEqual(['lat', 'lng', 'accuracy'])
+  })
+
+  it('refuses half a position or one out of range', () => {
+    expect(() => parsePosition('21.0', '')).toThrow(SightingEditError)
+    expect(() => parsePosition('91', '105')).toThrow(SightingEditError)
+    expect(() => parsePosition('21', '-181')).toThrow(SightingEditError)
+    expect(() => parsePosition('north', '105')).toThrow(SightingEditError)
+    expect(parsePosition(' ', '')).toBeNull()
+  })
+
+  it('moves a sighting to another trip, or out of any trip', () => {
+    expect(editPatch(base, { ...editDraftFrom(base), tripId: 'trip-b' }, NOW)).toEqual({ tripId: 'trip-b' })
+    expect(editPatch(base, { ...editDraftFrom(base), tripId: '' }, NOW)).toEqual({ tripId: undefined })
+  })
+
+  it('persists all three, removes cleared values from the record, and queues it for sync', async () => {
+    const { id } = await saveSighting({
+      species: species(), count: 1, notes: '', at: SEEN, lat: 21.0285, lng: 105.8542, accuracy: 9, tripId: 'trip-a', photos: [],
+    })
+    await db.sightings.update(id, { syncState: 'synced' })
+    const before = (await db.sightings.get(id))!
+
+    const draft = { ...editDraftFrom(before), time: toInput(before, Date.UTC(2026, 9, 3, 1, 5)), lat: '', lng: '', tripId: 'trip-b' }
+    await updateSighting(id, editPatch(before, draft, NOW)!)
+
+    const after = (await db.sightings.get(id))!
+    expect(after.at).toBe(Date.UTC(2026, 9, 3, 1, 5))
+    expect(after.tripId).toBe('trip-b')
+    expect('lat' in after || 'lng' in after || 'accuracy' in after).toBe(false)
+    expect(after.tzOffsetMinutes).toBe(before.tzOffsetMinutes)
+    expect(after.clientVersion).toBe(before.clientVersion + 1)
+    expect(after.syncState).toBe('local')
+  })
+})
+
+/** The datetime-local value that means `at` on this record's own clock. */
+function toInput(s: { tzOffsetMinutes: number }, at: number): string {
+  return new Date(at + s.tzOffsetMinutes * 60_000).toISOString().slice(0, 16)
+}
 
 describe('deleteSighting', () => {
   it('tombstones the photos instead of destroying the originals', async () => {

@@ -121,16 +121,21 @@
     "count": "Số lượng",
     "decrease": "Bớt một",
     "denied": "Đã tắt định vị — lưu không kèm vị trí",
+    "enterPosition": "Nhập thủ công",
     "fixed": "Đã định vị · ±{{m}} m",
     "geoUnavailable": "Máy không hỗ trợ định vị",
     "increase": "Thêm một",
-    "noFix": "Không định vị được — vẫn lưu",
+    "latitude": "Vĩ độ",
+    "longitude": "Kinh độ",
+    "noFix": "Không có GPS — nhập thủ công, hoặc lưu không kèm vị trí",
     "noPosition": "Không có vị trí",
     "notes": "Ghi chú",
     "notesPlaceholder": "Kích cỡ, màu, tập tính, đang đậu ở đâu…",
     "originalsKept": "Ảnh gốc được giữ trên máy",
     "photos": "Ảnh",
     "position": "Vị trí",
+    "positionHint": "Độ thập phân, ví dụ 21.0285, 105.8542. Để trống cả hai nếu không có vị trí.",
+    "positionInvalid": "Kiểm tra vị trí: vĩ độ từ −90 đến 90, kinh độ từ −180 đến 180, điền cả hai hoặc để trống cả hai.",
     "quota": "Hết dung lượng: {{count}} ảnh chưa được lưu. Ghi nhận vẫn được giữ.",
     "quota_other": "Hết dung lượng: {{count}} ảnh chưa được lưu. Ghi nhận vẫn được giữ.",
     "resolveLater": "Định danh sau tại trại — không cần sóng",
@@ -139,7 +144,8 @@
     "save": "Lưu ghi nhận",
     "saveFailed": "Không lưu được. Hãy giải phóng dung lượng rồi thử lại.",
     "saveToNeedsId": "Lưu vào mục chưa rõ",
-    "time": "Thời gian"
+    "time": "Thời gian",
+    "useGps": "Dùng GPS"
   },
   "nav": {
     "back": "Quay lại",
@@ -254,7 +260,9 @@
     "searchNone": "Không có ghi nhận nào khớp",
     "searchNoneFix": "Thử tên loài hoặc một từ trong ghi chú, hoặc xoá ô tìm kiếm.",
     "viewPhoto": "Xem ảnh {{n}} toàn màn hình",
-    "photoAlt": "Ảnh ghi nhận {{n}}"
+    "photoAlt": "Ảnh ghi nhận {{n}}",
+    "timeInvalid": "Thời gian này không hợp lệ cho một lần quan sát. Hãy kiểm tra ngày.",
+    "timeZoneNote": "Giờ địa phương nơi quan sát ({{offset}})"
   },
   "species": {
     "compare": "So sánh",

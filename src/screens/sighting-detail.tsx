@@ -8,10 +8,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { db, type Photo, type Sighting } from '../data/db'
+import { db, type Photo, type Sighting, type Trip } from '../data/db'
 import { canViewSighting } from '../features/auth/scope'
 import { photosFor } from '../features/log/photo-store'
-import { deleteSighting, editPatch, NOTES_MAX, resolveSpecies, updateSighting } from '../features/log/sighting-repo'
+import {
+  deleteSighting, editDraftFrom, editPatch, EARLIEST_AT, NOTES_MAX, resolveSpecies, SightingEditError, updateSighting,
+  type EditDraft,
+} from '../features/log/sighting-repo'
+import { toZonedInput } from '../features/log/clock'
+import { listTrips } from '../features/log/trip-repo'
+import { PositionFields } from '../features/log/position-fields'
 import { useActivePack } from '../features/guide/use-pack'
 import { Plate } from '../features/guide/species-grid'
 import { search } from '../data/search-index'
@@ -32,7 +38,9 @@ export function SightingDetail() {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [picking, setPicking] = useState(false)
   // A draft while editing; null when the record is shown read-only.
-  const [draft, setDraft] = useState<{ notes: string; count: number } | null>(null)
+  const [draft, setDraft] = useState<Required<EditDraft> | null>(null)
+  const [editError, setEditError] = useState<'time' | 'position' | null>(null)
+  const [trips, setTrips] = useState<Trip[]>([])
   const [query, setQuery] = useState('')
 
   useEffect(() => {
@@ -43,9 +51,11 @@ export function SightingDetail() {
       // Another account's record is not this person's to open, even by URL.
       const visible = s && (await canViewSighting(s)) ? s : undefined
       const ph = visible ? await photosFor(id) : []
+      const tr = visible ? await listTrips() : []
       if (cancelled) return
       setSighting(visible ?? null)
       setPhotos(ph)
+      setTrips(tr)
     })()
     return () => { cancelled = true }
   }, [id])
@@ -57,6 +67,9 @@ export function SightingDetail() {
   }, [all, query])
 
   if (sighting === undefined) return null
+
+  const trip = sighting?.tripId ? trips.find((tr) => tr.id === sighting.tripId) : undefined
+  const tripName = trip ? (trip.name || t('fieldLog.tripUntitled')) : null
 
   // A deleted record, a stale link or another account's id: say so and offer
   // the way back, rather than leaving a blank screen with no navigation.
@@ -122,6 +135,45 @@ export function SightingDetail() {
                   style={{ minWidth: 'var(--tap-min)', minHeight: 'var(--tap-min)', color: 'var(--ink)' }}>+</button>
               </div>
             </section>
+            <section>
+              <div style={{ marginBottom: 'var(--space-2)' }}><Meta>{t('log.time')}</Meta></div>
+              {/* Wall time where it was seen: the record's own offset, not this device's. */}
+              <input
+                type="datetime-local"
+                value={draft.time}
+                min={toZonedInput(EARLIEST_AT, sighting.tzOffsetMinutes)}
+                onChange={(e) => { setDraft({ ...draft, time: e.target.value }); setEditError(null) }}
+                aria-label={t('log.time')}
+                aria-invalid={editError === 'time' || undefined}
+                style={fieldStyle}
+              />
+              <div style={{ marginTop: 'var(--space-1)' }}>
+                <Meta tone={editError === 'time' ? 'warn' : undefined}>
+                  {editError === 'time' ? t('sightings.timeInvalid') : t('sightings.timeZoneNote', { offset: formatOffset(sighting.tzOffsetMinutes) })}
+                </Meta>
+              </div>
+            </section>
+            <section>
+              <div style={{ marginBottom: 'var(--space-2)' }}><Meta>{t('log.position')}</Meta></div>
+              <PositionFields
+                lat={draft.lat}
+                lng={draft.lng}
+                invalid={editError === 'position'}
+                onChange={(next) => { setDraft({ ...draft, ...next }); setEditError(null) }}
+              />
+            </section>
+            <section>
+              <div style={{ marginBottom: 'var(--space-2)' }}><Meta>{t('fieldLog.logTrip')}</Meta></div>
+              <select
+                value={draft.tripId}
+                onChange={(e) => setDraft({ ...draft, tripId: e.target.value })}
+                aria-label={t('fieldLog.logTrip')}
+                style={fieldStyle}
+              >
+                <option value="">{t('fieldLog.logNoTrip')}</option>
+                {trips.map((tr) => <option key={tr.id} value={tr.id}>{tr.name || t('fieldLog.tripUntitled')}</option>)}
+              </select>
+            </section>
           </>
         ) : (
           sighting.notes && <p className="t-body" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{sighting.notes}</p>
@@ -131,9 +183,10 @@ export function SightingDetail() {
           <Meta>{formatObservedDate(sighting.at, sighting.tzOffsetMinutes)} · {formatTime(sighting.at, sighting.tzOffsetMinutes)}</Meta>
           <Meta>{t('fieldLog.lifeTimes', { count: sighting.count })}</Meta>
           {sighting.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
-          {sighting.lat != null && (
-            <Meta>{sighting.lat.toFixed(4)}, {sighting.lng!.toFixed(4)}</Meta>
+          {sighting.lat != null && sighting.lng != null && (
+            <Meta>{sighting.lat.toFixed(4)}, {sighting.lng.toFixed(4)}</Meta>
           )}
+          {tripName && <Meta>{tripName}</Meta>}
         </div>
 
         {!sighting.speciesId && !picking && !draft && (
@@ -174,14 +227,20 @@ export function SightingDetail() {
         {draft ? (
           <>
             <Button variant="primary" onClick={async () => {
-              const patch = editPatch(sighting, draft)
+              let patch: ReturnType<typeof editPatch>
+              try {
+                patch = editPatch(sighting, draft)
+              } catch (e) {
+                if (e instanceof SightingEditError) { setEditError(e.field); return }
+                throw e
+              }
               if (patch) {
                 await updateSighting(sighting.id, patch)
                 setSighting({ ...sighting, ...patch })
               }
               setDraft(null)
             }}>{t('sightings.saveEdit')}</Button>
-            <Button variant="inline" onClick={() => setDraft(null)}>{t('sightings.cancelEdit')}</Button>
+            <Button variant="inline" onClick={() => { setDraft(null); setEditError(null) }}>{t('sightings.cancelEdit')}</Button>
           </>
         ) : (
           <>
@@ -189,7 +248,7 @@ export function SightingDetail() {
               await updateSighting(sighting.id, { count: sighting.count + 1 })
               setSighting({ ...sighting, count: sighting.count + 1 })
             }}>{t('sightings.addOne')}</Button>
-            <Button variant="secondary" onClick={() => setDraft({ notes: sighting.notes, count: sighting.count })}>
+            <Button variant="secondary" onClick={() => setDraft(editDraftFrom(sighting))}>
               {t('sightings.edit')}
             </Button>
             <Button variant="inline" onClick={async () => {
@@ -203,6 +262,19 @@ export function SightingDetail() {
       </div>
     </div>
   )
+}
+
+const fieldStyle: React.CSSProperties = {
+  display: 'block', width: '100%', minHeight: 'var(--tap-min)',
+  background: 'var(--paper)', border: 'var(--hair) solid var(--line)',
+  color: 'var(--ink)', padding: '0 var(--space-2)', font: 'var(--type-body)',
+}
+
+/** `UTC+07:00`, `UTC−03:30` — the zone a sighting's time is read in. */
+function formatOffset(minutes: number): string {
+  const sign = minutes < 0 ? '−' : '+'
+  const abs = Math.abs(minutes)
+  return `UTC${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`
 }
 
 /**

@@ -126,16 +126,21 @@
     "count": "Count",
     "decrease": "One fewer",
     "denied": "Location off — saved without a position",
+    "enterPosition": "Enter by hand",
     "fixed": "Fixed · ±{{m}} m",
     "geoUnavailable": "No location on this device",
     "increase": "One more",
-    "noFix": "No fix — saved without a position",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "noFix": "No GPS fix — enter it by hand, or save without one",
     "noPosition": "No position",
     "notes": "Notes",
     "notesPlaceholder": "Size, colour, behaviour, what it was on…",
     "originalsKept": "Originals kept on this device",
     "photos": "Photos",
     "position": "Position",
+    "positionHint": "Decimal degrees, e.g. 21.0285, 105.8542. Leave both empty for no position.",
+    "positionInvalid": "Check the position: latitude −90 to 90 and longitude −180 to 180, both filled in or both empty.",
     "quota": "Out of space: {{count}} photo(s) were not saved. The sighting was kept.",
     "quota_one": "Out of space: 1 photo was not saved. The sighting was kept.",
     "quota_other": "Out of space: {{count}} photos were not saved. The sighting was kept.",
@@ -145,7 +150,8 @@
     "save": "Save sighting",
     "saveFailed": "Could not save. Free up some space and try again.",
     "saveToNeedsId": "Save to Needs ID",
-    "time": "Time"
+    "time": "Time",
+    "useGps": "Use GPS"
   },
   "nav": {
     "back": "Back",
@@ -264,7 +270,9 @@
     "searchNone": "No sightings match",
     "searchNoneFix": "Try a species name or a word from your notes, or clear the search.",
     "viewPhoto": "View photo {{n}} full screen",
-    "photoAlt": "Sighting photo {{n}}"
+    "photoAlt": "Sighting photo {{n}}",
+    "timeInvalid": "That time is not possible for a sighting. Check the date.",
+    "timeZoneNote": "Local time where it was seen ({{offset}})"
   },
   "species": {
     "compare": "Compare",

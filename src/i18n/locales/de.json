@@ -126,16 +126,21 @@
     "count": "Anzahl",
     "decrease": "Eins weniger",
     "denied": "Ortung aus — ohne Position gespeichert",
+    "enterPosition": "Von Hand eingeben",
     "fixed": "Genau · ±{{m}} m",
     "geoUnavailable": "Keine Ortung auf diesem Gerät",
     "increase": "Eins mehr",
-    "noFix": "Keine Position — trotzdem gespeichert",
+    "latitude": "Breitengrad",
+    "longitude": "Längengrad",
+    "noFix": "Kein GPS-Fix — von Hand eingeben oder ohne Position speichern",
     "noPosition": "Keine Position",
     "notes": "Notizen",
     "notesPlaceholder": "Größe, Farbe, Verhalten, Sitzplatz…",
     "originalsKept": "Originale bleiben auf dem Gerät",
     "photos": "Fotos",
     "position": "Position",
+    "positionHint": "Dezimalgrad, z. B. 21,0285 und 105,8542. Beide leer lassen für keine Position.",
+    "positionInvalid": "Position prüfen: Breitengrad −90 bis 90, Längengrad −180 bis 180, beide ausgefüllt oder beide leer.",
     "quota": "Kein Speicher mehr: {{count}} Foto(s) wurden nicht gesichert. Die Beobachtung bleibt erhalten.",
     "quota_one": "Kein Speicher: 1 Foto wurde nicht gesichert. Die Beobachtung bleibt erhalten.",
     "quota_other": "Kein Speicher: {{count}} Fotos wurden nicht gesichert. Die Beobachtung bleibt erhalten.",
@@ -145,7 +150,8 @@
     "save": "Beobachtung speichern",
     "saveFailed": "Speichern nicht möglich. Schaffe Platz und versuche es erneut.",
     "saveToNeedsId": "Als unbestimmt speichern",
-    "time": "Zeit"
+    "time": "Zeit",
+    "useGps": "GPS verwenden"
   },
   "nav": {
     "back": "Zurück",
@@ -264,7 +270,9 @@
     "searchNone": "Keine passende Beobachtung",
     "searchNoneFix": "Versuche einen Artnamen oder ein Wort aus deinen Notizen, oder lösche die Suche.",
     "viewPhoto": "Foto {{n}} im Vollbild ansehen",
-    "photoAlt": "Beobachtungsfoto {{n}}"
+    "photoAlt": "Beobachtungsfoto {{n}}",
+    "timeInvalid": "Diese Zeit ist für eine Beobachtung nicht möglich. Bitte das Datum prüfen.",
+    "timeZoneNote": "Ortszeit am Beobachtungsort ({{offset}})"
   },
   "species": {
     "compare": "Vergleichen",
