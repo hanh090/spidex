@@ -153,7 +153,8 @@
     "explore": "Explore",
     "identify": "Identify",
     "menu": "Menu",
-    "sightings": "Sightings"
+    "sightings": "Sightings",
+    "tabs": "Main sections"
   },
   "net": {
     "offline": "Offline",
@@ -253,7 +254,9 @@
     "trip": "Trip",
     "tripActive": "Trip in progress",
     "tripNone": "No trip",
-    "unidentified": "Unidentified"
+    "unidentified": "Unidentified",
+    "notFound": "This sighting no longer exists.",
+    "notFoundFix": "It may have been deleted, or it belongs to another account."
   },
   "species": {
     "compare": "Compare",

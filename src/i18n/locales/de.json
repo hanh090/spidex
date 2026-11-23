@@ -153,7 +153,8 @@
     "explore": "Entdecken",
     "identify": "Bestimmen",
     "menu": "Menü",
-    "sightings": "Beobachtungen"
+    "sightings": "Beobachtungen",
+    "tabs": "Hauptbereiche"
   },
   "net": {
     "offline": "Offline",
@@ -253,7 +254,9 @@
     "trip": "Tour",
     "tripActive": "Tour läuft",
     "tripNone": "Keine Tour",
-    "unidentified": "Unbestimmt"
+    "unidentified": "Unbestimmt",
+    "notFound": "Diese Beobachtung gibt es nicht mehr.",
+    "notFoundFix": "Sie wurde vielleicht gelöscht oder gehört zu einem anderen Konto."
   },
   "species": {
     "compare": "Vergleichen",

@@ -154,7 +154,10 @@ export function Sightings() {
                         borderBottom: 'var(--hair) solid var(--line)', color: 'var(--ink)',
                       }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="t-name">{s.speciesSnapshot?.commonName ?? s.speciesId}</div>
+                          <div className="t-name">
+                            {s.speciesSnapshot?.commonName ?? s.speciesId}
+                            {s.count > 1 && <span className="t-meta" style={{ color: 'var(--ink-muted)' }}> × {formatNumber(s.count)}</span>}
+                          </div>
                           <div className="t-sci">{s.speciesSnapshot?.sciName}</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>

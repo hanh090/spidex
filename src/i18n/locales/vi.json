@@ -147,7 +147,8 @@
     "explore": "Khám phá",
     "identify": "Định danh",
     "menu": "Menu",
-    "sightings": "Ghi nhận"
+    "sightings": "Ghi nhận",
+    "tabs": "Các mục chính"
   },
   "net": {
     "offline": "Ngoại tuyến",
@@ -243,7 +244,9 @@
     "trip": "Chuyến đi",
     "tripActive": "Đang trong chuyến",
     "tripNone": "Chưa có chuyến",
-    "unidentified": "Chưa xác định"
+    "unidentified": "Chưa xác định",
+    "notFound": "Ghi nhận này không còn tồn tại.",
+    "notFoundFix": "Có thể nó đã bị xoá, hoặc thuộc về một tài khoản khác."
   },
   "species": {
     "compare": "So sánh",

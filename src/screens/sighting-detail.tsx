@@ -16,7 +16,7 @@ import { useActivePack } from '../features/guide/use-pack'
 import { Plate } from '../features/guide/species-grid'
 import { search } from '../data/search-index'
 import { resolve } from '../data/localized'
-import { Button, Meta, Badge } from '../ui/primitives'
+import { Button, EmptyState, Meta, Badge } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
 import { formatObservedDate, formatTime } from '../i18n/format'
 
@@ -26,7 +26,8 @@ export function SightingDetail() {
   const navigate = useNavigate()
   const { species: all, baseUrl } = useActivePack()
 
-  const [sighting, setSighting] = useState<Sighting | null>(null)
+  // undefined while the lookup runs, null when there is nothing to show.
+  const [sighting, setSighting] = useState<Sighting | null | undefined>(undefined)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [picking, setPicking] = useState(false)
   const [query, setQuery] = useState('')
@@ -52,8 +53,22 @@ export function SightingDetail() {
     return all.filter((s) => rank.has(s.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!)
   }, [all, query])
 
-  if (!sighting) return null
+  if (sighting === undefined) return null
 
+  // A deleted record, a stale link or another account's id: say so and offer
+  // the way back, rather than leaving a blank screen with no navigation.
+  if (sighting === null) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
+        <NavBar fallback="/sightings" />
+        <EmptyState
+          title={t('sightings.notFound')}
+          fix={t('sightings.notFoundFix')}
+          action={<Button variant="secondary" onClick={() => navigate('/sightings', { replace: true })}>{t('sightings.title')}</Button>}
+        />
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', width: '100%' }}>
@@ -76,6 +91,7 @@ export function SightingDetail() {
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
           <Meta>{formatObservedDate(sighting.at, sighting.tzOffsetMinutes)} · {formatTime(sighting.at, sighting.tzOffsetMinutes)}</Meta>
+          <Meta>{t('fieldLog.lifeTimes', { count: sighting.count })}</Meta>
           {sighting.clockConfidence === 'suspect' && <Badge tone="warn">{t('sightings.clockSuspect')}</Badge>}
           {sighting.lat != null && (
             <Meta>{sighting.lat.toFixed(4)}, {sighting.lng!.toFixed(4)}</Meta>
@@ -120,7 +136,7 @@ export function SightingDetail() {
         <Button variant="secondary" onClick={async () => {
           await updateSighting(sighting.id, { count: sighting.count + 1 })
           setSighting({ ...sighting, count: sighting.count + 1 })
-        }}>{t('sightings.addOne', { count: sighting.count })}</Button>
+        }}>{t('sightings.addOne')}</Button>
         <Button variant="inline" onClick={async () => {
           // One mis-tap in the field would otherwise destroy untouched originals.
           if (!confirm(t('sightings.deleteConfirm'))) return
