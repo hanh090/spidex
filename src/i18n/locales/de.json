@@ -125,7 +125,7 @@
     "addPhoto": "Hinzufügen",
     "count": "Anzahl",
     "decrease": "Eins weniger",
-    "denied": "Ortung aus — ohne Position gespeichert",
+    "denied": "Ortung aus — von Hand eingeben oder ohne Position speichern",
     "enterPosition": "Von Hand eingeben",
     "fixed": "Genau · ±{{m}} m",
     "geoUnavailable": "Keine Ortung auf diesem Gerät",

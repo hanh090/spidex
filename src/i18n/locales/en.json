@@ -125,7 +125,7 @@
     "addPhoto": "Add",
     "count": "Count",
     "decrease": "One fewer",
-    "denied": "Location off — saved without a position",
+    "denied": "Location off — enter it by hand, or save without one",
     "enterPosition": "Enter by hand",
     "fixed": "Fixed · ±{{m}} m",
     "geoUnavailable": "No location on this device",
