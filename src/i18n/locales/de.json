@@ -262,7 +262,9 @@
     "cancelEdit": "Abbrechen",
     "search": "Beobachtungen durchsuchen…",
     "searchNone": "Keine passende Beobachtung",
-    "searchNoneFix": "Versuche einen Artnamen oder ein Wort aus deinen Notizen, oder lösche die Suche."
+    "searchNoneFix": "Versuche einen Artnamen oder ein Wort aus deinen Notizen, oder lösche die Suche.",
+    "viewPhoto": "Foto {{n}} im Vollbild ansehen",
+    "photoAlt": "Beobachtungsfoto {{n}}"
   },
   "species": {
     "compare": "Vergleichen",

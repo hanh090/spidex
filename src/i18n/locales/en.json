@@ -262,7 +262,9 @@
     "cancelEdit": "Cancel",
     "search": "Search sightings…",
     "searchNone": "No sightings match",
-    "searchNoneFix": "Try a species name or a word from your notes, or clear the search."
+    "searchNoneFix": "Try a species name or a word from your notes, or clear the search.",
+    "viewPhoto": "View photo {{n}} full screen",
+    "photoAlt": "Sighting photo {{n}}"
   },
   "species": {
     "compare": "Compare",

@@ -252,7 +252,9 @@
     "cancelEdit": "Huỷ",
     "search": "Tìm trong ghi nhận…",
     "searchNone": "Không có ghi nhận nào khớp",
-    "searchNoneFix": "Thử tên loài hoặc một từ trong ghi chú, hoặc xoá ô tìm kiếm."
+    "searchNoneFix": "Thử tên loài hoặc một từ trong ghi chú, hoặc xoá ô tìm kiếm.",
+    "viewPhoto": "Xem ảnh {{n}} toàn màn hình",
+    "photoAlt": "Ảnh ghi nhận {{n}}"
   },
   "species": {
     "compare": "So sánh",

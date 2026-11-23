@@ -18,6 +18,7 @@ import { search } from '../data/search-index'
 import { resolve } from '../data/localized'
 import { Button, EmptyState, Meta, Badge } from '../ui/primitives'
 import { NavBar } from '../ui/nav-bar'
+import { PlateViewer } from '../ui/lightbox'
 import { formatObservedDate, formatTime } from '../i18n/format'
 
 export function SightingDetail() {
@@ -79,7 +80,7 @@ export function SightingDetail() {
       <div className="column" style={{ padding: 'var(--space-3) var(--gutter-sm) 0', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {photos.length > 0 && (
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-            {photos.map((p) => <PhotoThumb key={p.id} photo={p} />)}
+            {photos.map((p, i) => <PhotoThumb key={p.id} photo={p} index={i + 1} />)}
           </div>
         )}
 
@@ -204,14 +205,43 @@ export function SightingDetail() {
   )
 }
 
-function PhotoThumb({ photo }: { photo: Photo }) {
-  const [url, setUrl] = useState<string>()
+/**
+ * A thumbnail that opens the photo full screen. A field photo is evidence for
+ * an identification, and the detail that settles it is rarely legible at 96px.
+ * The viewer shows the untouched original, falling back to the derived copy.
+ */
+function PhotoThumb({ photo, index }: { photo: Photo; index: number }) {
+  const { t } = useTranslation()
+  const [thumb, setThumb] = useState<string>()
+  const [full, setFull] = useState<string>()
+  const [open, setOpen] = useState(false)
+
   useEffect(() => {
     const u = URL.createObjectURL(photo.derived)
-    setUrl(u)
+    setThumb(u)
     return () => URL.revokeObjectURL(u)
   }, [photo])
-  return url
-    ? <img src={url} alt="" style={{ width: 96, height: 96, objectFit: 'cover', border: 'var(--hair) solid var(--line)' }} />
-    : null
+
+  // The original can be several megabytes: only materialise it while viewing.
+  useEffect(() => {
+    if (!open) return
+    const u = URL.createObjectURL(photo.original ?? photo.derived)
+    setFull(u)
+    return () => { URL.revokeObjectURL(u); setFull(undefined) }
+  }, [open, photo])
+
+  if (!thumb) return null
+  const alt = t('sightings.photoAlt', { n: index })
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label={t('sightings.viewPhoto', { n: index })}
+        style={{ padding: 0, background: 'none', display: 'block', cursor: 'zoom-in' }}
+      >
+        <img src={thumb} alt={alt} style={{ display: 'block', width: 96, height: 96, objectFit: 'cover', border: 'var(--hair) solid var(--line)' }} />
+      </button>
+      {open && full && <PlateViewer src={full} alt={alt} onClose={() => setOpen(false)} />}
+    </>
+  )
 }
