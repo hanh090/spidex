@@ -65,7 +65,7 @@ export default defineConfig(({ mode }) => {
     })]),
   ],
   test: {
-    include: ['{src,functions,server}/**/*.{test,spec}.{ts,tsx}'],
+    include: ['{src,functions,server,scripts}/**/*.{test,spec}.{ts,tsx}'],
     environment: 'node',
     // Without this every Dexie path — save, quota recovery, pack delete,
     // integrity — is unexecuted by CI while the suite still reports green.
