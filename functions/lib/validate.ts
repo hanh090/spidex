@@ -62,7 +62,7 @@ export const oauthCallbackSchema = z.object({ code: z.string().min(1, 'Code requ
 
 // ---- admin ----
 
-const metaObject = z.record(z.unknown()).refine((m) => JSON.stringify(m).length <= 64 * 1024, 'meta is too large')
+const metaObject = z.record(z.string(), z.unknown()).refine((m) => JSON.stringify(m).length <= 64 * 1024, 'meta is too large')
 
 export const resourceCreateSchema = z.object({
   kind: z.string().trim().min(1, 'kind is required').max(64),
@@ -87,6 +87,6 @@ export const publishSchema = z.object({ published: z.boolean().optional() })
 export const submissionCreateSchema = z.object({
   packId: z.string().trim().min(1, 'packId is required').max(63),
   note: z.string().optional().transform((n) => (n ?? '').slice(0, 500)),
-  fileCount: z.number({ invalid_type_error: 'fileCount must be a number' }),
-  totalBytes: z.number({ invalid_type_error: 'totalBytes must be a number' }),
+  fileCount: z.number({ error: (iss) => (iss.input === undefined ? undefined : 'fileCount must be a number') }),
+  totalBytes: z.number({ error: (iss) => (iss.input === undefined ? undefined : 'totalBytes must be a number') }),
 })
