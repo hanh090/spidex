@@ -56,6 +56,13 @@ class ReleaseGateTests(unittest.TestCase):
         self.assertTrue(any("sourced identification traits" in issue for issue in issues))
         self.assertTrue(any("sourced markings and habitat" in issue for issue in issues))
 
+    def test_preview_rejects_restricted_plate_licence_even_with_open_reference(self):
+        row = {"sciName": "X y", "images": [{"thumbUrl": "img/x.jpg", "license": "CC-BY-NC"}],
+               "provenance": {"plate": {"referenceLicense": "cc-by-sa"}}}
+        issues = preview_content_issues("butterfly-th", {"traitSchema": {"traits": []}}, [row])
+        self.assertTrue(any("restricted media licence" in issue for issue in issues))
+        self.assertTrue(any("ShareAlike" in issue for issue in issues))
+
 
 if __name__ == "__main__":
     unittest.main()

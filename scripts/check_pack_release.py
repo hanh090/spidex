@@ -38,9 +38,17 @@ def preview_content_issues(pack_id: str, manifest: dict, species: list[dict]) ->
             issues.append(f"{name}: native status has no source")
         plate = provenance.get("plate") or {}
         reference = (plate.get("referenceLicense") or "").lower()
-        if any("archetype" not in image.get("thumbUrl", "") for image in row.get("images", [])):
+        displayed = [image for image in row.get("images", [])
+                     if "archetype" not in image.get("thumbUrl", "")]
+        if displayed:
             if reference not in {"cc-by", "cc-by-sa", "cc0", "pd"}:
                 issues.append(f"{name}: displayed plate lacks a documented derivative grant")
+            for image in displayed:
+                license_code = str(image.get("license", "")).upper()
+                if "-NC" in license_code or "-ND" in license_code:
+                    issues.append(f"{name}: displayed plate advertises a restricted media licence")
+                if reference == "cc-by-sa" and "BY-SA" not in license_code:
+                    issues.append(f"{name}: ShareAlike reference is not reflected in plate licence")
     if manifest.get("traitSchema", {}).get("traits") and not any(row.get("traits") for row in species):
         issues.append("manifest advertises an identification key without sourced traits")
     return issues
