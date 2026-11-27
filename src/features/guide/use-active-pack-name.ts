@@ -6,6 +6,7 @@
  * contradicts the app's own state.
  */
 import { useEffect, useState } from 'react'
+import { liveQuery } from 'dexie'
 import { db, getActivePackId } from '../../data/db'
 import { resolve } from '../../data/localized'
 import i18n from '../../i18n'
@@ -16,17 +17,25 @@ export function useActivePackName(): { name: string | null; loading: boolean } {
 
   useEffect(() => {
     let cancelled = false
-    const read = async () => {
+    const query = liveQuery(async () => {
       const id = await getActivePackId()
       const pack = id ? await db.packs.get(id) : undefined
-      if (cancelled) return
-      setName(pack ? resolve(pack.manifest.name) : null)
-      setLoading(false)
+      return pack?.manifest.name ?? null
+    })
+    let nameByLanguage: Parameters<typeof resolve>[0] | null = null
+    const translate = () => {
+      if (!cancelled) setName(nameByLanguage ? resolve(nameByLanguage) : null)
     }
-    void read()
-    // Re-resolve on language change so the pack name follows the UI language.
-    i18n.on('languageChanged', read)
-    return () => { cancelled = true; i18n.off('languageChanged', read) }
+    const subscription = query.subscribe({
+      next: (value) => {
+        nameByLanguage = value
+        translate()
+        if (!cancelled) setLoading(false)
+      },
+      error: () => { if (!cancelled) setLoading(false) },
+    })
+    i18n.on('languageChanged', translate)
+    return () => { cancelled = true; subscription.unsubscribe(); i18n.off('languageChanged', translate) }
   }, [])
 
   return { name, loading }

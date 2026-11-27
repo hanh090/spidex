@@ -13,7 +13,7 @@ my-pack/
   pack.json        manifest — metadata + the trait schema
   species.ndjson   one species record per line
   img/             plates, thumbnails, trait referent images
-  audio/           optional bundled audio (streaming URLs are preferred)
+  audio/           optional bundled audio (external streaming URLs need a connection)
 ```
 
 ### pack.json
