@@ -41,6 +41,7 @@ tsconfig.tsbuildinfo
 .wrangler/
 
 # Large exploration / comparison renders, not part of the app
+data/source-cache/
 # (regenerable from scripts/: generate_showcase_html, generate_dragonfly_preview,
 # generate_model_comparison_html, generate_vn_top100_showcase, generate_archetype_plates)
 museum_specimens/

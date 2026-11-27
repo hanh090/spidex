@@ -6,16 +6,17 @@
   },
   "taxonGroup": "aves",
   "region": "Thailand",
-  "version": 7,
+  "version": 8,
   "license": "Mixed; see item-level licences and provenance",
   "releaseStatus": "preview",
   "releaseNotes": {
-    "en": "Preview checklist: species-specific identification traits, habitat, seasonality and calls are not yet verified. Some plates are archetypes; photo-based plates with unclear or restricted reference rights are withheld pending review."
+    "en": "Preview checklist: AVONET supplies exact-match species habitat categories and measurements for part of the list. Visual identification traits, calls and seasonality remain unverified; absent fields mean no verified species-level source. Some plates are archetypes while rights review continues."
   },
   "sources": [
     "GBIF occurrence species facets and Backbone taxonomy (api.gbif.org)",
     "iNaturalist Thailand research-grade observation species counts (api.inaturalist.org)",
-    "Spidex merged candidate checklist; geographic occurrence and field accounts not expert-vetted"
+    "Spidex merged candidate checklist; geographic occurrence and field accounts not expert-vetted",
+    "AVONET species averages and ecological categories (Tobias et al. 2022; CC BY 4.0)"
   ],
   "speciesCount": 1493,
   "sizeBytes": {

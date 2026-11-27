@@ -20,6 +20,11 @@ TEMPLATE_TEXT = (
 SOURCE_AUDITED = {"bird-th", "butterfly-th", "butterfly-vn"}
 
 
+def has_species_source(provenance: dict, key: str) -> bool:
+    source = provenance.get(key) or {}
+    return bool(source.get("sourceUrl") or source.get("sourceUrls"))
+
+
 def preview_content_issues(pack_id: str, manifest: dict, species: list[dict]) -> list[str]:
     """Keep the source-backed preview migration from silently regressing."""
     if pack_id not in SOURCE_AUDITED:
@@ -28,13 +33,13 @@ def preview_content_issues(pack_id: str, manifest: dict, species: list[dict]) ->
     for row in species:
         name = row.get("sciName", row.get("id", "unknown"))
         provenance = row.get("provenance") or {}
-        if row.get("traits") and not (provenance.get("traits") or {}).get("sourceUrl"):
+        if row.get("traits") and not has_species_source(provenance, "traits"):
             issues.append(f"{name}: identification traits have no species-level source")
-        if (row.get("keyFeatures") or row.get("habitat") or row.get("taxonFields")) and not (provenance.get("content") or {}).get("sourceUrl"):
+        if (row.get("keyFeatures") or row.get("habitat") or row.get("taxonFields")) and not has_species_source(provenance, "content"):
             issues.append(f"{name}: field account has no species-level source")
-        if row.get("months") == list(range(1, 13)) and not (provenance.get("seasonality") or {}).get("sourceUrl"):
+        if row.get("months") == list(range(1, 13)) and not has_species_source(provenance, "seasonality"):
             issues.append(f"{name}: all-year seasonality has no source")
-        if row.get("status", {}).get("en") == "Native" and not (provenance.get("status") or {}).get("sourceUrl"):
+        if row.get("status", {}).get("en") == "Native" and not has_species_source(provenance, "status"):
             issues.append(f"{name}: native status has no source")
         plate = provenance.get("plate") or {}
         reference = (plate.get("referenceLicense") or "").lower()
@@ -82,10 +87,10 @@ def issues_for_pack(pack_id: str, manifest: dict, species: list[dict]) -> list[s
         name = row.get("sciName", row.get("id", "unknown"))
         if pack_id in SOURCE_AUDITED:
             provenance = row.get("provenance") or {}
-            if not row.get("traits") or not (provenance.get("traits") or {}).get("sourceUrl"):
+            if not row.get("traits") or not has_species_source(provenance, "traits"):
                 issues.append(f"{name}: complete guide requires sourced identification traits")
             if (not row.get("keyFeatures") or not row.get("habitat")
-                    or not (provenance.get("content") or {}).get("sourceUrl")):
+                    or not has_species_source(provenance, "content")):
                 issues.append(f"{name}: complete guide requires sourced markings and habitat")
         if row.get("family") in (None, "", "Unknown"):
             issues.append(f"{name}: family unknown")
