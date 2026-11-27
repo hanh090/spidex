@@ -32,9 +32,9 @@ export function SoundList({ sounds }: { sounds: SpeciesSound[] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-      {!online && (
-        <p className="t-meta" style={{ color: 'var(--warn)', margin: 0 }}>{t('species.soundsOffline')}</p>
-      )}
+      <p className="t-meta" role={!online ? 'status' : undefined} style={{ color: online ? 'var(--ink-muted)' : 'var(--warn)', margin: 0 }}>
+        {t(online ? 'species.soundsOnline' : 'species.soundsOffline')}
+      </p>
       {sounds.map((s) => (
         <SoundRow key={s.id} sound={s} enabled={online} />
       ))}
@@ -50,6 +50,12 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
   const [failed, setFailed] = useState(false)
 
   useEffect(() => () => { audio.current?.pause() }, [])
+  useEffect(() => {
+    if (!enabled) {
+      audio.current?.pause()
+      setPlaying(false)
+    }
+  }, [enabled])
 
   const fail = () => {
     // Drop the element so Retry builds a fresh one instead of reusing a
@@ -62,6 +68,7 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
   }
 
   const toggle = () => {
+    if (!enabled) return
     setFailed(false)
     if (!audio.current) {
       const el = new Audio(sound.url)
@@ -79,9 +86,11 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
     } else {
       const el = audio.current
       void el.play().then(() => setPlaying(true)).catch((e: unknown) => {
-        // Autoplay refusals and interrupted loads are not a broken recording.
-        if (audio.current === el && (el.error || (e as Error)?.name === 'NotSupportedError')) fail()
-        else setPlaying(false)
+        if (audio.current !== el) return
+        // User-gesture and pause interruptions are transient. A failed fetch,
+        // unsupported format, or other media error needs a visible Retry.
+        if (['NotAllowedError', 'AbortError'].includes((e as Error)?.name)) setPlaying(false)
+        else fail()
       })
     }
   }
@@ -133,7 +142,7 @@ function SoundRow({ sound, enabled }: { sound: SpeciesSound; enabled: boolean })
             <div style={{ width: `${progress * 100}%`, height: '100%', background: 'var(--accent)' }} />
           </div>
         </div>
-        {failed && (
+        {failed && enabled && (
           <div role="alert" className="t-meta" style={{ color: 'var(--warn)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             <span>{t('species.soundError')}</span>
             <button

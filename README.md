@@ -7,8 +7,8 @@
 **A field guide for the places with no signal.**
 
 An open catalogue of species packs — any taxon, any region, authored by
-anyone — with species accounts, identification keys, and voice recordings
-that live entirely on your phone.
+anyone — with species accounts and identification keys that live on your
+phone. Bird recordings stream from the source archive when online.
 
 [![CI](https://github.com/hanh090/spidex/actions/workflows/ci.yml/badge.svg)](https://github.com/hanh090/spidex/actions/workflows/ci.yml)
 [![Live](https://img.shields.io/badge/live-spidex--app.pages.dev-b8232c)](https://spidex-app.pages.dev)
@@ -30,7 +30,7 @@ identification key works with **zero connectivity**.
 | | |
 |---|---|
 | ![Onboarding — pick a checklist](docs/readme/01-home.png) | ![Pack library — regional checklists](docs/readme/03-library.png) |
-| *Download once. Everything lives on the device.* | *Each pack is a complete regional guide — specimens, keys, voices.* |
+| *Download once. Species and plates live on the device.* | *Regional guides include specimens and keys; bird recordings need a connection.* |
 
 </div>
 
@@ -42,8 +42,8 @@ identification key works with **zero connectivity**.
 - **Identify** — trait-based keys that narrow a sighting to a species, built
   for wet and gloved hands: oversized touch targets, sun-readable and
   red-shifted night themes
-- **Voice** — bird calls stream from [xeno-canto](https://xeno-canto.org) with
-  full recordist and licence attribution
+- **Voice** — bird calls stream online from [xeno-canto](https://xeno-canto.org)
+  with full recordist and licence attribution; they are not downloaded with a pack
 - **Sightings** — a personal field log with photos, GPS and a life list,
   stored locally; exportable to CSV/GeoJSON
 - **Packs** — species packs install to IndexedDB and stay usable offline; the
@@ -105,13 +105,18 @@ migrations/     D1 schema for the admin store
 **Offline contract.** Online, the library lists every pack in
 `packs/index.json`; a pack becomes usable when downloaded, and offline the
 library shows only what's installed. Removing a pack never removes your
-sightings.
+sightings. Installed species, keys, and downloaded plates work offline;
+bird recordings require a connection.
 
-**Bird voices.** `scripts/fetch_bird_voices.py` pulls CC-licensed recordings
-from the xeno-canto API into `data/voices/`, keeping only commercial-safe
-licences (CC BY, BY-SA, BY-ND, CC0 — NC is excluded so that any pack, including
-an author-priced one, can be distributed), then `apply_voices_to_pack.py` merges `sounds[]` into a pack's
-`species.ndjson`. Audio streams at playback — packs stay small.
+**Bird voices.** `scripts/fetch_bird_voices.py` pulls recording *metadata*
+from the xeno-canto API into `data/voices/`, retaining only CC BY, BY-SA,
+BY-ND and CC0 links; `apply_voices_to_pack.py` then merges `sounds[]` into
+`species.ndjson`. No audio is downloaded by this pipeline or pack install.
+The current bird packs link to 640 recordings totaling about 7.1 hours,
+roughly 409 MB at 128 kbps before storage overhead; their size labels do not
+include audio.
+The service worker caches pack media under `/packs/`, not the external
+xeno-canto URLs; audio has no offline playback guarantee.
 
 ## Deploy
 
