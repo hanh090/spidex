@@ -6,14 +6,16 @@
   },
   "taxonGroup": "lepidoptera",
   "region": "Thailand",
-  "version": 3,
-  "license": "CC-BY-SA-4.0",
+  "version": 4,
+  "license": "Mixed; see item-level licences and provenance",
   "releaseStatus": "preview",
-  "releaseNotes": {"en": "Identification and habitat text and trait keys are largely generic; some image metadata includes NonCommercial licences pending permissions review."},
+  "releaseNotes": {
+    "en": "Preview checklist: species-specific identification traits, habitat, seasonality and host plants are not yet verified. Some plates are archetypes; photo-based plates with unclear or restricted reference rights are withheld pending review."
+  },
   "sources": [
-    "GBIF Occurrence Backbone (api.gbif.org)",
-    "iNaturalist Research Grade Observations",
-    "Official Biodiversity Checklist of Thailand"
+    "GBIF occurrence species facets and Backbone taxonomy (api.gbif.org)",
+    "iNaturalist Thailand research-grade observation species counts (api.inaturalist.org)",
+    "Spidex merged candidate checklist; geographic occurrence and field accounts not expert-vetted"
   ],
   "speciesCount": 1119,
   "sizeBytes": {
@@ -22,162 +24,7 @@
   },
   "idRemap": [],
   "traitSchema": {
-    "traits": [
-      {
-        "key": "size",
-        "label": {
-          "en": "Wingspan",
-          "vi": "Sải cánh"
-        },
-        "type": "single",
-        "render": "chip",
-        "options": [
-          {
-            "v": "tiny",
-            "label": {
-              "en": "< 30 mm",
-              "vi": "< 30 mm"
-            }
-          },
-          {
-            "v": "small",
-            "label": {
-              "en": "30–50 mm",
-              "vi": "30–50 mm"
-            }
-          },
-          {
-            "v": "med",
-            "label": {
-              "en": "50–90 mm",
-              "vi": "50–90 mm"
-            }
-          },
-          {
-            "v": "large",
-            "label": {
-              "en": "> 90 mm",
-              "vi": "> 90 mm"
-            }
-          }
-        ]
-      },
-      {
-        "key": "colour",
-        "label": {
-          "en": "Main colour",
-          "vi": "Màu chính"
-        },
-        "type": "multi",
-        "render": "swatch",
-        "max": 3,
-        "options": [
-          {
-            "v": "black",
-            "hex": "#1b1713",
-            "label": {
-              "en": "Black",
-              "vi": "Đen"
-            }
-          },
-          {
-            "v": "white",
-            "hex": "#f6f2ea",
-            "label": {
-              "en": "White",
-              "vi": "Trắng"
-            }
-          },
-          {
-            "v": "gold",
-            "hex": "#d4a017",
-            "label": {
-              "en": "Gold",
-              "vi": "Vàng"
-            }
-          },
-          {
-            "v": "orange",
-            "hex": "#cf7a1e",
-            "label": {
-              "en": "Orange",
-              "vi": "Cam"
-            }
-          },
-          {
-            "v": "red",
-            "hex": "#b8232c",
-            "label": {
-              "en": "Red",
-              "vi": "Đỏ"
-            }
-          },
-          {
-            "v": "blue",
-            "hex": "#2f5fa8",
-            "label": {
-              "en": "Blue",
-              "vi": "Xanh"
-            }
-          },
-          {
-            "v": "brown",
-            "hex": "#5c3d2e",
-            "label": {
-              "en": "Brown",
-              "vi": "Nâu"
-            }
-          },
-          {
-            "v": "green",
-            "hex": "#3d7a44",
-            "label": {
-              "en": "Green",
-              "vi": "Xanh lục"
-            }
-          }
-        ]
-      },
-      {
-        "key": "pattern",
-        "label": {
-          "en": "Pattern",
-          "vi": "Hoa văn"
-        },
-        "type": "multi",
-        "render": "chip",
-        "options": [
-          {
-            "v": "spots",
-            "label": {
-              "en": "Spots",
-              "vi": "Đốm"
-            }
-          },
-          {
-            "v": "bands",
-            "label": {
-              "en": "Bands",
-              "vi": "Dải"
-            }
-          },
-          {
-            "v": "eyespots",
-            "label": {
-              "en": "Eyespots",
-              "vi": "Mắt giả"
-            }
-          },
-          {
-            "v": "plain",
-            "label": {
-              "en": "Plain",
-              "vi": "Trơn"
-            }
-          }
-        ]
-      }
-    ],
+    "traits": [],
     "aspects": {
       "required": [
         "dorsal"
