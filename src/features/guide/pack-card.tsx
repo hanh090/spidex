@@ -110,6 +110,13 @@ export function PackCard({
           )}
         </div>
 
+        {manifest.releaseStatus !== 'complete' && (
+          <p className="t-meta" style={{ margin: 0, color: 'var(--ink-muted)', textWrap: 'pretty' }}>
+            <strong>{t(manifest.releaseStatus === 'fixture' ? 'packs.fixtureLabel' : 'packs.previewLabel')}</strong>
+            {' · '}{manifest.releaseNotes ? resolve(manifest.releaseNotes) : t('packs.previewDefaultNote')}
+          </p>
+        )}
+
         {progress && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)', marginBottom: 6 }}>

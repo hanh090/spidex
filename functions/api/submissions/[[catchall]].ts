@@ -215,7 +215,7 @@ export const onRequest = async (context: any) => {
         issues.push({ path: 'species.ndjson', message: 'missing' })
       } else {
         const text = await ndjsonObj.text()
-        const check = checkSpeciesNdjson(text)
+        const check = checkSpeciesNdjson(text, manifest?.releaseStatus === 'complete')
         if (!check.count) issues.push({ path: 'species.ndjson', message: 'no species records' })
         for (const msg of check.issues) issues.push({ path: 'species.ndjson', message: msg })
         if (manifest && Number.isInteger(manifest.speciesCount) && check.count !== manifest.speciesCount) {

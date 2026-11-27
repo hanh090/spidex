@@ -26,6 +26,8 @@ my-pack/
   "region": "Global",               // free text — "Peru", "SE Asia", "Worldwide"
   "version": 1,
   "license": "CC BY-SA 4.0",        // licence for the pack's compiled content
+  "releaseStatus": "preview",       // default for older packs; never implies expert review
+  "releaseNotes": { "en": "Identification accounts are still being reviewed." },
   "sources": ["eBird/Clements 2024", "…"],
   "speciesCount": 132,              // must equal the line count of species.ndjson
   "sizeBytes": { "thumb": 12000000, "full": 48000000 },
@@ -43,6 +45,14 @@ identification traits (each with a `render`: `chip`, `swatch`, or
 `referent-image`), which image aspects every species must carry, and which
 extra sections species detail renders. Nothing in the app knows what a bird
 is — your schema does.
+
+Use `preview` while species accounts, traits, plates, or licences need review;
+explain concrete limitations in `releaseNotes.en`. A `complete` claim needs
+`contentReview` with a named reviewer and ISO date. The release and upload
+gates reject known template text, placeholder plates, unknown families, and
+NonCommercial image entries in packs marked complete. Passing these checks
+does not replace expert identification or permissions review. `fixture` packs
+are for tests and are excluded from the public catalogue.
 
 ### species.ndjson
 

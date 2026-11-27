@@ -9,6 +9,8 @@
   "region": "fixture",
   "version": 4,
   "license": "CC0-1.0",
+  "releaseStatus": "fixture",
+  "releaseNotes": {"en": "Test fixture for automated checks; not a field guide."},
   "sources": [
     "fixture — not real content"
   ],
