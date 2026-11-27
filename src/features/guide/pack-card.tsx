@@ -56,6 +56,7 @@ export function PackCard({
    */
   const [broken, setBroken] = useState<ReadonlySet<string>>(() => new Set())
   const usable = preview.filter((p) => !broken.has(p.url))
+  const uniqueArtwork = usable.filter((p, i) => usable.findIndex((other) => other.url === p.url) === i)
   const markBroken = (url: string) =>
     setBroken((prev) => (prev.has(url) ? prev : new Set(prev).add(url)))
 
@@ -88,7 +89,7 @@ export function PackCard({
 
       <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          {usable.length > 0 && <AvatarStack preview={usable} onError={markBroken} />}
+          {uniqueArtwork.length > 0 && <AvatarStack preview={uniqueArtwork} onError={markBroken} />}
           <div style={{ minWidth: 0, flex: 1 }}>
             <H className="t-heading" style={{ margin: 0, textWrap: 'balance' }}>{name}</H>
             <div className="t-meta" style={{ color: 'var(--ink-muted)', marginTop: 2 }}>

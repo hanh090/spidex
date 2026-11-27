@@ -1,6 +1,6 @@
 /**
- * A few real plates from a pack, for screens that show a pack before it is
- * installed.
+ * A few species and their available artwork from a pack, for screens that
+ * show a pack before it is installed.
  *
  * Reads small ranges of `species.ndjson` rather than pulling a 1.8MB catalogue
  * to show three thumbnails. A server that ignores Range returns the whole file,
@@ -8,15 +8,11 @@
  *
  * Two things this deliberately does NOT do naively:
  *
- *   - It skips archetype fallbacks. Butterflies of Vietnam carries 60 real
- *     plates against 1,429 species; everything else points at a shared
- *     `*-archetype-*` drawing. A preview built from those advertises the pack
- *     with three copies of one generic silhouette.
- *   - It does not always read from the top. The head of the file is the
- *     alphabetical start of the checklist, which for that pack is entirely
- *     archetypes — so the pack that most needed a good preview got the worst
- *     possible one. When the head yields too few real plates, it samples
- *     further in.
+ *   - It prefers species plates over archetypes. Some preview checklists now
+ *     contain only archetypes, so sample species must still remain visible.
+ *   - It does not always read from the top. The head of an alphabetical
+ *     checklist may contain only archetypes. When it yields too few species
+ *     plates, it samples further in.
  *
  * Preview art is decorative. Every failure path returns whatever it has, and
  * no caller may depend on it — a pack with no reachable preview must still be
@@ -98,14 +94,14 @@ export async function fetchPackPreview(
   const head = await readChunk(url, 0, signal)
   if (!head) return []
 
-  const seen = new Set<string>()
+  const seenSpecies = new Set<string>()
   const real: PackPreview[] = []
   const fallback: PackPreview[] = []
 
   const collect = (items: PackPreview[]) => {
     for (const item of items) {
-      if (seen.has(item.url)) continue
-      seen.add(item.url)
+      if (seenSpecies.has(item.sciName)) continue
+      seenSpecies.add(item.sciName)
       ;(item.archetype ? fallback : real).push(item)
     }
   }
