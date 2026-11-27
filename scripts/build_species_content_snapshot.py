@@ -288,6 +288,7 @@ def extract() -> dict:
                 "trophicNiche": bird.get("Trophic.Niche"),
                 "primaryLifestyle": bird.get("Primary.Lifestyle"),
                 "massG": valid_number(bird.get("Mass", "")),
+                "massSource": bird.get("Mass.Source"),
                 "wingLengthMm": valid_number(bird.get("Wing.Length", "")),
                 "beakLengthCulmenMm": valid_number(bird.get("Beak.Length_Culmen", "")),
                 "inference": bird.get("Inference"),

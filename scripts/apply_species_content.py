@@ -206,7 +206,7 @@ def apply_bird(row: dict, species: dict) -> Counter:
     features = []
     measurements = []
     if bird.get("inference") == "NO":
-        if bird.get("massG"):
+        if bird.get("massG") and bird.get("massSource") in {"Dunning", "Updated_literature", "Updated_live.sample", "DataFromSplit"}:
             measurements.append(f"mass {bird['massG']:g} g")
         if bird.get("wingLengthMm"):
             measurements.append(f"wing {bird['wingLengthMm']:g} mm")
