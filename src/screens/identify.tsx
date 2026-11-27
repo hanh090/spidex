@@ -53,6 +53,9 @@ export function Identify() {
   if (!pack || !schema) return <EmptyState title={t('identify.empty')} fix={t('identify.emptyFix')} />
 
   const traits = schema.traits
+  if (traits.length === 0) {
+    return <EmptyState title={t('identify.pendingTitle')} fix={t('identify.pendingFix')} />
+  }
   const done = step >= traits.length
 
   const restart = () => { setSelection(clearAll()); setStep(0); setShowResults(false) }

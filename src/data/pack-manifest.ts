@@ -73,7 +73,8 @@ export const zSection = z.object({
 export type Section = z.infer<typeof zSection>
 
 export const zTraitSchema = z.object({
-  traits: z.array(zTrait).min(1),
+  /** A source-backed checklist can intentionally have no identification key. */
+  traits: z.array(zTrait),
   aspects: zAspects,
   sections: z.array(zSection).default([]),
 })

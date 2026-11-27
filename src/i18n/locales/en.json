@@ -105,6 +105,8 @@
     "title": "Explore"
   },
   "identify": {
+    "pendingTitle": "Identification key pending",
+    "pendingFix": "This preview has no reviewed traits yet. Browse or search its species checklist instead.",
     "compareTop": "Compare the closest",
     "empty": "Nothing to narrow yet",
     "emptyFix": "Identify needs a pack mounted first.",

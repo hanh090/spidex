@@ -102,6 +102,8 @@
     "title": "Khám phá"
   },
   "identify": {
+    "pendingTitle": "Chưa có khóa định danh",
+    "pendingFix": "Gói xem trước chưa có đặc điểm được rà soát. Hãy duyệt hoặc tìm kiếm danh lục loài.",
     "compareTop": "So sánh gần nhất",
     "empty": "Chưa có gì để lọc",
     "emptyFix": "Cần tải một gói trước khi định danh.",

@@ -129,12 +129,14 @@ export function Explore() {
           )}
         </div>
 
-        <FilterChips
-          tags={tags}
-          hints={hints}
-          onOpenSheet={() => setSheetOpen(true)}
-          onClearAll={() => setSelection(clearAll())}
-        />
+        {schema.traits.length > 0 && (
+          <FilterChips
+            tags={tags}
+            hints={hints}
+            onOpenSheet={() => setSheetOpen(true)}
+            onClearAll={() => setSelection(clearAll())}
+          />
+        )}
         </div>
       </div>
 

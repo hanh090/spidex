@@ -105,6 +105,8 @@
     "title": "Entdecken"
   },
   "identify": {
+    "pendingTitle": "Bestimmungsschlüssel ausstehend",
+    "pendingFix": "Für diese Vorschau sind noch keine Merkmale geprüft. Durchsuchen Sie stattdessen die Artenliste.",
     "compareTop": "Ähnlichste vergleichen",
     "empty": "Noch nichts einzugrenzen",
     "emptyFix": "Zum Bestimmen muss zuerst ein Paket geladen sein.",
