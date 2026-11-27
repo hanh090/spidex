@@ -131,11 +131,14 @@ export function PackOnboarding() {
             </p>
           )}
 
-          <div style={{ marginBottom: 'var(--space-3)' }}>
+          <div className="pack-choose-row">
             <Meta>{t('onboarding.choose')}</Meta>
+            <Button variant="inline" onClick={() => navigate('/library')}>
+              {t('onboarding.browseAll')}
+            </Button>
           </div>
 
-          <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+          <div className="pack-grid">
             {offers.map((offer, i) => (
               <PackCard
                 key={offer.id}
@@ -162,11 +165,6 @@ export function PackOnboarding() {
             ))}
           </div>
 
-          <div style={{ marginTop: 'var(--space-6)', textAlign: 'center' }}>
-            <Button variant="inline" onClick={() => navigate('/library')}>
-              {t('onboarding.browseAll')}
-            </Button>
-          </div>
         </div>
       </div>
     </div>
@@ -243,7 +241,6 @@ function Hero({ plates, totalSpecies, packCount }: {
           }}>
             <Stat value={formatNumber(totalSpecies)} label={t('onboarding.statSpecies')} />
             <Stat value={formatNumber(packCount)} label={t('onboarding.statChecklists')} />
-            <Stat value={t('onboarding.statOfflineValue')} label={t('onboarding.statOffline')} />
           </dl>
         )}
       </div>

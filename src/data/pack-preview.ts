@@ -27,6 +27,7 @@ export interface PackPreview {
   /** Absolute URL, ready for src. */
   url: string
   sciName: string
+  commonName?: string
   /** Provenance of the plate — a photograph credit, or a drawing statement. */
   credit: string
   /** True when this is a shared fallback drawing rather than a real plate. */
@@ -68,6 +69,7 @@ function parse(text: string, baseUrl: string, dropFirstLine: boolean): PackPrevi
     try {
       const rec = JSON.parse(line) as {
         sciName?: string
+        commonNames?: { en?: string }
         images?: { thumbUrl?: string; credit?: string }[]
       }
       const img = rec.images?.[0]
@@ -75,6 +77,7 @@ function parse(text: string, baseUrl: string, dropFirstLine: boolean): PackPrevi
       out.push({
         url: `${baseUrl}/${img.thumbUrl}`,
         sciName: rec.sciName ?? '',
+        commonName: rec.commonNames?.en,
         credit: img.credit ?? '',
         archetype: /archetype/i.test(img.thumbUrl),
       })
