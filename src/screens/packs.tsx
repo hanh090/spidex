@@ -42,6 +42,8 @@ export function Packs() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [progress, setProgress] = useState<Record<string, Progress>>({})
   const [problem, setProblem] = useState<string | null>(null)
+  const [region, setRegion] = useState('')
+  const [taxon, setTaxon] = useState('')
 
 
   /**
@@ -137,8 +139,13 @@ export function Packs() {
     await refresh()
   }
 
-  const installedList = listed.filter((l) => installed.some((p) => p.id === l.id))
-  const availableList = listed.filter((l) => !installed.some((p) => p.id === l.id))
+  const regions = [...new Set(listed.map((entry) => entry.manifest.region))].sort()
+  const taxa = [...new Set(listed.map((entry) => entry.manifest.taxonGroup))].sort()
+  const visible = listed.filter((entry) =>
+    (!region || entry.manifest.region === region) && (!taxon || entry.manifest.taxonGroup === taxon),
+  )
+  const installedList = visible.filter((l) => installed.some((p) => p.id === l.id))
+  const availableList = visible.filter((l) => !installed.some((p) => p.id === l.id))
 
   const renderCard = (entry: Listed) => {
     const localPack = installed.find((p) => p.id === entry.id)
@@ -217,7 +224,7 @@ export function Packs() {
       <NavBar title={t('packs.title')} />
 
       <div
-        className="scroll-y column"
+        className="scroll-y pack-library"
         style={{
           flex: 1, width: '100%',
           padding: 'var(--space-4) var(--gutter-sm)',
@@ -230,6 +237,26 @@ export function Packs() {
         <p className="t-body" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-6)', textWrap: 'pretty' }}>
           {t('packs.lede')}
         </p>
+
+        {listed.length > 0 && (
+          <div className="pack-filters" role="group" aria-label={t('packs.filterLabel')}>
+            <label>
+              <span className="t-meta">{t('packs.regionFilter')}</span>
+              <select value={region} onChange={(event) => setRegion(event.target.value)}>
+                <option value="">{t('packs.allRegions')}</option>
+                {regions.map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <label>
+              <span className="t-meta">{t('packs.taxonFilter')}</span>
+              <select value={taxon} onChange={(event) => setTaxon(event.target.value)}>
+                <option value="">{t('packs.allTaxa')}</option>
+                {taxa.map((value) => <option key={value} value={value}>{t(`packs.taxon.${value}`, { defaultValue: value })}</option>)}
+              </select>
+            </label>
+            <span className="t-meta" role="status">{t('packs.showing', { count: visible.length })}</span>
+          </div>
+        )}
 
         {problem && (
           <p
@@ -250,7 +277,7 @@ export function Packs() {
             <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
               {t('packs.onThisDevice', { count: installedList.length, n: formatNumber(installedList.length) })}
             </h2>
-            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+            <div className="pack-grid">
               {installedList.map(renderCard)}
             </div>
           </section>
@@ -261,7 +288,7 @@ export function Packs() {
             <h2 className="t-meta" style={{ color: 'var(--ink-muted)', margin: '0 0 var(--space-3)' }}>
               {t('packs.available')}
             </h2>
-            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+            <div className="pack-grid">
               {availableList.map(renderCard)}
             </div>
           </section>
@@ -269,6 +296,9 @@ export function Packs() {
 
         {listed.length === 0 && (
           <p className="t-body" style={{ color: 'var(--ink-muted)' }}>{t('packs.noneListed')}</p>
+        )}
+        {listed.length > 0 && visible.length === 0 && (
+          <p className="t-body">{t('packs.noMatches')}</p>
         )}
 
         {/* The catalogue is open: any signed-in author can publish a pack. */}

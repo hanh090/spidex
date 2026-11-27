@@ -46,6 +46,7 @@ export function PackCard({
 }: PackCardProps) {
   const { t } = useTranslation()
   const name = resolve(manifest.name)
+  const DetailHeading = H === 'h2' ? 'h3' : 'h4'
 
   /*
    * A plate URL can 404 — a catalogue entry whose images were never shipped
@@ -162,6 +163,33 @@ export function PackCard({
           </p>
         )}
 
+        <details className="pack-details">
+          <summary>{t('packs.previewDetails')}</summary>
+          <div className="pack-details-content">
+            {preview.length > 0 && (
+              <div>
+                <DetailHeading className="t-meta">{t('packs.sampleSpecies')}</DetailHeading>
+                <ul className="pack-samples">
+                  {preview.map((species) => (
+                    <li key={species.url}>
+                      <span>{species.commonName || species.sciName}</span>
+                      {species.commonName && species.commonName !== species.sciName && <i>{species.sciName}</i>}
+                    </li>
+                  ))}
+                </ul>
+                <p className="t-meta pack-note">{t('packs.sampleNote')}</p>
+              </div>
+            )}
+            {manifest.sources.length > 0 && (
+              <div>
+                <DetailHeading className="t-meta">{t('packs.listedSources')}</DetailHeading>
+                <ul className="pack-sources">{manifest.sources.map((source) => <li key={source}>{source}</li>)}</ul>
+              </div>
+            )}
+            <p className="t-meta pack-note">{t('packs.coverageNote')}</p>
+          </div>
+        </details>
+
         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
           {actions}
         </div>
@@ -199,7 +227,7 @@ function BlurredGround({ src, onError }: { src: string; onError: () => void }) {
       />
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(to bottom, color-mix(in srgb, var(--paper) 42%, transparent), color-mix(in srgb, var(--paper) 92%, transparent) 62%, var(--paper))',
+        background: 'linear-gradient(to bottom, color-mix(in srgb, var(--paper) 75%, transparent), color-mix(in srgb, var(--paper) 94%, transparent) 62%, var(--paper))',
       }} />
     </div>
   )
