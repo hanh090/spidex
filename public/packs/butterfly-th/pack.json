@@ -6,16 +6,18 @@
   },
   "taxonGroup": "lepidoptera",
   "region": "Thailand",
-  "version": 4,
+  "version": 5,
   "license": "Mixed; see item-level licences and provenance",
   "releaseStatus": "preview",
   "releaseNotes": {
-    "en": "Preview checklist: species-specific identification traits, habitat, seasonality and host plants are not yet verified. Some plates are archetypes; photo-based plates with unclear or restricted reference rights are withheld pending review."
+    "en": "Preview checklist: LepTraits and the NHM HOSTS archive supply exact-match wingspan, habitat-affinity, phenology or host-plant facts for part of the list. Visual identification traits remain unverified and regional phenology coverage is sparse; absent fields mean no verified species-level source. Some plates are archetypes while rights review continues."
   },
   "sources": [
     "GBIF occurrence species facets and Backbone taxonomy (api.gbif.org)",
     "iNaturalist Thailand research-grade observation species counts (api.inaturalist.org)",
-    "Spidex merged candidate checklist; geographic occurrence and field accounts not expert-vetted"
+    "Spidex merged candidate checklist; geographic occurrence and field accounts not expert-vetted",
+    "LepTraits 1.0 species trait data (Shirey et al. 2022; CC0)",
+    "HOSTS Lepidopteran hostplants archive (Natural History Museum 2023; CC0)"
   ],
   "speciesCount": 1119,
   "sizeBytes": {
@@ -24,7 +26,52 @@
   },
   "idRemap": [],
   "traitSchema": {
-    "traits": [],
+    "traits": [
+      {
+        "key": "size",
+        "label": {
+          "en": "Wingspan",
+          "de": "Flügelspannweite",
+          "vi": "Sải cánh"
+        },
+        "type": "multi",
+        "render": "chip",
+        "options": [
+          {
+            "v": "tiny",
+            "label": {
+              "en": "< 30 mm",
+              "de": "< 30 mm",
+              "vi": "< 30 mm"
+            }
+          },
+          {
+            "v": "small",
+            "label": {
+              "en": "30–50 mm",
+              "de": "30–50 mm",
+              "vi": "30–50 mm"
+            }
+          },
+          {
+            "v": "med",
+            "label": {
+              "en": "50–90 mm",
+              "de": "50–90 mm",
+              "vi": "50–90 mm"
+            }
+          },
+          {
+            "v": "large",
+            "label": {
+              "en": "> 90 mm",
+              "de": "> 90 mm",
+              "vi": "> 90 mm"
+            }
+          }
+        ]
+      }
+    ],
     "aspects": {
       "required": [
         "dorsal"
