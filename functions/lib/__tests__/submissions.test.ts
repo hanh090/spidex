@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  checkSpeciesNdjson, deletePrefix, isRealAsset, isValidPackId, mergeCatalogue, sanitizePath, servingPrefix,
+  checkManifest, checkSpeciesNdjson, deletePrefix, isRealAsset, isValidPackId, mergeCatalogue, sanitizePath, servingPrefix,
 } from '../submissions'
 import { fakeR2, htmlFallback } from './fakes'
 
@@ -86,5 +86,29 @@ describe('checkSpeciesNdjson ND licences', () => {
   })
   it.each(['CC BY 4.0', 'CC BY-NC 4.0', 'CC BY-SA 4.0', 'CC0'])('accepts %s', (license) => {
     expect(checkSpeciesNdjson(line(license)).issues).toEqual([])
+  })
+})
+
+describe('complete pack release gate', () => {
+  const manifest = {
+    id: 'bird-test', name: { en: 'Birds' }, taxonGroup: 'aves', region: 'Test',
+    version: 1, traitSchema: { traits: [{}] }, license: 'CC BY-SA', speciesCount: 1,
+  }
+  it('keeps old community packs in preview and requires a reviewer for complete claims', () => {
+    expect(checkManifest(manifest, 'bird-test')).toEqual([])
+    expect(checkManifest({ ...manifest, releaseStatus: 'complete' }, 'bird-test').join()).toMatch(/contentReview/)
+    expect(checkManifest({ ...manifest, releaseStatus: 'fixture' }, 'bird-test').join()).toMatch(/fixtures/)
+  })
+  it('rejects template content, placeholder plates, and NC images when called complete', () => {
+    const species = JSON.stringify({
+      id: 'x', sciName: 'X y', family: 'Unknown',
+      keyFeatures: [{ en: 'Diagnostic field markings of X y' }],
+      images: [{ credit: 'species plate pending', license: 'CC-BY-NC', thumbUrl: 'img/archetype.svg' }],
+    })
+    expect(checkSpeciesNdjson(species).issues).toEqual([])
+    const issues = checkSpeciesNdjson(species, true).issues.join(' ')
+    expect(issues).toMatch(/template identification content/)
+    expect(issues).toMatch(/placeholder plate/)
+    expect(issues).toMatch(/NonCommercial/)
   })
 })

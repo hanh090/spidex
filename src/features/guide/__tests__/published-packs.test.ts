@@ -7,6 +7,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fetchPublishedPacks } from '../published-packs'
+import { CATALOGUE, FEATURED } from '../../../data/pack-catalogue'
 
 const PACKS = join(__dirname, '..', '..', '..', '..', 'public', 'packs')
 const manifest = (id: string) => readFileSync(join(PACKS, id, 'pack.json'), 'utf8')
@@ -24,13 +25,13 @@ function serve(index: object, served: string[]) {
 afterEach(() => { vi.unstubAllGlobals() })
 
 describe('fetchPublishedPacks', () => {
-  it('counts every published pack whose manifest loads, not just the featured ones', async () => {
-    serve({ version: 1, featured: ['bird-min'], packs: ['bird-min', 'butterfly-zz', 'butterfly-min'] }, ['bird-min', 'butterfly-min'])
+  it('counts served previews but never markets fixtures, even if the index names one', async () => {
+    serve({ version: 1, featured: ['bird-vn'], packs: ['bird-vn', 'butterfly-zz', 'butterfly-vn', 'bird-min'] }, ['bird-vn', 'butterfly-vn', 'bird-min'])
     const { index, packs } = await fetchPublishedPacks()
 
-    expect(index.featured).toEqual(['bird-min'])
+    expect(index.featured).toEqual(['bird-vn'])
     // An id the server cannot serve is not on offer, and keeps no slot.
-    expect(packs.map((p) => p.id)).toEqual(['bird-min', 'butterfly-min'])
+    expect(packs.map((p) => p.id)).toEqual(['bird-vn', 'butterfly-vn'])
     // Catalogue numbers still follow the published order.
     expect(packs.map((p) => p.catNo)).toEqual([1, 3])
   })
@@ -40,6 +41,8 @@ describe('fetchPublishedPacks', () => {
     const onDisk = index.packs.filter((id) => {
       try { manifest(id); return true } catch { return false }
     })
+    expect([...CATALOGUE]).toEqual(index.packs)
+    expect([...FEATURED]).toEqual(index.featured)
     serve(index, onDisk)
     const { packs } = await fetchPublishedPacks()
     expect(packs.length).toBe(onDisk.length)

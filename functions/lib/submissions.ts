@@ -227,11 +227,17 @@ export function checkManifest(raw: unknown, expectedId: string): string[] {
   if (!m.traitSchema?.traits?.length) issues.push('traitSchema.traits missing')
   if (!m.license) issues.push('license missing')
   if (!Number.isInteger(m.speciesCount)) issues.push('speciesCount must be an integer')
+  if (m.releaseStatus === 'fixture') issues.push('test fixtures cannot be published')
+  if (m.releaseStatus === 'preview' && !m.releaseNotes?.en?.trim()) issues.push('preview requires releaseNotes.en')
+  if (m.releaseStatus === 'complete' && !(m.contentReview?.reviewer && /^\d{4}-\d{2}-\d{2}$/.test(m.contentReview?.date))) {
+    issues.push('complete requires a named contentReview reviewer and ISO date')
+  }
+  if (m.releaseStatus != null && !['preview', 'complete', 'fixture'].includes(m.releaseStatus)) issues.push('invalid releaseStatus')
   return issues
 }
 
 /** Per-record check on species.ndjson: JSON shape plus attribution presence. */
-export function checkSpeciesNdjson(text: string): { issues: string[]; count: number } {
+export function checkSpeciesNdjson(text: string, complete = false): { issues: string[]; count: number } {
   const issues: string[] = []
   let count = 0
   text.split('\n').forEach((line, i) => {
@@ -241,6 +247,19 @@ export function checkSpeciesNdjson(text: string): { issues: string[]; count: num
     try {
       const sp = JSON.parse(t)
       if (!sp.id || !sp.sciName) issues.push(`line ${i + 1}: id/sciName missing`)
+      if (complete) {
+        const account = JSON.stringify([sp.keyFeatures, sp.habitat, sp.taxonFields])
+        if (/Diagnostic field markings of |Native regional ecosystem and forest canopy|Distinctive vocalization in natural habitat/.test(account)) {
+          issues.push(`line ${i + 1}: template identification content`)
+        }
+        if (!sp.family || sp.family === 'Unknown') issues.push(`line ${i + 1}: family unknown`)
+        if (Array.isArray(sp.images) && sp.images.some((im: any) => /pending/i.test(im.credit) || /archetype/i.test(im.thumbUrl))) {
+          issues.push(`line ${i + 1}: placeholder plate`)
+        }
+        if (Array.isArray(sp.images) && sp.images.some((im: any) => /\bBY-NC/i.test(im.license))) {
+          issues.push(`line ${i + 1}: NonCommercial image needs policy and permissions review`)
+        }
+      }
       if (!Array.isArray(sp.images) || !sp.images.length) {
         issues.push(`line ${i + 1}: no images`)
       } else if (sp.images.some((im: any) => !im.credit || !im.license)) {

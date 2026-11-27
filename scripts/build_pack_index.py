@@ -2,7 +2,7 @@
 """
 Build public/packs/index.json — the published pack catalogue.
 
-Every directory under public/packs/ that contains a valid pack.json is a pack.
+Every directory under public/packs/ that contains a valid non-fixture pack.json is a pack.
 The index records them in display order: an existing index's order is kept for
 packs it already names, and new packs append at the end. `featured` carries
 forward; on first run it defaults to the two national checklists.
@@ -41,6 +41,11 @@ def discover_packs() -> list[str]:
         if manifest["id"] != entry.name:
             print(f"  ! {entry.name}: manifest id is {manifest['id']!r} — skipped", file=sys.stderr)
             continue
+        if manifest.get("releaseStatus") == "fixture":
+            continue
+        if manifest.get("releaseStatus") not in ("preview", "complete"):
+            print(f"  ! {entry.name}: explicit releaseStatus required — skipped", file=sys.stderr)
+            continue
         packs.append(entry.name)
     return packs
 
@@ -66,7 +71,7 @@ def main() -> int:
     ordered = [p for p in previous.get("packs", []) if p in found]
     ordered += [p for p in found if p not in ordered]
 
-    featured = args.featured or [f for f in previous.get("featured", []) if f in found]
+    featured = [f for f in (args.featured or previous.get("featured", [])) if f in found]
     if not featured:
         featured = [f for f in DEFAULT_FEATURED if f in found]
 

@@ -22,22 +22,22 @@ that live entirely on your phone.
 
 Field guides fail where they're needed most: deep in a national park, on a
 boat, at 3am with no bars. Spidex is a species index designed the other way
-around — a checklist downloads once, then every species, plate and
-identification key works with **zero connectivity**.
+around — a checklist downloads once, then its species accounts and plates
+can be browsed without connectivity. Bird recordings still stream online.
 
 <div align="center">
 
 | | |
 |---|---|
 | ![Onboarding — pick a checklist](docs/readme/01-home.png) | ![Pack library — regional checklists](docs/readme/03-library.png) |
-| *Download once. Everything lives on the device.* | *Each pack is a complete regional guide — specimens, keys, voices.* |
+| *Download a checklist for offline species and plates.* | *Regional checklists are previews while content review continues.* |
 
 </div>
 
 ## What it does
 
 - **Explore** — a browsable specimen catalogue with every plate credited and
-  licensed; the built-in packs cover Vietnam, Thailand and Malaysia, and the
+  licensed; the built-in preview packs cover Vietnam and Thailand, and the
   catalogue is open to community packs for any species, any region
 - **Identify** — trait-based keys that narrow a sighting to a species, built
   for wet and gloved hands: oversized touch targets, sun-readable and
@@ -162,9 +162,11 @@ Spidex is free and open source under the
 [GNU Affero General Public License v3.0](LICENSE) or later. If you run a
 modified version as a network service, you must offer its source to its users.
 
-The licence covers the code. Pack content keeps its own licences: every
-photograph, plate and recording is credited with its Creative Commons licence
-(CC0, CC BY or CC BY-SA) inside the pack and in the app.
+The licence covers the code. Pack content has separate, per-item licence
+metadata and credits shown in the app. Some Thailand image entries are marked
+CC BY-NC or CC BY-NC-SA; their permissions and attribution need review before
+any claim that all pack media can be used commercially. The pack-level licence
+describes compiled content and does not override an image or recording licence.
 
 ## Acknowledgements
 

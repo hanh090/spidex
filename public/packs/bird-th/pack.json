@@ -8,6 +8,8 @@
   "region": "Thailand",
   "version": 6,
   "license": "CC-BY-SA-4.0",
+  "releaseStatus": "preview",
+  "releaseNotes": {"en": "Identification and habitat text and trait keys are largely generic; some image metadata includes NonCommercial licences pending permissions review."},
   "sources": [
     "GBIF Occurrence Backbone (api.gbif.org)",
     "iNaturalist Research Grade Observations",

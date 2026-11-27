@@ -15,9 +15,6 @@ export const CATALOGUE = [
   'bird-vn',
   'butterfly-th',
   'bird-th',
-  'butterfly-sg',
-  'butterfly-min',
-  'bird-min',
 ] as const
 
 /**

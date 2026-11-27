@@ -8,6 +8,8 @@
   "region": "Vietnam",
   "version": 6,
   "license": "CC-BY-SA-4.0",
+  "releaseStatus": "preview",
+  "releaseNotes": {"en": "Checklist and plates are available, but species accounts have not had expert field-guide review. Bird recordings stream and require a connection."},
   "sources": [
     "IOC World Bird List v14.1 & Craik & Minh (2018)",
     "Vietnam Red Data Book & IEBR Checklist",

@@ -87,6 +87,10 @@ export const zPackManifest = z.object({
   version: z.number().int().positive(),
   traitSchema: zTraitSchema,
   license: z.string().min(1),
+  /** Missing on older installed/community packs: never imply editorial review. */
+  releaseStatus: z.enum(['preview', 'complete', 'fixture']).optional(),
+  releaseNotes: zLocalizedText.optional(),
+  contentReview: z.object({ reviewer: z.string().min(1), date: z.string().date() }).optional(),
   sources: z.array(z.string()).default([]),
   speciesCount: z.number().int().nonnegative(),
   /** Thumbnail tier and full tier, in bytes, from the manifest — never from storage.estimate(). */

@@ -15,6 +15,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: python3 scripts/check_pack_release.py
+      - run: python3 -m unittest discover -s scripts -p 'test_check_pack_release.py'
       - run: npm run typecheck
       - run: npm test
       - run: npm run build

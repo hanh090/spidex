@@ -30,7 +30,9 @@ export async function fetchPublishedPacks(): Promise<PublishedCatalogue> {
   const fetched = await Promise.all(
     index.packs.map(async (id, i) => {
       const res = await fetchManifest(packBaseUrl(id))
-      return res.ok ? { id, manifest: res.manifest, catNo: i + 1 } : null
+      return res.ok && res.manifest.releaseStatus !== 'fixture'
+        ? { id, manifest: res.manifest, catNo: i + 1 }
+        : null
     }),
   )
   return { index, packs: fetched.filter((p): p is PublishedPack => p !== null) }

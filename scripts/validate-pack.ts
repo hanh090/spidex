@@ -50,7 +50,7 @@ if (!parsed.ok) {
 
 // The server's upload gate (ND image licences, non-http(s) sound links, missing
 // attribution) runs here too, so a pack that passes locally is not refused at upload.
-const gate = checkSpeciesNdjson(speciesText)
+const gate = checkSpeciesNdjson(speciesText, manifest.releaseStatus === 'complete')
 if (gate.issues.length) {
   console.error('species.ndjson would be refused at upload:')
   for (const msg of gate.issues) console.error(`  ${msg}`)

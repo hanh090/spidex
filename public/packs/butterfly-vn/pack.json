@@ -8,6 +8,8 @@
   "region": "Vietnam",
   "version": 2,
   "license": "CC-BY-SA-4.0",
+  "releaseStatus": "preview",
+  "releaseNotes": {"en": "Many species use placeholder plates and broad identification and habitat text; this is a checklist preview, not a species-level identification guide."},
   "sources": [
     "A. L. Monastyrskii & A. L. Devyatkin (Butterflies of Vietnam)",
     "Vietnam Biodiversity Checklist & iNaturalist Research Specimens",
